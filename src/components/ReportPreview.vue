@@ -7,7 +7,8 @@
       <!-- 보고서 내용 -->
       <div ref="reportContent" class="report-content leading-relaxed">
         <br /><br /><br />
-        <h2 class="title-lg text-center mb-6 text-gray-800">청 구 지 출 결 의 서</h2>
+        <!-- ✅ 문서 종류 반영 -->
+        <h2 class="title-lg text-center mb-6 text-gray-800">{{ report.documentType }}</h2>
         <br /><br /><br />
 
         <!-- 결재 서명란 -->
@@ -173,10 +174,11 @@ const props = defineProps(["report"]);
 const reportContent = ref(null);
 const expanded = ref(false);
 
+/* ✅ 최소 10행 보장 */
 const paddedItems = computed(() => {
   const items = props.report.items || [];
   if (items.length >= 10) return items;
-  const emptyRows = Array.from({ length: 8 - items.length }, () => ({
+  const emptyRows = Array.from({ length: 10 - items.length }, () => ({
     gwan: "",
     hang: "",
     mok: "",
@@ -187,6 +189,7 @@ const paddedItems = computed(() => {
   return items.concat(emptyRows);
 });
 
+/* ✅ PDF 다운로드 (파일명 규칙 반영) */
 const downloadPDF = async () => {
   const content = reportContent.value;
   const canvas = await html2canvas(content, { scale: 2 });
@@ -220,9 +223,12 @@ const downloadPDF = async () => {
     heightLeft -= usableHeight;
   }
 
-  pdf.save("report.pdf");
+  /* ✅ 파일명 규칙: 문서종류_부서명_작성일자.pdf */
+  const fileName = `${props.report.documentType}_${props.report.deptName}_${props.report.date}.pdf`;
+  pdf.save(fileName);
 };
 
+/* ✅ 프린트 */
 const printReport = async () => {
   const content = reportContent.value;
   const canvas = await html2canvas(content, { scale: 2 });
@@ -258,7 +264,7 @@ const printReport = async () => {
 .no-print { display: block; }
 @media print { .no-print { display: none !important; } }
 
-/* ✅ 본문 폰트 사이즈 (기존 +5pt → 약 14pt) */
+/* ✅ 본문 폰트 사이즈 */
 .report-content {
   font-size: 14pt !important;
 }

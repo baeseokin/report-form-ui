@@ -20,6 +20,7 @@
         v-model:selectedDept="selectedDept"
         v-model:author="author"
         v-model:date="date"
+        v-model:documentType="documentType"
         :dept-data="deptData"
         @next="goNextTab"
       />
@@ -33,6 +34,7 @@
       />
       <ConfirmTab
         v-if="activeTab === '최종 확인'"
+        :document-type="documentType"
         :selected-dept="selectedDept"
         :author="author"
         :date="date"
@@ -59,6 +61,7 @@ import ReportPreview from "./components/ReportPreview.vue";
 const tabs = ["기본정보", "지출내역", "최종 확인"];
 const activeTab = ref("기본정보");
 
+const documentType = ref("청구지출결의서"); // ✅ 문서종류 기본값
 const selectedDept = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
@@ -85,6 +88,7 @@ const goPrevTab = () => {
 
 const generateReport = () => {
   report.value = {
+    documentType: documentType.value, // ✅ 추가됨
     deptName: selectedDept.value,
     author: author.value,
     date: date.value,

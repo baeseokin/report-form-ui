@@ -2,6 +2,7 @@
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">📄 최종 확인</h2>
     <div class="p-4 bg-gray-50 rounded-lg shadow-inner space-y-1">
+      <p><strong>문서 종류:</strong> {{ documentType }}</p>
       <p><strong>부서명:</strong> {{ selectedDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
@@ -47,31 +48,44 @@
 </template>
 
 <script setup>
-const props = defineProps(["selectedDept", "author", "date", "totalAmount", "comment", "items"]);
+const props = defineProps([
+  "documentType", // ✅ 문서 종류 추가
+  "selectedDept",
+  "author",
+  "date",
+  "totalAmount",
+  "comment",
+  "items",
+]);
 const emits = defineEmits(["update:comment", "prev", "generate"]);
 
 /* ✅ JSON 저장 (결재요청 버튼) */
 const saveAsJson = () => {
   const data = {
+    documentType: props.documentType, // ✅ 포함
     deptName: props.selectedDept,
     author: props.author,
     date: props.date,
     totalAmount: props.totalAmount,
     comment: props.comment,
-    items: props.items?.map((i) => ({
-      gwan: i.gwan,
-      hang: i.hang,
-      mok: i.mok,
-      semok: i.semok,
-      detail: i.detail,
-      amount: i.amount,
-    })) || [],
+    items:
+      props.items?.map((i) => ({
+        gwan: i.gwan,
+        hang: i.hang,
+        mok: i.mok,
+        semok: i.semok,
+        detail: i.detail,
+        amount: i.amount,
+      })) || [],
   };
+
+  // ✅ 파일 이름 동적 생성
+  const fileName = `${props.documentType}_${props.selectedDept || "부서"}_${props.author || "작성자"}_${props.date || "날짜"}.json`;
 
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "approval_request.json";
+  link.download = fileName;
   link.click();
   URL.revokeObjectURL(link.href);
 };
