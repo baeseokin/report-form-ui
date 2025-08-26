@@ -16,14 +16,14 @@
           <table class="w-1/3 border text-center">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
-                <th class="border">담당</th>
-                <th class="border">부장</th>
-                <th class="border">위원장</th>
-                <th class="border">당회장</th>
+                <th class="border w-1/4">담당</th>
+                <th class="border w-1/4">부장</th>
+                <th class="border w-1/4">위원장</th>
+                <th class="border w-1/4">당회장</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr class="h-24">
                 <td class="border"></td>
                 <td class="border"></td>
                 <td class="border"></td>
@@ -35,14 +35,14 @@
           <table class="w-1/3 border text-center">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
-                <th class="border">담당</th>
-                <th class="border">부장</th>
-                <th class="border">위원장</th>
-                <th class="border">당회장</th>
+                <th class="border w-1/4">담당</th>
+                <th class="border w-1/4">부장</th>
+                <th class="border w-1/4">위원장</th>
+                <th class="border w-1/4">당회장</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr class="h-24">
                 <td class="border"></td>
                 <td class="border"></td>
                 <td class="border"></td>
@@ -177,8 +177,8 @@ const expanded = ref(false);
 /* ✅ 최소 10행 보장 */
 const paddedItems = computed(() => {
   const items = props.report.items || [];
-  if (items.length >= 10) return items;
-  const emptyRows = Array.from({ length: 10 - items.length }, () => ({
+  if (items.length >= 8) return items;
+  const emptyRows = Array.from({ length: 8 - items.length }, () => ({
     gwan: "",
     hang: "",
     mok: "",
