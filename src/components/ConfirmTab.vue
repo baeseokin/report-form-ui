@@ -37,7 +37,7 @@
         </button>
 
         <button
-          @click="saveAsJson"
+          @click="sendApprovalRequest"
           class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg shadow-md transition"
         >
           📤 결재요청
@@ -49,7 +49,7 @@
 
 <script setup>
 const props = defineProps([
-  "documentType", // ✅ 문서 종류 추가
+  "documentType",
   "selectedDept",
   "author",
   "date",
@@ -59,10 +59,10 @@ const props = defineProps([
 ]);
 const emits = defineEmits(["update:comment", "prev", "generate"]);
 
-/* ✅ JSON 저장 (결재요청 버튼) */
-const saveAsJson = () => {
+/* ✅ 서버 저장 로직 */
+const sendApprovalRequest = async () => {
   const data = {
-    documentType: props.documentType, // ✅ 포함
+    documentType: props.documentType,
     deptName: props.selectedDept,
     author: props.author,
     date: props.date,
@@ -79,14 +79,19 @@ const saveAsJson = () => {
       })) || [],
   };
 
-  // ✅ 파일 이름 동적 생성
-  const fileName = `${props.documentType}_${props.selectedDept || "부서"}_${props.author || "작성자"}_${props.date || "날짜"}.json`;
+  try {
+    const response = await fetch("http://localhost:3001/api/approval", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = fileName;
-  link.click();
-  URL.revokeObjectURL(link.href);
+    if (!response.ok) throw new Error("서버 저장 실패");
+
+    alert("✅ 결재요청이 성공적으로 저장되었습니다!");
+  } catch (err) {
+    console.error(err);
+    alert("❌ 서버 저장 중 오류가 발생했습니다.");
+  }
 };
 </script>
