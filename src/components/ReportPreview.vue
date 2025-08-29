@@ -139,7 +139,7 @@
         <!-- 영수 문구 -->
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
-          {{ report.date }}<br />
+          {{ formatDate(report.date) }}<br />
           영수인 성명 : {{ report.author }} (인)
         </div>
       </div>
@@ -258,6 +258,17 @@ const printReport = async () => {
   `);
   win.document.close();
 };
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+
 </script>
 
 <style>

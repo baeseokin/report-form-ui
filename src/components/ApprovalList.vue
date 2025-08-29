@@ -3,42 +3,41 @@
     <h2 class="text-xl font-bold text-gray-800 mb-4">📑 청구목록 조회</h2>
 
     <!-- 검색 조건 -->
-  <div class="flex gap-4 mb-4 items-center">
-  <!-- 부서명 -->
-  <div class="flex flex-col w-1/4">
-    <label class="font-bold mb-1">부서명</label>
-    <input
-      type="text"
-      v-model="filters.deptName"
-      placeholder="부서명 입력"
-      class="border rounded p-2 w-full"
-    />
-  </div>
+    <div class="flex gap-4 mb-4 items-center">
+      <!-- 부서명 -->
+      <div class="flex flex-col w-1/4">
+        <label class="font-bold mb-1">부서명</label>
+        <input
+          type="text"
+          v-model="filters.deptName"
+          placeholder="부서명 입력"
+          class="border rounded p-2 w-full"
+        />
+      </div>
 
-  <!-- 문서종류 -->
-  <div class="flex flex-col w-1/4">
-    <label class="font-bold mb-1">문서종류</label>
-    <select v-model="filters.documentType" class="border rounded p-2 w-full">
-      <option value="">전체</option>
-      <option value="청구지출결의서">청구지출결의서</option>
-      <option value="정산지출결의서">정산지출결의서</option>
-      <option value="가불지출결의서">가불지출결의서</option>
-    </select>
-  </div>
+      <!-- 문서종류 -->
+      <div class="flex flex-col w-1/4">
+        <label class="font-bold mb-1">문서종류</label>
+        <select v-model="filters.documentType" class="border rounded p-2 w-full">
+          <option value="">전체</option>
+          <option value="청구지출결의서">청구지출결의서</option>
+          <option value="정산지출결의서">정산지출결의서</option>
+          <option value="가불지출결의서">가불지출결의서</option>
+        </select>
+      </div>
 
-  <!-- 청구시작일자 -->
-  <div class="flex flex-col w-1/4">
-    <label class="font-bold mb-1">청구시작일자</label>
-    <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
-  </div>
+      <!-- 청구시작일자 -->
+      <div class="flex flex-col w-1/4">
+        <label class="font-bold mb-1">청구시작일자</label>
+        <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
+      </div>
 
-  <!-- 청구종료일자 -->
-  <div class="flex flex-col w-1/4">
-    <label class="font-bold mb-1">청구종료일자</label>
-    <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
-  </div>
-</div>
-
+      <!-- 청구종료일자 -->
+      <div class="flex flex-col w-1/4">
+        <label class="font-bold mb-1">청구종료일자</label>
+        <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
+      </div>
+    </div>
 
     <div class="mb-4">
       <button
@@ -61,7 +60,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in approvals" :key="item.id">
+        <tr
+          v-for="item in approvals"
+          :key="item.id"
+          @click="openPreview(item.id)"
+          class="cursor-pointer hover:bg-blue-50"
+        >
           <td class="border p-2">{{ item.dept_name }}</td>
           <td class="border p-2">{{ item.document_type }}</td>
           <td class="border p-2">{{ formatDate(item.request_date) }}</td>
@@ -86,16 +90,21 @@
         {{ page }}
       </button>
     </div>
+
+    <!-- ✅ 미리보기 -->
+    <ReportPreview v-if="previewReport" :report="previewReport" @close="previewReport = null" />
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import axios from "axios";
+import ReportPreview from "./ReportPreview.vue";
 
 const approvals = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
+const previewReport = ref(null);
 
 const filters = ref({
   deptName: "",
@@ -122,6 +131,20 @@ const fetchApprovals = async (page = 1) => {
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("ko-KR");
+  const d = new Date(dateStr);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// ✅ 상세보기 열기
+const openPreview = async (id) => {
+  try {
+    const res = await axios.get(`http://localhost:3001/api/approval/${id}`);
+    previewReport.value = res.data;
+  } catch (err) {
+    console.error("상세조회 실패:", err);
+  }
 };
 </script>
