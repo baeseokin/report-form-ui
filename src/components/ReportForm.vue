@@ -21,6 +21,7 @@
         v-model:selectedDept="selectedDept"
         v-model:author="author"
         v-model:date="date"
+        v-model:aliasName="aliasName" 
         :dept-data="deptData"
         @next="goNextTab"
       />
@@ -40,6 +41,7 @@
         :date="date"
         :total-amount="totalAmount"
         :items="items"
+        :alias-name="aliasName" 
         v-model:comment="comment"
         @prev="goPrevTab"
         @generate="generateReport"
@@ -65,8 +67,11 @@ const documentType = ref("청구지출결의서");
 const selectedDept = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
+const aliasName = ref(""); // ✅ 별칭 상태 추가
 const deptData = ref({});
-const items = ref([{ selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 }]);
+const items = ref([
+  { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
+]);
 const comment = ref("");
 const report = ref(null);
 
@@ -93,6 +98,7 @@ const generateReport = () => {
     author: author.value,
     date: date.value,
     totalAmount: totalAmount.value,
+    aliasName: aliasName.value, // ✅ 별칭 반영
     items: JSON.parse(JSON.stringify(items.value)),
     comment: comment.value,
   };

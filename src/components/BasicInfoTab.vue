@@ -55,6 +55,19 @@
       />
     </div>
 
+    <!-- ✅ 청구요청 별칭 입력란 -->
+    <div>
+      <label class="block text-lg font-semibold text-gray-700 mb-2">청구요청 별칭</label>
+      <input
+        type="text"
+        :value="aliasName"
+        @input="$emit('update:aliasName', $event.target.value)"
+        maxlength="100"
+        placeholder="청구요청 별칭 입력 (최대 100자)"
+        class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 w-full"
+      />
+    </div>
+
     <!-- 다음 버튼 -->
     <div class="flex justify-end mt-6">
       <button
@@ -68,12 +81,21 @@
 </template>
 
 <script setup>
-const props = defineProps(["selectedDept", "author", "date", "deptData", "documentType"]);
+const props = defineProps([
+  "selectedDept",
+  "author",
+  "date",
+  "deptData",
+  "documentType",
+  "aliasName", // ✅ 추가됨
+]);
+
 const emits = defineEmits([
   "update:selectedDept",
   "update:author",
   "update:date",
   "update:documentType",
+  "update:aliasName", // ✅ 추가됨
   "next",
 ]);
 

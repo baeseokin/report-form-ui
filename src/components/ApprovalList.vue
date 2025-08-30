@@ -26,72 +26,93 @@
         </select>
       </div>
 
-      <!-- 청구시작일자 -->
+      <!-- 청구 시작일자 -->
       <div class="flex flex-col w-1/4">
-        <label class="font-bold mb-1">청구시작일자</label>
-        <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
+        <label class="font-bold mb-1">청구 시작일자</label>
+        <input
+          type="date"
+          v-model="filters.startDate"
+          class="border rounded p-2 w-full"
+        />
       </div>
 
-      <!-- 청구종료일자 -->
+      <!-- 청구 종료일자 -->
       <div class="flex flex-col w-1/4">
-        <label class="font-bold mb-1">청구종료일자</label>
-        <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
+        <label class="font-bold mb-1">청구 종료일자</label>
+        <input
+          type="date"
+          v-model="filters.endDate"
+          class="border rounded p-2 w-full"
+        />
       </div>
     </div>
 
+    <!-- 조회 버튼 -->
     <div class="mb-4">
       <button
         @click="fetchApprovals(1)"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded shadow"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
       >
-        🔍 조회
+        조회
       </button>
     </div>
 
-    <!-- 결과 테이블 -->
-    <table class="w-full border text-center text-sm">
-      <thead class="bg-gray-100">
-        <tr>
-          <th class="border p-2">부서명</th>
-          <th class="border p-2">문서종류</th>
-          <th class="border p-2">청구일자</th>
-          <th class="border p-2">총액</th>
-          <th class="border p-2">작성자</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="item in approvals"
-          :key="item.id"
-          @click="openPreview(item.id)"
-          class="cursor-pointer hover:bg-blue-50"
-        >
-          <td class="border p-2">{{ item.dept_name }}</td>
-          <td class="border p-2">{{ item.document_type }}</td>
-          <td class="border p-2">{{ formatDate(item.request_date) }}</td>
-          <td class="border p-2 text-right">₩{{ Number(item.total_amount).toLocaleString() }}</td>
-          <td class="border p-2">{{ item.author }}</td>
-        </tr>
-        <tr v-if="approvals.length === 0">
-          <td colspan="5" class="border p-4 text-gray-400">데이터가 없습니다.</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- 결과 목록 -->
+    <div>
+      <table class="w-full border text-sm">
+        <thead>
+          <tr class="bg-gray-100 text-left">
+            <th class="border p-2">ID</th>
+            <th class="border p-2">문서종류</th>
+            <th class="border p-2">부서명</th>
+            <th class="border p-2">작성자</th>
+            <th class="border p-2">청구요청 별칭</th> <!-- ✅ 추가됨 -->
+            <th class="border p-2">청구일자</th>
+            <th class="border p-2">총액</th>
+            <th class="border p-2">상세</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="a in approvals" :key="a.id" class="hover:bg-gray-50">
+            <td class="border p-2">{{ a.id }}</td>
+            <td class="border p-2">{{ a.document_type }}</td>
+            <td class="border p-2">{{ a.dept_name }}</td>
+            <td class="border p-2">{{ a.author }}</td>
+            <td class="border p-2">{{ a.aliasName }}</td> <!-- ✅ aliasName -->
+            <td class="border p-2">{{ formatDate(a.request_date) }}</td>
+            <td class="border p-2 text-right">{{ a.total_amount.toLocaleString() }}</td>
+            <td class="border p-2">
+              <button
+                @click="openPreview(a.id)"
+                class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
+              >
+                상세보기
+              </button>
+            </td>
+          </tr>
+          <tr v-if="approvals.length === 0">
+            <td colspan="8" class="text-center p-4">데이터가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <!-- 페이징 -->
-    <div class="flex justify-center gap-2 mt-4">
+    <!-- 페이지네이션 -->
+    <div class="flex justify-center mt-4 space-x-2">
       <button
         v-for="page in totalPages"
         :key="page"
         @click="fetchApprovals(page)"
-        class="px-3 py-1 border rounded"
-        :class="page === currentPage ? 'bg-blue-500 text-white' : 'bg-white'"
+        :class="[
+          'px-3 py-1 border rounded',
+          currentPage === page ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100'
+        ]"
       >
         {{ page }}
       </button>
     </div>
 
-    <!-- ✅ 미리보기 -->
+    <!-- 상세보기 모달 -->
     <ReportPreview v-if="previewReport" :report="previewReport" @close="previewReport = null" />
   </div>
 </template>
@@ -101,6 +122,19 @@ import { ref } from "vue";
 import axios from "axios";
 import ReportPreview from "./ReportPreview.vue";
 
+// 오늘 날짜
+const today = new Date();
+const year = today.getFullYear();
+const startOfYear = new Date(year, 0, 1);
+
+// yyyy-MM-dd 포맷 함수
+const formatDateValue = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
 const approvals = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
@@ -109,8 +143,8 @@ const previewReport = ref(null);
 const filters = ref({
   deptName: "",
   documentType: "",
-  startDate: "",
-  endDate: "",
+  startDate: formatDateValue(startOfYear),
+  endDate: formatDateValue(today),
 });
 
 const fetchApprovals = async (page = 1) => {
@@ -138,7 +172,6 @@ const formatDate = (dateStr) => {
   return `${year}-${month}-${day}`;
 };
 
-// ✅ 상세보기 열기
 const openPreview = async (id) => {
   try {
     const res = await axios.get(`http://localhost:3001/api/approval/${id}`);

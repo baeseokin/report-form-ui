@@ -7,6 +7,8 @@
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
       <p><strong>청구총액:</strong> ₩{{ totalAmount.toLocaleString() }}</p>
+      <!-- ✅ 별칭 표시 -->
+      <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
     </div>
 
     <h2 class="text-xl font-bold text-gray-800">📌 추가 의견</h2>
@@ -56,6 +58,7 @@ const props = defineProps([
   "totalAmount",
   "comment",
   "items",
+  "aliasName", // ✅ 별칭 추가
 ]);
 const emits = defineEmits(["update:comment", "prev", "generate"]);
 
@@ -68,6 +71,7 @@ const sendApprovalRequest = async () => {
     date: props.date,
     totalAmount: props.totalAmount,
     comment: props.comment,
+    aliasName: props.aliasName, // ✅ 서버 전송에 포함
     items:
       props.items?.map((i) => ({
         gwan: i.gwan,
