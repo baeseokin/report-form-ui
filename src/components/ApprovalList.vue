@@ -62,7 +62,6 @@
       <table class="w-full border text-sm">
         <thead>
           <tr class="bg-gray-100 text-left">
-            <th class="border p-2">ID</th>
             <th class="border p-2">문서종류</th>
             <th class="border p-2">부서명</th>
             <th class="border p-2">작성자</th>
@@ -74,7 +73,6 @@
         </thead>
         <tbody>
           <tr v-for="a in approvals" :key="a.id" class="hover:bg-gray-50">
-            <td class="border p-2">{{ a.id }}</td>
             <td class="border p-2">{{ a.document_type }}</td>
             <td class="border p-2">{{ a.dept_name }}</td>
             <td class="border p-2">{{ a.author }}</td>
@@ -87,6 +85,12 @@
                 class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
               >
                 상세보기
+              </button>
+              <button
+                @click="goToReport(a.id)"
+                class="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded"
+              >
+                보고서작성
               </button>
             </td>
           </tr>
@@ -121,6 +125,12 @@
 import { ref } from "vue";
 import axios from "axios";
 import ReportPreview from "./ReportPreview.vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
+
+const goToReport = (id) => {
+  router.push({ name: "ReportForm", params: { id } });
+};
 
 // 오늘 날짜
 const today = new Date();

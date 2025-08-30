@@ -68,6 +68,11 @@
       />
     </div>
 
+    <!-- ✅ 안내 문구 추가 -->
+    <p class="text-sm text-gray-500 italic">
+      ◎ 청구목록 조회화면에서 기존 청구내역을 재사용하여 보고서를 작성할 수 있습니다.
+    </p>
+
     <!-- 다음 버튼 -->
     <div class="flex justify-end mt-6">
       <button

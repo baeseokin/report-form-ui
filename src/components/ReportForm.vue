@@ -59,7 +59,10 @@ import BasicInfoTab from "./BasicInfoTab.vue";
 import ExpenseTab from "./ExpenseTab.vue";
 import ConfirmTab from "./ConfirmTab.vue";
 import ReportPreview from "./ReportPreview.vue";
+import { useRoute } from "vue-router";
+import axios from "axios";
 
+const route = useRoute();
 const tabs = ["기본정보", "지출내역", "최종 확인"];
 const activeTab = ref("기본정보");
 
@@ -78,7 +81,34 @@ const report = ref(null);
 onMounted(async () => {
   const res = await fetch("/deptData.json");
   deptData.value = await res.json();
+  if (route.params.id) {
+    try {
+      const res = await axios.get(`http://localhost:3001/api/approval/${route.params.id}`);
+      const data = res.data;
+
+      // approval_requests 값 채우기
+      documentType.value = data.documentType;
+      selectedDept.value = data.deptName;
+      //author.value = data.author;
+      //date.value = data.date;
+      aliasName.value = data.aliasName;
+      //comment.value = data.comment || "";
+
+      // approval_items 값 채우기
+      items.value = data.items.map(i => ({
+        gwan: i.gwan,
+        hang: i.hang,
+        mok: i.mok,
+        semok: i.semok,
+        detail: i.detail,
+        amount: i.amount,
+      }));
+    } catch (err) {
+      console.error("❌ 보고서 데이터 불러오기 실패:", err);
+    }
+  }
 });
+
 
 const totalAmount = computed(() => items.value.reduce((sum, i) => sum + (i.amount || 0), 0));
 
