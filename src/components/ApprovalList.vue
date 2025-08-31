@@ -160,7 +160,7 @@ const filters = ref({
 const fetchApprovals = async (page = 1) => {
   currentPage.value = page;
   try {
-    const res = await axios.post("http://localhost:3001/api/approvalList", {
+    const res = await axios.post("/api/approvalList", {
       ...filters.value,
       page,
       pageSize: 10,
@@ -184,7 +184,7 @@ const formatDate = (dateStr) => {
 
 const openPreview = async (id) => {
   try {
-    const res = await axios.get(`http://localhost:3001/api/approval/${id}`);
+    const res = await axios.get(`/api/approval/${id}`);
     previewReport.value = res.data;
   } catch (err) {
     console.error("상세조회 실패:", err);

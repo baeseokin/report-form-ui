@@ -1,6 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center p-10 font-nanum">
-    <div class="w-full max-w-6xl bg-white shadow-2xl rounded-2xl p-8 border border-gray-200">
+  <div
+    class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center p-10 font-nanum"
+  >
+    <div
+      class="w-full max-w-6xl bg-white shadow-2xl rounded-2xl p-8 border border-gray-200"
+    >
       <!-- 탭 -->
       <div class="flex border-b mb-6">
         <button
@@ -8,7 +12,11 @@
           :key="tab"
           @click="activeTab = tab"
           class="flex-1 py-3 text-center font-semibold transition"
-          :class="activeTab === tab ? 'border-b-4 border-purple-600 text-purple-700' : 'text-gray-500 hover:text-gray-700'"
+          :class="
+            activeTab === tab
+              ? 'border-b-4 border-purple-600 text-purple-700'
+              : 'text-gray-500 hover:text-gray-700'
+          "
         >
           {{ tab }}
         </button>
@@ -21,10 +29,11 @@
         v-model:selectedDept="selectedDept"
         v-model:author="author"
         v-model:date="date"
-        v-model:aliasName="aliasName" 
+        v-model:aliasName="aliasName"
         :dept-data="deptData"
         @next="goNextTab"
       />
+
       <ExpenseTab
         v-if="activeTab === '지출내역'"
         v-model:items="items"
@@ -33,6 +42,14 @@
         @prev="goPrevTab"
         @next="goNextTab"
       />
+
+      <FileAttachTab
+        v-if="activeTab === '파일첨부'"
+        v-model="attachedFiles"
+        @prev="goPrevTab"
+        @next="goNextTab"
+      />
+
       <ConfirmTab
         v-if="activeTab === '최종 확인'"
         :document-type="documentType"
@@ -41,8 +58,9 @@
         :date="date"
         :total-amount="totalAmount"
         :items="items"
-        :alias-name="aliasName" 
+        :alias-name="aliasName"
         v-model:comment="comment"
+        :attached-files="attachedFiles"
         @prev="goPrevTab"
         @generate="generateReport"
       />
@@ -55,47 +73,48 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import BasicInfoTab from "./BasicInfoTab.vue";
-import ExpenseTab from "./ExpenseTab.vue";
-import ConfirmTab from "./ConfirmTab.vue";
-import ReportPreview from "./ReportPreview.vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 
-const route = useRoute();
-const tabs = ["기본정보", "지출내역", "최종 확인"];
+// 컴포넌트 import
+import BasicInfoTab from "./BasicInfoTab.vue";
+import ExpenseTab from "./ExpenseTab.vue";
+import FileAttachTab from "./FileAttachTab.vue";
+import ConfirmTab from "./ConfirmTab.vue";
+import ReportPreview from "./ReportPreview.vue";
+
+const tabs = ["기본정보", "지출내역", "파일첨부", "최종 확인"];
 const activeTab = ref("기본정보");
 
 const documentType = ref("청구지출결의서");
 const selectedDept = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
-const aliasName = ref(""); // ✅ 별칭 상태 추가
+const aliasName = ref(""); 
 const deptData = ref({});
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
 ]);
 const comment = ref("");
 const report = ref(null);
+const attachedFiles = ref([]); // ✅ 첨부파일 상태
+
+const route = useRoute();
 
 onMounted(async () => {
   const res = await fetch("/deptData.json");
   deptData.value = await res.json();
+
   if (route.params.id) {
     try {
       const res = await axios.get(`http://localhost:3001/api/approval/${route.params.id}`);
       const data = res.data;
 
-      // approval_requests 값 채우기
       documentType.value = data.documentType;
       selectedDept.value = data.deptName;
-      //author.value = data.author;
-      //date.value = data.date;
       aliasName.value = data.aliasName;
-      //comment.value = data.comment || "";
 
-      // approval_items 값 채우기
-      items.value = data.items.map(i => ({
+      items.value = data.items.map((i) => ({
         gwan: i.gwan,
         hang: i.hang,
         mok: i.mok,
@@ -109,8 +128,9 @@ onMounted(async () => {
   }
 });
 
-
-const totalAmount = computed(() => items.value.reduce((sum, i) => sum + (i.amount || 0), 0));
+const totalAmount = computed(() =>
+  items.value.reduce((sum, i) => sum + (i.amount || 0), 0)
+);
 
 const goNextTab = () => {
   const idx = tabs.indexOf(activeTab.value);
@@ -128,7 +148,7 @@ const generateReport = () => {
     author: author.value,
     date: date.value,
     totalAmount: totalAmount.value,
-    aliasName: aliasName.value, // ✅ 별칭 반영
+    aliasName: aliasName.value,
     items: JSON.parse(JSON.stringify(items.value)),
     comment: comment.value,
   };
