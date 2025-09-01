@@ -29,21 +29,13 @@
       <!-- 청구 시작일자 -->
       <div class="flex flex-col w-1/4">
         <label class="font-bold mb-1">청구 시작일자</label>
-        <input
-          type="date"
-          v-model="filters.startDate"
-          class="border rounded p-2 w-full"
-        />
+        <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
       </div>
 
       <!-- 청구 종료일자 -->
       <div class="flex flex-col w-1/4">
         <label class="font-bold mb-1">청구 종료일자</label>
-        <input
-          type="date"
-          v-model="filters.endDate"
-          class="border rounded p-2 w-full"
-        />
+        <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
       </div>
     </div>
 
@@ -65,7 +57,7 @@
             <th class="border p-2">문서종류</th>
             <th class="border p-2">부서명</th>
             <th class="border p-2">작성자</th>
-            <th class="border p-2">청구요청 별칭</th> <!-- ✅ 추가됨 -->
+            <th class="border p-2">청구요청 별칭</th>
             <th class="border p-2">청구일자</th>
             <th class="border p-2">총액</th>
             <th class="border p-2">상세</th>
@@ -76,7 +68,7 @@
             <td class="border p-2">{{ a.document_type }}</td>
             <td class="border p-2">{{ a.dept_name }}</td>
             <td class="border p-2">{{ a.author }}</td>
-            <td class="border p-2">{{ a.aliasName }}</td> <!-- ✅ aliasName -->
+            <td class="border p-2">{{ a.aliasName }}</td>
             <td class="border p-2">{{ formatDate(a.request_date) }}</td>
             <td class="border p-2 text-right">{{ a.total_amount.toLocaleString() }}</td>
             <td class="border p-2">
@@ -117,7 +109,11 @@
     </div>
 
     <!-- 상세보기 모달 -->
-    <ReportPreview v-if="previewReport" :report="previewReport" @close="previewReport = null" />
+    <ReportPreview
+      v-if="previewReport"
+      :report="previewReport"
+      @close="previewReport = null"
+    />
   </div>
 </template>
 
@@ -128,27 +124,21 @@ import ReportPreview from "./ReportPreview.vue";
 import { useRouter } from "vue-router";
 const router = useRouter();
 
-const goToReport = (id) => {
-  router.push({ name: "ReportForm", params: { id } });
-};
+const approvals = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const previewReport = ref(null);
 
-// 오늘 날짜
 const today = new Date();
 const year = today.getFullYear();
 const startOfYear = new Date(year, 0, 1);
 
-// yyyy-MM-dd 포맷 함수
 const formatDateValue = (date) => {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
 };
-
-const approvals = ref([]);
-const currentPage = ref(1);
-const totalPages = ref(1);
-const previewReport = ref(null);
 
 const filters = ref({
   deptName: "",
@@ -176,18 +166,24 @@ const fetchApprovals = async (page = 1) => {
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate()
+  ).padStart(2, "0")}`;
 };
 
 const openPreview = async (id) => {
   try {
     const res = await axios.get(`/api/approval/${id}`);
-    previewReport.value = res.data;
+    previewReport.value = {
+      ...res.data,
+      attachedFiles: res.data.attachedFiles || [], // ✅ 첨부파일 반영
+    };
   } catch (err) {
     console.error("상세조회 실패:", err);
   }
+};
+
+const goToReport = (id) => {
+  router.push({ name: "ReportForm", params: { id } });
 };
 </script>

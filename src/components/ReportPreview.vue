@@ -1,19 +1,16 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 font-nanum">
-    <div class="bg-white rounded-2xl w-full max-w-6xl h-screen p-10 relative overflow-y-auto border-t-8 border-purple-500">
+    <div class="bg-white rounded-2xl w-full max-w-4xl h-screen p-10 relative overflow-y-auto border-t-8 border-purple-500">
       <!-- 닫기 버튼 -->
       <button @click="$emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl">✕</button>
 
-      <!-- 보고서 내용 -->
-      <div ref="reportContent" class="report-content leading-relaxed">
-        <br /><br /><br />
-        <!-- ✅ 문서 종류 반영 -->
-        <h2 class="title-lg text-center mb-6 text-gray-800">{{ report.documentType }}</h2>
-        <br /><br /><br />
+      <!-- 보고서 첫번째 페이지 -->
+      <div class="page report-content leading-relaxed" ref="reportContent">
+        <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
         <!-- 결재 서명란 -->
         <div class="flex justify-between mb-6">
-          <table class="w-1/3 border text-center">
+          <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th class="border w-1/4">담당</th>
@@ -24,15 +21,15 @@
             </thead>
             <tbody>
               <tr class="h-24">
-                <td class="border"></td>
-                <td class="border"></td>
-                <td class="border"></td>
-                <td class="border"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
               </tr>
             </tbody>
           </table>
 
-          <table class="w-1/3 border text-center">
+          <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th class="border w-1/4">담당</th>
@@ -43,33 +40,27 @@
             </thead>
             <tbody>
               <tr class="h-24">
-                <td class="border"></td>
-                <td class="border"></td>
-                <td class="border"></td>
-                <td class="border"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <br /><br />
-
         <!-- 부서명 -->
         <table class="w-full border text-center mb-4">
           <tbody>
             <tr>
-              <td class="border w-64 bg-blue-100 text-gray-800 font-bold">부서명</td>
-              <td class="border bg-white text-black">{{ report.deptName }}</td>
+              <td class="border w-64 bg-blue-100 font-bold">부서명</td>
+              <td class="border">{{ report.deptName }}</td>
             </tr>
           </tbody>
         </table>
 
-        <br />
-
         <!-- 지출내역 -->
-        <h3 class="title-md flex items-center mb-4">
-          💸 <span class="ml-2">지출내역</span>
-        </h3>
+        <h3 class="title-md flex items-center mb-4">💸 <span class="ml-2">지출내역</span></h3>
         <table class="w-full border my-4 text-center">
           <thead class="bg-blue-100 text-gray-800">
             <tr>
@@ -83,11 +74,11 @@
           </thead>
           <tbody>
             <tr v-for="(item, idx) in paddedItems" :key="idx">
-              <td class="border">{{ item.gwan || '' }}</td>
-              <td class="border">{{ item.hang || '' }}</td>
-              <td class="border">{{ item.mok || '' }}</td>
-              <td class="border">{{ item.semok || '' }}</td>
-              <td class="border">{{ item.detail || '' }}</td>
+              <td class="border">{{ item.gwan }}</td>
+              <td class="border">{{ item.hang }}</td>
+              <td class="border">{{ item.mok }}</td>
+              <td class="border">{{ item.semok }}</td>
+              <td class="border">{{ item.detail }}</td>
               <td class="border text-right">
                 <span v-if="item.amount">{{ item.amount.toLocaleString() }} 원</span>
               </td>
@@ -99,43 +90,6 @@
           </tbody>
         </table>
 
-        <br />
-
-        <!-- 코멘트 -->
-        <h3 class="title-md flex items-center mb-2">
-          📝 <span class="ml-2">Comment</span>
-        </h3>
-        <table v-if="report.comment" class="w-full border text-left mb-6 table-fixed">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="border w-[10%]">구분</th>
-              <th class="border w-[20%]">성명</th>
-              <th class="border w-[20%]">입력시간</th>
-              <th class="border w-[50%]">Comment</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="border">기안</td>
-              <td class="border">{{ report.author }}</td>
-              <td class="border">
-                {{ new Date(report.date).toLocaleString("ko-KR", { hour12: false }) }}
-              </td>
-              <td class="border">
-                <span v-if="report.comment.length <= 100">{{ report.comment }}</span>
-                <span v-else>
-                  {{ expanded ? report.comment : report.comment.substring(0, 100) + '...' }}
-                  <button @click="expanded = !expanded" class="text-blue-500 text-xs ml-2">
-                    {{ expanded ? '접기' : '더보기' }}
-                  </button>
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <br />
-
         <!-- 영수 문구 -->
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
@@ -144,22 +98,25 @@
         </div>
       </div>
 
-      <br />
+      <!-- 첨부파일 페이지 -->
+      <div v-if="report.attachedFiles && report.attachedFiles.length > 0" class="page report-content mt-10">
+        <h2 class="title-lg text-center mb-6 text-gray-800">📎 첨부파일</h2>
+        <ul class="list-disc ml-6 mb-6">
+          <li v-for="(f, idx) in report.attachedFiles" :key="'file-'+idx">
+            {{ getFileAlias(f) }}
+          </li>
+        </ul>
+        <template v-for="(f, idx) in report.attachedFiles" :key="'img-'+idx">
+          <div v-if="isImage(f)" class="mb-8">
+            <img :src="getFileUrl(f)" class="max-w-full max-h-[250mm] object-contain border" />
+          </div>
+        </template>
+      </div>
 
       <!-- PDF & 프린터 버튼 -->
       <div class="flex justify-end gap-4 mt-6 no-print">
-        <button
-          @click="downloadPDF"
-          class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-5 py-2 rounded-lg shadow-md transition"
-        >
-          📄 PDF 다운로드
-        </button>
-        <button
-          @click="printReport"
-          class="flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white px-5 py-2 rounded-lg shadow-md transition"
-        >
-          🖨️ 프린터 출력
-        </button>
+        <button @click="downloadPDF" class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg shadow-md">📄 PDF 다운로드</button>
+        <button @click="printReport" class="flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
       </div>
     </div>
   </div>
@@ -171,129 +128,82 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 const props = defineProps(["report"]);
-const reportContent = ref(null);
 const expanded = ref(false);
 
-/* ✅ 최소 10행 보장 */
 const paddedItems = computed(() => {
   const items = props.report.items || [];
   if (items.length >= 8) return items;
-  const emptyRows = Array.from({ length: 8 - items.length }, () => ({
-    gwan: "",
-    hang: "",
-    mok: "",
-    semok: "",
-    detail: "",
-    amount: null,
-  }));
-  return items.concat(emptyRows);
+  return items.concat(Array.from({ length: 8 - items.length }, () => ({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })));
 });
 
-/* ✅ PDF 다운로드 (파일명 규칙 반영) */
-const downloadPDF = async () => {
-  const content = reportContent.value;
-  const canvas = await html2canvas(content, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
-
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
-
-  const marginLeft = 10;
-  const marginTop = 15;
-  const marginRight = 10;
-  const marginBottom = 15;
-
-  const usableWidth = pdfWidth - marginLeft - marginRight;
-  const usableHeight = pdfHeight - marginTop - marginBottom;
-
-  const imgWidth = usableWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  let heightLeft = imgHeight;
-  let position = marginTop;
-
-  pdf.addImage(imgData, "PNG", marginLeft, position, imgWidth, imgHeight);
-  heightLeft -= usableHeight;
-
-  while (heightLeft > 0) {
-    position = marginTop - (imgHeight - heightLeft);
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", marginLeft, position, imgWidth, imgHeight);
-    heightLeft -= usableHeight;
-  }
-
-  /* ✅ 파일명 규칙: 문서종류_부서명_작성일자.pdf */
-  const fileName = `${props.report.documentType}_${props.report.deptName}_${props.report.date}.pdf`;
-  pdf.save(fileName);
+const getFileAlias = (f) => f.aliasName || f.alias_name;
+const isImage = (f) => {
+  const type = f.type || f.mime_type || "";
+  return type.startsWith("image/") || /\.(png|jpg|jpeg|gif)$/i.test(f.name || f.file_name || "");
 };
-
-/* ✅ 프린트 */
-const printReport = async () => {
-  const content = reportContent.value;
-  const canvas = await html2canvas(content, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
-
-  const win = window.open("", "", "width=800,height=600");
-  win.document.write(`
-    <html>
-      <head>
-        <title>Print</title>
-        <style>
-          body { margin: 0; text-align: center; }
-          img { width: 100%; }
-        </style>
-      </head>
-      <body>
-        <img id="printImage" src="${imgData}" />
-        <script>
-          const img = document.getElementById('printImage');
-          img.onload = function() {
-            window.print();
-            window.close();
-          };
-        <\/script>
-      </body>
-    </html>
-  `);
-  win.document.close();
+const getFileUrl = (f) => {
+  if (f instanceof File) return URL.createObjectURL(f);
+  if (f.file_path) return `/api/files/${f.file_path}`;
+  return "";
 };
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+const downloadPDF = async () => {
+  const pdf = new jsPDF("p", "mm", "a4");
+  const pages = document.querySelectorAll(".page");
+  for (let i = 0; i < pages.length; i++) {
+    const canvas = await html2canvas(pages[i], { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
+    if (i > 0) pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
+  }
+  pdf.save(`${props.report.documentType}_${props.report.deptName}_${props.report.date}.pdf`);
+};
+
+const printReport = async () => {
+  const pages = document.querySelectorAll(".page");
+  const imgs = [];
+  for (let i = 0; i < pages.length; i++) {
+    const canvas = await html2canvas(pages[i], { scale: 2 });
+    imgs.push(canvas.toDataURL("image/png"));
+  }
+  const win = window.open("", "", "width=800,height=600");
+  win.document.write("<html><head><title>Print</title></head><body>");
+  imgs.forEach((src) => { win.document.write(`<img src="${src}" style="width:100%; page-break-after:always;" />`); });
+  win.document.write("</body></html>");
+  win.document.close();
+};
 </script>
 
 <style>
-.no-print { display: block; }
-@media print { .no-print { display: none !important; } }
-
-/* ✅ 본문 폰트 사이즈 */
-.report-content {
-  font-size: 14pt !important;
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 10px auto;
+  padding: 20mm;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+  box-sizing: border-box;
 }
-
-/* ✅ 제목 스타일 */
-.title-lg {
-  font-size: 20pt !important;
-  font-weight: 800;
+@media print {
+  .page {
+    border: none;
+    box-shadow: none;
+    page-break-after: always;
+  }
 }
-.title-md {
-  font-size: 16pt !important;
-  font-weight: 700;
-}
-
-/* ✅ 세로 중앙정렬 */
-table td, table th {
-  height: 3rem;
-  vertical-align: middle !important;
-  text-align: center;
-}
+.report-content { font-size: 14pt; }
+.title-lg { font-size: 20pt; font-weight: 800; }
+.title-md { font-size: 16pt; font-weight: 700; }
+table td, table th { height: 3rem; vertical-align: middle !important; text-align: center; }
 </style>

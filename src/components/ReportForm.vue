@@ -151,6 +151,7 @@ const generateReport = () => {
     aliasName: aliasName.value,
     items: JSON.parse(JSON.stringify(items.value)),
     comment: comment.value,
+    attachedFiles: attachedFiles.value || []   // ✅ 파일 첨부 포함
   };
 };
 const closeReport = () => (report.value = null);
