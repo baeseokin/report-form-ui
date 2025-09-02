@@ -99,28 +99,32 @@
       </div>
 
       <!-- 첨부파일 페이지 -->
-      <div v-if="filesToPreview.length > 0" class="page report-content mt-10 break-before-page">
-        <h2 class="title-lg text-center mb-6 text-gray-800">📎 첨부파일</h2>
-        <ul class="space-y-6">
-          <li v-for="(f, idx) in filesToPreview" :key="'file-'+idx" class="space-y-2">
-            <!-- 파일명 -->
-            <p class="text-gray-700 font-medium">
-              {{ idx + 1 }}. {{ getFileAlias(f) }}
-            </p>
-            <!-- 이미지 미리보기 -->
-            <img
-              v-if="isImage(f)"
-              :src="getFileUrl(f)"
-              :alt="getFileAlias(f)"
-              class="border rounded-lg shadow-md max-h-[500px] mx-auto"
-            />
-            <!-- 이미지가 아닌 경우 안내 -->
-            <p v-else class="text-sm text-gray-500 italic">
-              (이미지 미리보기를 지원하지 않는 파일 형식입니다)
-            </p>
-          </li>
-        </ul>
-      </div>
+      <template v-for="(pageFiles, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
+        <div class="page report-content mt-10 break-before-page">
+          <h2 class="title-lg text-center mb-6 text-gray-800">
+            📎 첨부파일 ({{ pageIdx + 1 }} / {{ chunkedFiles.length }})
+          </h2>
+          <ul class="space-y-6">
+            <li v-for="(f, idx) in pageFiles" :key="'file-'+pageIdx+'-'+idx" class="space-y-2">
+              <!-- 파일명 -->
+              <p class="text-gray-700 font-medium">
+                {{ getFileAlias(f) }}
+              </p>
+              <!-- 이미지 미리보기 -->
+              <img
+                v-if="isImage(f)"
+                :src="getFileUrl(f)"
+                :alt="getFileAlias(f)"
+                class="border rounded-lg shadow-md max-h-[500px] mx-auto"
+              />
+              <!-- 이미지가 아닌 경우 안내 -->
+              <p v-else class="text-sm text-gray-500 italic">
+                (이미지 미리보기를 지원하지 않는 파일 형식입니다)
+              </p>
+            </li>
+          </ul>
+        </div>
+      </template>
 
       <!-- PDF & 프린터 버튼 -->
       <div class="flex justify-end gap-4 mt-6 no-print">
@@ -156,6 +160,32 @@ const filesToPreview = computed(() => {
   return [];
 });
 
+// 첨부파일 페이지 분리
+const chunkedFiles = computed(() => {
+  const files = filesToPreview.value;
+  const pages = [];
+  let currentPage = [];
+  let currentHeight = 0;
+
+  const maxHeight = 2000; // px 기준 (대략 A4 높이)
+
+  files.forEach((f) => {
+    const estimatedHeight = isImage(f) ? 800 : 200;
+    if (currentHeight + estimatedHeight > maxHeight) {
+      pages.push(currentPage);
+      currentPage = [f];
+      currentHeight = estimatedHeight;
+    } else {
+      currentPage.push(f);
+      currentHeight += estimatedHeight;
+    }
+  });
+
+  if (currentPage.length > 0) pages.push(currentPage);
+
+  return pages;
+});
+
 const getFileAlias = (f) =>
   f.aliasName || f.alias_name || f.name || f.file_name || "첨부파일";
 
@@ -176,13 +206,11 @@ const getFileUrl = (f) => {
   // DB에 저장된 경우
   if (f.file_name) return `/api/files/${f.file_name}`;
   if (f.file_path) {
-    // uploads/ 제거
     const filename = f.file_path.split("/").pop();
     return `/api/files/${filename}`;
   }
   return "";
 };
-
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
