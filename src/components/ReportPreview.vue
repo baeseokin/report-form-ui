@@ -104,13 +104,12 @@
         <ul class="list-disc ml-6 mb-6">
           <li v-for="(f, idx) in report.attachedFiles" :key="'file-'+idx">
             {{ getFileAlias(f) }}
+              <div v-if="isImage(f)" class="mb-8">
+                <img :src="getFileUrl(f)" class="max-w-full max-h-[250mm] object-contain border" />
+              </div>
           </li>
         </ul>
-        <template v-for="(f, idx) in report.attachedFiles" :key="'img-'+idx">
-          <div v-if="isImage(f)" class="mb-8">
-            <img :src="getFileUrl(f)" class="max-w-full max-h-[250mm] object-contain border" />
-          </div>
-        </template>
+        
       </div>
 
       <!-- PDF & 프린터 버튼 -->
