@@ -24,6 +24,14 @@
         <span class="text-sm text-gray-500">
           ({{ (f.size / 1024).toFixed(1) }} KB)
         </span>
+
+        <!-- 삭제 버튼 -->
+        <button
+          @click="removeFile(idx)"
+          class="text-red-500 hover:text-red-700"
+        >
+          ✖
+        </button>
       </li>
     </ul>
 
@@ -48,16 +56,42 @@
 </template>
 
 <script setup>
-const props = defineProps(["modelValue"]); // 부모에서 내려받음
+import { ref } from "vue";
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => [],
+  },
+});
+
 const emit = defineEmits(["update:modelValue", "prev", "next"]);
 
 const onFileChange = (e) => {
-  const newFiles = Array.from(e.target.files).map((f) => ({
+  const files = Array.from(e.target.files).map((f) => ({
     file: f,
     name: f.name,
     size: f.size,
-    aliasName: f.aliasName || "", // 유지 가능
+    aliasName: "",
   }));
-  emit("update:modelValue", newFiles); // 부모에 전달
+
+  // 기존 파일에 새 파일 추가 (중복 제외)
+  const updated = [...props.modelValue];
+  files.forEach((f) => {
+    if (!updated.some((uf) => uf.name === f.name && uf.size === f.size)) {
+      updated.push(f);
+    }
+  });
+
+  emit("update:modelValue", updated);
+
+  // input 초기화 (같은 파일 다시 선택할 수 있도록)
+  e.target.value = "";
+};
+
+const removeFile = (index) => {
+  const updated = [...props.modelValue];
+  updated.splice(index, 1);
+  emit("update:modelValue", updated);
 };
 </script>
