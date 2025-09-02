@@ -5,7 +5,7 @@
       <button @click="$emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl">✕</button>
 
       <!-- 보고서 첫번째 페이지 -->
-      <div class="page report-content leading-relaxed" ref="reportContent">
+      <div v-if="report" class="page report-content leading-relaxed" ref="reportContent">
         <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
         <!-- 결재 서명란 -->
@@ -99,17 +99,27 @@
       </div>
 
       <!-- 첨부파일 페이지 -->
-      <div v-if="report.attachedFiles && report.attachedFiles.length > 0" class="page report-content mt-10">
+      <div v-if="filesToPreview.length > 0" class="page report-content mt-10 break-before-page">
         <h2 class="title-lg text-center mb-6 text-gray-800">📎 첨부파일</h2>
-        <ul class="list-disc ml-6 mb-6">
-          <li v-for="(f, idx) in report.attachedFiles" :key="'file-'+idx">
-            {{ getFileAlias(f) }}
-              <div v-if="isImage(f)" class="mb-8">
-                <img :src="getFileUrl(f)" class="max-w-full max-h-[250mm] object-contain border" />
-              </div>
+        <ul class="space-y-6">
+          <li v-for="(f, idx) in filesToPreview" :key="'file-'+idx" class="space-y-2">
+            <!-- 파일명 -->
+            <p class="text-gray-700 font-medium">
+              {{ idx + 1 }}. {{ getFileAlias(f) }}
+            </p>
+            <!-- 이미지 미리보기 -->
+            <img
+              v-if="isImage(f)"
+              :src="getFileUrl(f)"
+              :alt="getFileAlias(f)"
+              class="border rounded-lg shadow-md max-h-[500px] mx-auto"
+            />
+            <!-- 이미지가 아닌 경우 안내 -->
+            <p v-else class="text-sm text-gray-500 italic">
+              (이미지 미리보기를 지원하지 않는 파일 형식입니다)
+            </p>
           </li>
         </ul>
-        
       </div>
 
       <!-- PDF & 프린터 버튼 -->
@@ -129,22 +139,50 @@ import jsPDF from "jspdf";
 const props = defineProps(["report"]);
 const expanded = ref(false);
 
+// 지출내역 테이블 패딩
 const paddedItems = computed(() => {
-  const items = props.report.items || [];
+  const items = props.report?.items || [];
   if (items.length >= 8) return items;
-  return items.concat(Array.from({ length: 8 - items.length }, () => ({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })));
+  return items.concat(Array.from({ length: 8 - items.length }, () => ({
+    gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null
+  })));
 });
 
-const getFileAlias = (f) => f.aliasName || f.alias_name;
+// 첨부파일 데이터
+const filesToPreview = computed(() => {
+  if (!props.report) return [];
+  if (props.report.attachedFiles?.length > 0) return props.report.attachedFiles;
+  if (props.report.files?.length > 0) return props.report.files;
+  return [];
+});
+
+const getFileAlias = (f) =>
+  f.aliasName || f.alias_name || f.name || f.file_name || "첨부파일";
+
 const isImage = (f) => {
-  const type = f.type || f.mime_type || "";
-  return type.startsWith("image/") || /\.(png|jpg|jpeg|gif)$/i.test(f.name || f.file_name || "");
+  if (!f) return false;
+  const type = f.type || f.mime_type || f.mimeType || "";
+  return (
+    type.startsWith("image/") ||
+    /\.(png|jpg|jpeg|gif)$/i.test(f.name || f.file_name || "")
+  );
 };
+
 const getFileUrl = (f) => {
+  if (!f) return "";
   if (f instanceof File) return URL.createObjectURL(f);
-  if (f.file_path) return `/api/files/${f.file_path}`;
+  if (f.file) return URL.createObjectURL(f.file);
+
+  // DB에 저장된 경우
+  if (f.file_name) return `/api/files/${f.file_name}`;
+  if (f.file_path) {
+    // uploads/ 제거
+    const filename = f.file_path.split("/").pop();
+    return `/api/files/${filename}`;
+  }
   return "";
 };
+
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -152,6 +190,7 @@ const formatDate = (dateStr) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+// PDF 다운로드
 const downloadPDF = async () => {
   const pdf = new jsPDF("p", "mm", "a4");
   const pages = document.querySelectorAll(".page");
@@ -159,15 +198,14 @@ const downloadPDF = async () => {
     const canvas = await html2canvas(pages[i], { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
     if (i > 0) pdf.addPage();
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
   }
   pdf.save(`${props.report.documentType}_${props.report.deptName}_${props.report.date}.pdf`);
 };
 
+// 프린트 출력
 const printReport = async () => {
   const pages = document.querySelectorAll(".page");
   const imgs = [];
@@ -177,7 +215,9 @@ const printReport = async () => {
   }
   const win = window.open("", "", "width=800,height=600");
   win.document.write("<html><head><title>Print</title></head><body>");
-  imgs.forEach((src) => { win.document.write(`<img src="${src}" style="width:100%; page-break-after:always;" />`); });
+  imgs.forEach((src) => {
+    win.document.write(`<img src="${src}" style="width:100%; page-break-after:always;" />`);
+  });
   win.document.write("</body></html>");
   win.document.close();
 };

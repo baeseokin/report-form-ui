@@ -122,6 +122,11 @@ onMounted(async () => {
         detail: i.detail,
         amount: i.amount,
       }));
+
+      // ✅ DB에서 가져온 첨부파일도 반영
+      if (data.files) {
+        attachedFiles.value = data.files;
+      }
     } catch (err) {
       console.error("❌ 보고서 데이터 불러오기 실패:", err);
     }
@@ -141,6 +146,7 @@ const goPrevTab = () => {
   if (idx > 0) activeTab.value = tabs[idx - 1];
 };
 
+// ✅ 첨부파일을 항상 포함하도록 수정
 const generateReport = () => {
   report.value = {
     documentType: documentType.value,
@@ -151,8 +157,9 @@ const generateReport = () => {
     aliasName: aliasName.value,
     items: JSON.parse(JSON.stringify(items.value)),
     comment: comment.value,
-    attachedFiles: attachedFiles.value || []   // ✅ 파일 첨부 포함
+    attachedFiles: attachedFiles.value || [] // ✅ 첨부파일 항상 포함
   };
 };
+
 const closeReport = () => (report.value = null);
 </script>
