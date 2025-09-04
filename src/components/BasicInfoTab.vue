@@ -27,15 +27,13 @@
 
     <!-- 부서명 / 작성자 / 제출일자 -->
     <div class="grid grid-cols-3 gap-4">
-      <!-- 부서명 선택 -->
-      <select
-        :value="selectedDept"
-        @change="$emit('update:selectedDept', $event.target.value)"
-        class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
-      >
-        <option disabled value="">부서명 선택</option>
-        <option v-for="(data, dept) in deptData" :key="dept" :value="dept">{{ dept }}</option>
-      </select>
+      <!-- ✅ 로그인 사용자의 부서명만 표시 -->
+      <input
+        type="text"
+        :value="user?.deptName"
+        readonly
+        class="border p-3 rounded-lg shadow-sm bg-gray-100 cursor-not-allowed"
+      />
 
       <!-- 작성자 -->
       <input
@@ -86,13 +84,16 @@
 </template>
 
 <script setup>
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
+
 const props = defineProps([
   "selectedDept",
   "author",
   "date",
   "deptData",
   "documentType",
-  "aliasName", // ✅ 추가됨
+  "aliasName",
 ]);
 
 const emits = defineEmits([
@@ -100,10 +101,14 @@ const emits = defineEmits([
   "update:author",
   "update:date",
   "update:documentType",
-  "update:aliasName", // ✅ 추가됨
+  "update:aliasName",
   "next",
 ]);
 
 // 문서 종류 리스트
 const documentTypes = ["청구지출결의서", "정산지출결의서", "가불지출결의서"];
+
+// ✅ 로그인 사용자 정보 불러오기
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
 </script>

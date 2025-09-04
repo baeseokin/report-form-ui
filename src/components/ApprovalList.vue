@@ -12,6 +12,7 @@
           v-model="filters.deptName"
           placeholder="부서명 입력"
           class="border rounded p-2 w-full"
+          readonly
         />
       </div>
 
@@ -118,11 +119,15 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import ReportPreview from "./ReportPreview.vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
+
 const router = useRouter();
+const { user } = storeToRefs(useUserStore());
 
 const approvals = ref([]);
 const currentPage = ref(1);
@@ -140,11 +145,19 @@ const formatDateValue = (date) => {
   return `${y}-${m}-${d}`;
 };
 
+// ✅ 로그인 사용자의 deptName 자동 세팅
 const filters = ref({
   deptName: "",
   documentType: "",
   startDate: formatDateValue(startOfYear),
   endDate: formatDateValue(today),
+});
+
+onMounted(() => {
+  if (user.value?.deptName) {
+    filters.value.deptName = user.value.deptName;
+    fetchApprovals(1);
+  }
 });
 
 const fetchApprovals = async (page = 1) => {
@@ -176,7 +189,7 @@ const openPreview = async (id) => {
     const res = await axios.get(`/api/approval/${id}`);
     previewReport.value = {
       ...res.data,
-      attachedFiles: res.data.attachedFiles || [], // ✅ 첨부파일 반영
+      attachedFiles: res.data.attachedFiles || [],
     };
   } catch (err) {
     console.error("상세조회 실패:", err);

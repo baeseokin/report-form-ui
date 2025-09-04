@@ -27,107 +27,62 @@
 
           <!-- 관 -->
           <td class="border p-2">
-            <template v-if="getGwans.length">
-              <select
-                :value="item.gwan"
-                @change="onSelect(idx, 'gwan', $event.target.value)"
-                class="w-full p-2 border rounded"
-              >
-                <option disabled value="">선택</option>
-                <option v-for="g in getGwans" :key="g">{{ g }}</option>
-              </select>
-            </template>
-            <template v-else>
-              <input
-                :value="item.gwan"
-                @input="updateField(idx, 'gwan', $event.target.value)"
-                class="w-full p-2 border rounded"
-              />
-            </template>
+            <select
+              :value="item.gwan"
+              @change="onSelect(idx, 'gwan', $event.target.value)"
+              class="w-full p-2 border rounded"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="g in getGwans" :key="g">{{ g }}</option>
+            </select>
           </td>
 
           <!-- 항 -->
           <td class="border p-2">
-            <template v-if="getHangs(item).length">
-              <select
-                :value="item.hang"
-                @change="onSelect(idx, 'hang', $event.target.value)"
-                class="w-full p-2 border rounded"
-              >
-                <option disabled value="">선택</option>
-                <option v-for="h in getHangs(item)" :key="h">{{ h }}</option>
-              </select>
-            </template>
-            <template v-else>
-              <input
-                :value="item.hang"
-                @input="updateField(idx, 'hang', $event.target.value)"
-                class="w-full p-2 border rounded"
-              />
-            </template>
+            <select
+              :value="item.hang"
+              @change="onSelect(idx, 'hang', $event.target.value)"
+              class="w-full p-2 border rounded"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="h in getHangs(item)" :key="h">{{ h }}</option>
+            </select>
           </td>
 
           <!-- 목 -->
           <td class="border p-2">
-            <template v-if="getMoks(item).length">
-              <select
-                :value="item.mok"
-                @change="onSelect(idx, 'mok', $event.target.value)"
-                class="w-full p-2 border rounded"
-              >
-                <option disabled value="">선택</option>
-                <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
-              </select>
-            </template>
-            <template v-else>
-              <input
-                :value="item.mok"
-                @input="updateField(idx, 'mok', $event.target.value)"
-                class="w-full p-2 border rounded"
-              />
-            </template>
+            <select
+              :value="item.mok"
+              @change="onSelect(idx, 'mok', $event.target.value)"
+              class="w-full p-2 border rounded"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
+            </select>
           </td>
 
           <!-- 세목 -->
           <td class="border p-2">
-            <template v-if="getSemoks(item).length">
-              <select
-                :value="item.semok"
-                @change="onSelect(idx, 'semok', $event.target.value)"
-                class="w-full p-2 border rounded"
-              >
-                <option disabled value="">선택</option>
-                <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
-              </select>
-            </template>
-            <template v-else>
-              <input
-                :value="item.semok"
-                @input="updateField(idx, 'semok', $event.target.value)"
-                class="w-full p-2 border rounded"
-              />
-            </template>
+            <select
+              :value="item.semok"
+              @change="onSelect(idx, 'semok', $event.target.value)"
+              class="w-full p-2 border rounded"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
+            </select>
           </td>
 
           <!-- 지출내역 -->
           <td class="border p-2">
-            <template v-if="getDetails(item).length">
-              <select
-                :value="item.detail"
-                @change="updateField(idx, 'detail', $event.target.value)"
-                class="w-full p-2 border rounded"
-              >
-                <option disabled value="">선택</option>
-                <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
-              </select>
-            </template>
-            <template v-else>
-              <input
-                :value="item.detail"
-                @input="updateField(idx, 'detail', $event.target.value)"
-                class="w-full p-2 border rounded"
-              />
-            </template>
+            <select
+              :value="item.detail"
+              @change="updateField(idx, 'detail', $event.target.value)"
+              class="w-full p-2 border rounded"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
+            </select>
           </td>
 
           <!-- 금액 -->
@@ -187,43 +142,50 @@
 
 <script setup>
 import { computed } from "vue";
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
 
-const props = defineProps(["items", "deptData", "selectedDept"]);
+const props = defineProps(["items", "deptData"]);
 const emits = defineEmits(["update:items", "prev", "next"]);
 
+const { user } = storeToRefs(useUserStore());
+const userDept = computed(() => user.value?.deptName || "");
+
+// ✅ 합계
 const totalAmount = computed(() =>
   props.items.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
 
-/* ✅ JSON 기반 셀렉트 박스 */
+// ✅ JSON 기반 셀렉트 박스
 const getGwans = computed(() =>
-  props.selectedDept ? Object.keys(props.deptData[props.selectedDept] || {}) : []
+  userDept.value ? Object.keys(props.deptData[userDept.value] || {}) : []
 );
 const getHangs = (item) =>
-  item.gwan && props.deptData[props.selectedDept]?.[item.gwan]
-    ? Object.keys(props.deptData[props.selectedDept][item.gwan] || {})
+  item.gwan && props.deptData[userDept.value]?.[item.gwan]
+    ? Object.keys(props.deptData[userDept.value][item.gwan] || {})
     : [];
 const getMoks = (item) =>
-  item.hang && props.deptData[props.selectedDept]?.[item.gwan]?.[item.hang]
-    ? Object.keys(props.deptData[props.selectedDept][item.gwan][item.hang] || {})
+  item.hang && props.deptData[userDept.value]?.[item.gwan]?.[item.hang]
+    ? Object.keys(props.deptData[userDept.value][item.gwan][item.hang] || {})
     : [];
 const getSemoks = (item) =>
-  item.mok && props.deptData[props.selectedDept]?.[item.gwan]?.[item.hang]?.[item.mok]
-    ? Object.keys(props.deptData[props.selectedDept][item.gwan][item.hang][item.mok] || {})
+  item.mok && props.deptData[userDept.value]?.[item.gwan]?.[item.hang]?.[item.mok]
+    ? Object.keys(props.deptData[userDept.value][item.gwan][item.hang][item.mok] || {})
     : [];
 const getDetails = (item) =>
-  item.semok && props.deptData[props.selectedDept]?.[item.gwan]?.[item.hang]?.[item.mok]?.[item.semok]
-    ? props.deptData[props.selectedDept][item.gwan][item.hang][item.mok][item.semok]
+  item.semok &&
+  props.deptData[userDept.value]?.[item.gwan]?.[item.hang]?.[item.mok]?.[item.semok]
+    ? props.deptData[userDept.value][item.gwan][item.hang][item.mok][item.semok]
     : [];
 
-/* ✅ 값 업데이트 */
+// ✅ 값 업데이트
 const updateField = (idx, field, value) => {
   const newItems = [...props.items];
   newItems[idx] = { ...newItems[idx], [field]: value };
   emits("update:items", newItems);
 };
 
-/* ✅ 단계 변경 시 하위 필드 초기화 */
+// ✅ 단계 변경 시 하위 필드 초기화
 const onSelect = (idx, level, value) => {
   const item = { ...props.items[idx], [level]: value };
   if (level === "gwan") item.hang = item.mok = item.semok = item.detail = "";
@@ -236,7 +198,7 @@ const onSelect = (idx, level, value) => {
   emits("update:items", newItems);
 };
 
-/* ✅ 금액 입력 처리 */
+// ✅ 금액 입력 처리
 const formatCurrency = (value) => (value ? Number(value).toLocaleString() : "");
 const updateAmount = (event, idx) => {
   const rawValue = event.target.value.replace(/[^0-9]/g, "");
@@ -247,7 +209,7 @@ const updateAmount = (event, idx) => {
   event.target.value = formatCurrency(amount);
 };
 
-/* ✅ 행 추가/삭제 */
+// ✅ 행 추가/삭제
 const addItem = () => {
   const newItems = [
     ...props.items,

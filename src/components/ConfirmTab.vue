@@ -3,7 +3,7 @@
     <h2 class="text-xl font-bold text-gray-800">📄 최종 확인</h2>
     <div class="p-4 bg-gray-50 rounded-lg shadow-inner space-y-1">
       <p><strong>문서 종류:</strong> {{ documentType }}</p>
-      <p><strong>부서명:</strong> {{ selectedDept }}</p>
+      <p><strong>부서명:</strong> {{ userDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
       <p><strong>청구총액:</strong> ₩{{ totalAmount.toLocaleString() }}</p>
@@ -24,7 +24,6 @@
       </ul>
       <p v-else class="text-gray-500">첨부된 파일이 없습니다.</p>
     </div>
-
 
     <h2 class="text-xl font-bold text-gray-800">📌 추가 의견</h2>
     <textarea
@@ -66,20 +65,26 @@
 
 <script setup>
 import axios from "axios";
+import { computed } from "vue";
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
 
 const props = defineProps([
   "documentType",
-  "selectedDept",
   "author",
   "date",
   "totalAmount",
   "comment",
   "items",
   "aliasName",
-  "attachedFiles", // ✅ FileAttachTab.vue에서 전달된 파일 객체 { file, name, size, aliasName }
+  "attachedFiles", // ✅ { file, name, size, aliasName }
 ]);
 
 const emits = defineEmits(["update:comment", "prev", "generate"]);
+
+// ✅ 로그인 사용자 부서 사용
+const { user } = storeToRefs(useUserStore());
+const userDept = computed(() => user.value?.deptName || "");
 
 /* ✅ 결재요청 */
 const sendApprovalRequest = async () => {
@@ -87,7 +92,7 @@ const sendApprovalRequest = async () => {
     // 1️⃣ 결재 요청 저장
     const data = {
       documentType: props.documentType,
-      deptName: props.selectedDept,
+      deptName: userDept.value, // ✅ 로그인한 사용자 부서
       author: props.author,
       date: props.date,
       totalAmount: props.totalAmount,
@@ -104,7 +109,7 @@ const sendApprovalRequest = async () => {
         })) || [],
     };
 
-    const res = await axios.post("/api/approval", data);
+    const res = await axios.post("/api/approval", data, { withCredentials: true });
     if (!res.data.success) throw new Error("서버 저장 실패");
 
     const requestId = res.data.id;
@@ -123,6 +128,7 @@ const sendApprovalRequest = async () => {
 
       await axios.post(`/api/approval/${requestId}/files`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
       });
     }
 

@@ -1,7 +1,7 @@
 {
   "name": "report-form-ui",
   "version": "1.0.0",
-  "type": "module",  
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,6 +11,7 @@
     "axios": "^1.11.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+    "pinia": "^3.0.3",
     "vue": "^3.4.21",
     "vue-router": "^4.5.1"
   },

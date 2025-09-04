@@ -54,7 +54,7 @@
           <tbody>
             <tr>
               <td class="border w-64 bg-blue-100 font-bold">부서명</td>
-              <td class="border">{{ report.deptName }}</td>
+              <td class="border">{{ userDept }}</td>
             </tr>
           </tbody>
         </table>
@@ -94,7 +94,7 @@
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
           {{ formatDate(report.date) }}<br />
-          영수인 성명 : {{ report.author }} (인)
+          영수인 성명 : {{ userName }} (인)
         </div>
       </div>
 
@@ -139,9 +139,16 @@
 import { ref, computed } from "vue";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
 
 const props = defineProps(["report"]);
 const expanded = ref(false);
+
+// ✅ 로그인 사용자 정보
+const { user } = storeToRefs(useUserStore());
+const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
+const userName = computed(() => user.value?.userName || props.report?.author || "");
 
 // 지출내역 테이블 패딩
 const paddedItems = computed(() => {
@@ -230,7 +237,7 @@ const downloadPDF = async () => {
     if (i > 0) pdf.addPage();
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
   }
-  pdf.save(`${props.report.documentType}_${props.report.deptName}_${props.report.date}.pdf`);
+  pdf.save(`${props.report.documentType}_${userDept.value}_${props.report.date}.pdf`);
 };
 
 // 프린트 출력
