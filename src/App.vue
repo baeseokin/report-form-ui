@@ -20,6 +20,12 @@
           >
             청구목록 조회
           </router-link>
+          <router-link
+            to="/approvalStatus"
+            class="block hover:bg-gray-700 px-3 py-2 rounded"
+          >
+            결재목록 조회
+          </router-link>
 
           <!-- 관리자 전용 -->
           <div v-if="roles.includes('관리자')">
@@ -72,7 +78,7 @@ const router = useRouter();
 const userStore = useUserStore();
 
 onMounted(() => {
-  userStore.loadSession(); // ✅ 새로고침 시에도 세션 복구
+  userStore.loadSession();
 });
 
 const user = computed(() => userStore.user);

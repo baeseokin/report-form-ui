@@ -107,14 +107,21 @@ onMounted(async () => {
 
   if (route.params.id) {
     try {
-      const res = await axios.get(`http://localhost:3001/api/approval/${route.params.id}`);
+      // ✅ API 경로 변경
+      const res = await axios.get(`/api/approval/detail/${route.params.id}`, {
+        withCredentials: true,
+      });
+
       const data = res.data;
 
-      documentType.value = data.documentType;
-      selectedDept.value = data.deptName;
+      // ✅ camelCase로 변환
+      documentType.value = data.document_type;
+      selectedDept.value = data.dept_name;
+      author.value = data.author;
+      date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
 
-      items.value = data.items.map((i) => ({
+      items.value = (data.items || []).map((i) => ({
         gwan: i.gwan,
         hang: i.hang,
         mok: i.mok,
@@ -123,10 +130,9 @@ onMounted(async () => {
         amount: i.amount,
       }));
 
-      // ✅ DB에서 가져온 첨부파일도 반영
-      if (data.files) {
-        attachedFiles.value = data.files;
-      }
+      // ✅ 청구일자와 첨부파일은 제외 → 새로 작성해야 하므로 초기화
+      date.value = new Date().toISOString().slice(0, 10);
+      attachedFiles.value = [];
     } catch (err) {
       console.error("❌ 보고서 데이터 불러오기 실패:", err);
     }

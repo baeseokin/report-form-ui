@@ -2,10 +2,10 @@
   <div class="p-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800 mb-4">📑 청구목록 조회</h2>
 
-    <!-- 검색 조건 -->
-    <div class="flex gap-4 mb-4 items-center">
+    <!-- ✅ 검색조건 + 조회 버튼 같은 라인 -->
+    <div class="flex flex-wrap gap-4 mb-6 items-end">
       <!-- 부서명 -->
-      <div class="flex flex-col w-1/4">
+      <div class="flex flex-col w-40">
         <label class="font-bold mb-1">부서명</label>
         <input
           type="text"
@@ -17,7 +17,7 @@
       </div>
 
       <!-- 문서종류 -->
-      <div class="flex flex-col w-1/4">
+      <div class="flex flex-col w-48">
         <label class="font-bold mb-1">문서종류</label>
         <select v-model="filters.documentType" class="border rounded p-2 w-full">
           <option value="">전체</option>
@@ -28,26 +28,26 @@
       </div>
 
       <!-- 청구 시작일자 -->
-      <div class="flex flex-col w-1/4">
+      <div class="flex flex-col w-44">
         <label class="font-bold mb-1">청구 시작일자</label>
         <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
       </div>
 
       <!-- 청구 종료일자 -->
-      <div class="flex flex-col w-1/4">
+      <div class="flex flex-col w-44">
         <label class="font-bold mb-1">청구 종료일자</label>
         <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
       </div>
-    </div>
 
-    <!-- 조회 버튼 -->
-    <div class="mb-4">
-      <button
-        @click="fetchApprovals(1)"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-      >
-        조회
-      </button>
+      <!-- 조회 버튼 -->
+      <div class="flex items-end">
+        <button
+          @click="fetchApprovals(1)"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          조회
+        </button>
+      </div>
     </div>
 
     <!-- 결과 목록 -->
@@ -184,17 +184,33 @@ const formatDate = (dateStr) => {
   ).padStart(2, "0")}`;
 };
 
+// ✅ 상세조회 API 경로 변경
 const openPreview = async (id) => {
   try {
-    const res = await axios.get(`/api/approval/${id}`);
-    previewReport.value = {
-      ...res.data,
-      attachedFiles: res.data.attachedFiles || [],
+    const res = await axios.get(`/api/approval/detail/${id}`);
+
+    // ✅ 필드명 변환 (snake_case → camelCase)
+    const report = {
+      id: res.data.id,
+      documentType: res.data.document_type,
+      deptName: res.data.dept_name,
+      author: res.data.author,
+      date: res.data.request_date,
+      totalAmount: res.data.total_amount,
+      comment: res.data.comment,
+      aliasName: res.data.aliasName,
+      items: res.data.items || [],
+      attachedFiles: res.data.attachedFiles || []
     };
+
+    console.log("📄 상세조회 결과:", report); // ✅ 디버깅 로그
+
+    previewReport.value = report;
   } catch (err) {
     console.error("상세조회 실패:", err);
   }
 };
+
 
 const goToReport = (id) => {
   router.push({ name: "ReportForm", params: { id } });

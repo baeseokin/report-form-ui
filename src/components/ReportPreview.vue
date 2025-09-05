@@ -4,52 +4,54 @@
       <!-- 닫기 버튼 -->
       <button @click="$emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl">✕</button>
 
-      <!-- 보고서 첫번째 페이지 -->
+      <!-- 보고서 -->
       <div v-if="report" class="page report-content leading-relaxed" ref="reportContent">
         <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
-        <!-- 결재 서명란 -->
+        <!-- ✅ 결재 서명란 -->
         <div class="flex justify-between mb-6">
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
-                <th class="border w-1/4">담당</th>
-                <th class="border w-1/4">부장</th>
-                <th class="border w-1/4">위원장</th>
-                <th class="border w-1/4">당회장</th>
+                <th v-for="role in approverRoles" :key="role" class="border">{{ role }}</th>
               </tr>
             </thead>
             <tbody>
               <tr class="h-24">
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-              </tr>
-            </tbody>
-          </table>
-
-          <table class="w-2/5 border text-center table-fixed">
-            <thead class="bg-purple-100 text-gray-700">
-              <tr>
-                <th class="border w-1/4">담당</th>
-                <th class="border w-1/4">부장</th>
-                <th class="border w-1/4">위원장</th>
-                <th class="border w-1/4">당회장</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="h-24">
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
+                <td
+                  v-for="role in approverRoles"
+                  :key="role"
+                  class="border cursor-pointer relative"
+                  @click="openApproval(role)"
+                >
+                  <!-- ✅ 서명 이미지 -->
+                  <img
+                    v-if="getSignature(role)"
+                    :src="getSignatureUrl(role)"
+                    class="h-16 mx-auto object-contain"
+                  />
+                  <!-- ✅ 코멘트 아이콘 + 말풍선 -->
+                  <!-- <div
+                    v-if="getComment(role)"
+                    class="absolute top-1 right-1 text-purple-600 cursor-pointer comment-icon no-print"
+                    @mouseover="visibleCommentRole = role"
+                    @mouseleave="visibleCommentRole = null"
+                  > -->
+                    <!-- 말풍선 -->
+                    <div
+                      v-if="visibleCommentRole === role"
+                      class="absolute top-6 right-0 bg-white border border-gray-300 shadow-lg rounded p-2 text-sm w-40 z-50 no-print"
+                    >
+                      {{ getComment(role) }}
+                    </div>
+                  <!-- </div> -->
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- 부서명 -->
+        <!-- ✅ 부서명 -->
         <table class="w-full border text-center mb-4">
           <tbody>
             <tr>
@@ -59,7 +61,7 @@
           </tbody>
         </table>
 
-        <!-- 지출내역 -->
+        <!-- ✅ 지출내역 -->
         <h3 class="title-md flex items-center mb-4">💸 <span class="ml-2">지출내역</span></h3>
         <table class="w-full border my-4 text-center">
           <thead class="bg-blue-100 text-gray-800">
@@ -90,7 +92,7 @@
           </tbody>
         </table>
 
-        <!-- 영수 문구 -->
+        <!-- ✅ 영수 문구 -->
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
           {{ formatDate(report.date) }}<br />
@@ -98,7 +100,7 @@
         </div>
       </div>
 
-      <!-- 첨부파일 페이지 -->
+      <!-- ✅ 첨부파일 페이지 -->
       <template v-for="(pageFiles, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
         <div class="page report-content mt-10 break-before-page">
           <h2 class="title-lg text-center mb-6 text-gray-800">
@@ -106,32 +108,34 @@
           </h2>
           <ul class="space-y-6">
             <li v-for="(f, idx) in pageFiles" :key="'file-'+pageIdx+'-'+idx" class="space-y-2">
-              <!-- 파일명 -->
-              <p class="text-gray-700 font-medium">
-                {{ getFileAlias(f) }}
-              </p>
-              <!-- 이미지 미리보기 -->
+              <p class="text-gray-700 font-medium">{{ getFileAlias(f) }}</p>
               <img
                 v-if="isImage(f)"
                 :src="getFileUrl(f)"
                 :alt="getFileAlias(f)"
                 class="border rounded-lg shadow-md max-h-[500px] mx-auto"
               />
-              <!-- 이미지가 아닌 경우 안내 -->
-              <p v-else class="text-sm text-gray-500 italic">
-                (이미지 미리보기를 지원하지 않는 파일 형식입니다)
-              </p>
+              <p v-else class="text-sm text-gray-500 italic">(이미지 미리보기를 지원하지 않는 파일 형식입니다)</p>
             </li>
           </ul>
         </div>
       </template>
 
-      <!-- PDF & 프린터 버튼 -->
+      <!-- ✅ PDF & 프린터 버튼 -->
       <div class="flex justify-end gap-4 mt-6 no-print">
         <button @click="downloadPDF" class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg shadow-md">📄 PDF 다운로드</button>
         <button @click="printReport" class="flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
       </div>
     </div>
+
+    <!-- ✅ 결재 팝업 -->
+    <ApprovalPopup v-if="showPopup" :report="report" @close="closePopup" @refresh="refreshApprovalData" />
+
+    <!-- ✅ 코멘트 보기 -->
+    <!-- <div v-if="commentText" class="fixed bottom-10 right-10 bg-white shadow-xl p-4 rounded-lg border">
+      <p class="text-gray-700">{{ commentText }}</p>
+      <button class="text-sm text-purple-600 mt-2" @click="commentText=null">닫기</button>
+    </div> -->
   </div>
 </template>
 
@@ -141,41 +145,82 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
+import ApprovalPopup from "./ApprovalPopup.vue";
+import axios from "axios";
 
 const props = defineProps(["report"]);
-const expanded = ref(false);
-
-// ✅ 로그인 사용자 정보
 const { user } = storeToRefs(useUserStore());
+
 const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
 const userName = computed(() => user.value?.userName || props.report?.author || "");
 
-// 지출내역 테이블 패딩
+// ✅ 결재 관련 상태
+const approverRoles = ["담당", "부장", "위원장", "당회장"];
+const showPopup = ref(false);
+const selectedRole = ref(null);
+const commentText = ref(null);
+
+// ✅ approvalHistory 관리
+const approvalHistory = ref(props.report?.approvalHistory || []);
+
+// ✅ 현재 말풍선이 열린 결재자 role
+const visibleCommentRole = ref(null);
+
+const openApproval = (role) => {
+  selectedRole.value = role;
+  showPopup.value = true;
+};
+const closePopup = () => { showPopup.value = false; };
+
+// ✅ 결재 후 데이터 새로고침
+const refreshApprovalData = async () => {
+  if (!props.report?.id) return;
+  try {
+    const res = await axios.get(`/api/approval/detail/${props.report.id}`, { withCredentials: true });
+    approvalHistory.value = res.data.approvalHistory || [];
+  } catch (err) {
+    console.error("❌ 결재 이력 갱신 실패:", err);
+  }
+};
+
+// ✅ 결재 이력에서 서명/코멘트 찾기
+const getSignature = (role) => {
+  return approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
+};
+const getComment = (role) => {
+  return approvalHistory.value.find(h => h.approver_role === role)?.comment || null;
+};
+const getSignatureUrl = (role) => {
+  const signaturePath = approvalHistory.value.find(h => h.approver_role === role)?.signature_path;
+  return signaturePath ? `/api/files/${signaturePath}` : "";
+};
+const showComment = (role) => { commentText.value = getComment(role); };
+
+// ✅ 말풍선 토글
+const toggleComment = (role) => {
+  visibleCommentRole.value = visibleCommentRole.value === role ? null : role;
+};
+
+// ✅ 지출내역 패딩
 const paddedItems = computed(() => {
   const items = props.report?.items || [];
   if (items.length >= 8) return items;
-  return items.concat(Array.from({ length: 8 - items.length }, () => ({
-    gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null
-  })));
+  return items.concat(Array.from({ length: 8 - items.length }, () => ({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })));
 });
 
-// 첨부파일 데이터
+// ✅ 첨부파일 관련
 const filesToPreview = computed(() => {
   if (!props.report) return [];
   if (props.report.attachedFiles?.length > 0) return props.report.attachedFiles;
   if (props.report.files?.length > 0) return props.report.files;
   return [];
 });
-
-// 첨부파일 페이지 분리
 const chunkedFiles = computed(() => {
   const files = filesToPreview.value;
   const pages = [];
   let currentPage = [];
   let currentHeight = 0;
-
-  const maxHeight = 2000; // px 기준 (대략 A4 높이)
-
+  const maxHeight = 2000;
   files.forEach((f) => {
     const estimatedHeight = isImage(f) ? 800 : 200;
     if (currentHeight + estimatedHeight > maxHeight) {
@@ -187,30 +232,19 @@ const chunkedFiles = computed(() => {
       currentHeight += estimatedHeight;
     }
   });
-
   if (currentPage.length > 0) pages.push(currentPage);
-
   return pages;
 });
-
-const getFileAlias = (f) =>
-  f.aliasName || f.alias_name || f.name || f.file_name || "첨부파일";
-
+const getFileAlias = (f) => f.aliasName || f.alias_name || f.name || f.file_name || "첨부파일";
 const isImage = (f) => {
   if (!f) return false;
   const type = f.type || f.mime_type || f.mimeType || "";
-  return (
-    type.startsWith("image/") ||
-    /\.(png|jpg|jpeg|gif)$/i.test(f.name || f.file_name || "")
-  );
+  return type.startsWith("image/") || /\.(png|jpg|jpeg|gif)$/i.test(f.name || f.file_name || "");
 };
-
 const getFileUrl = (f) => {
   if (!f) return "";
   if (f instanceof File) return URL.createObjectURL(f);
   if (f.file) return URL.createObjectURL(f.file);
-
-  // DB에 저장된 경우
   if (f.file_name) return `/api/files/${f.file_name}`;
   if (f.file_path) {
     const filename = f.file_path.split("/").pop();
@@ -218,14 +252,13 @@ const getFileUrl = (f) => {
   }
   return "";
 };
-
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-// PDF 다운로드
+// ✅ PDF 다운로드
 const downloadPDF = async () => {
   const pdf = new jsPDF("p", "mm", "a4");
   const pages = document.querySelectorAll(".page");
@@ -240,7 +273,7 @@ const downloadPDF = async () => {
   pdf.save(`${props.report.documentType}_${userDept.value}_${props.report.date}.pdf`);
 };
 
-// 프린트 출력
+// ✅ 프린트 출력
 const printReport = async () => {
   const pages = document.querySelectorAll(".page");
   const imgs = [];
@@ -269,7 +302,19 @@ const printReport = async () => {
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
   box-sizing: border-box;
 }
+
+.comment-icon::before {
+  content: "💬";
+}
+
 @media print {
+  .comment-icon::before {
+    content: "" !important;
+  }
+  .no-print, .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
   .page {
     border: none;
     box-shadow: none;
