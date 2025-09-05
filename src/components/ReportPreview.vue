@@ -49,6 +49,26 @@
               </tr>
             </tbody>
           </table>
+
+          <table class="w-2/5 border text-center table-fixed">
+            <thead class="bg-purple-100 text-gray-700">
+              <tr>
+                <th class="border w-1/4">담당</th>
+                <th class="border w-1/4">부장</th>
+                <th class="border w-1/4">위원장</th>
+                <th class="border w-1/4">당회장</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="h-24">
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+                <td class="border w-1/4"></td>
+              </tr>
+            </tbody>
+          </table>
+
         </div>
 
         <!-- ✅ 부서명 -->
