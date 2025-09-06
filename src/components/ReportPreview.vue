@@ -13,7 +13,9 @@
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
-                <th v-for="role in approverRoles" :key="role" class="border">{{ role === "회계" ? "담당" : role }}</th>
+                <th v-for="role in approverRoles" :key="role" class="border">
+                  {{ role === "회계" ? "담당" : role }}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -31,7 +33,6 @@
                       :src="getSignatureUrl(role)"
                       class="w-20 h-20 object-contain rounded"
                     />
-                    <!-- ✅ 결재일시 (approved_at) -->
                     <small v-if="getApprovedAt(role)" class="text-gray-500 text-xs mt-1">
                       {{ formatDateTime(getApprovedAt(role)) }}
                     </small>
@@ -44,12 +45,12 @@
                   >
                     {{ getComment(role) }}
                   </div>
-
                 </td>
               </tr>
             </tbody>
           </table>
 
+          <!-- 오른쪽 결재란 (비어있음) -->
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
@@ -68,7 +69,6 @@
               </tr>
             </tbody>
           </table>
-
         </div>
 
         <!-- ✅ 부서명 -->
@@ -149,13 +149,20 @@
     </div>
 
     <!-- ✅ 결재 팝업 -->
-    <ApprovalPopup v-if="showPopup" :report="report" @close="closePopup" @refresh="refreshApprovalData" />
+    <ApprovalPopup
+      v-if="showPopup"
+      :report="report"
+      @close="closePopup"
+      @approved="handleApproved"
+    />
 
-    <!-- ✅ 코멘트 보기 -->
-    <!-- <div v-if="commentText" class="fixed bottom-10 right-10 bg-white shadow-xl p-4 rounded-lg border">
-      <p class="text-gray-700">{{ commentText }}</p>
-      <button class="text-sm text-purple-600 mt-2" @click="commentText=null">닫기</button>
-    </div> -->
+    <!-- ✅ 결재 완료 알림 -->
+    <ModalAlert
+      :visible="showModal"
+      title="알림"
+      message="정상적으로 결재되었습니다."
+      @close="handleModalClose"
+    />
   </div>
 </template>
 
@@ -166,19 +173,21 @@ import jsPDF from "jspdf";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import ApprovalPopup from "./ApprovalPopup.vue";
+import ModalAlert from "./ModalAlert.vue"; // ✅ 추가
 import axios from "axios";
 
 const props = defineProps(["report"]);
-const { user } = storeToRefs(useUserStore());
+const emit = defineEmits(["close"]);
 
+const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
 const userName = computed(() => user.value?.userName || props.report?.author || "");
 
 // ✅ 결재 관련 상태
 const approverRoles = ["회계", "부장", "위원장", "당회장"];
 const showPopup = ref(false);
+const showModal = ref(false);
 const selectedRole = ref(null);
-const commentText = ref(null);
 
 // ✅ approvalHistory 관리
 const approvalHistory = ref(props.report?.approvalHistory || []);
@@ -203,34 +212,39 @@ const refreshApprovalData = async () => {
   }
 };
 
+// ✅ ApprovalPopup → 승인 성공 시 실행
+const handleApproved = async () => {
+  await refreshApprovalData();
+  showPopup.value = false;
+  showModal.value = true;
+};
+
+// ✅ ModalAlert 닫을 때 → ReportPreview 닫기
+const handleModalClose = () => {
+  showModal.value = false;
+  emit("close");
+};
+
 // ✅ 금액 포맷팅
 const formatAmount = (val) => {
   if (!val && val !== 0) return "";
   const num = Number(val);
-  if (isNaN(num)) return val; // 숫자 변환 불가 시 그대로 반환
+  if (isNaN(num)) return val;
   return num.toLocaleString("ko-KR");
 };
 
-// ✅ 결재 이력에서 서명/코멘트 찾기
-const getSignature = (role) => {
-  return approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
-};
-const getComment = (role) => {
-  return approvalHistory.value.find(h => h.approver_role === role)?.comment || null;
-};
+// ✅ 결재 이력에서 서명/코멘트/일시 찾기
+const getSignature = (role) => approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
+const getComment = (role) => approvalHistory.value.find(h => h.approver_role === role)?.comment || null;
 const getSignatureUrl = (role) => {
   const signaturePath = approvalHistory.value.find(h => h.approver_role === role)?.signature_path;
   return signaturePath ? `/api/files/${signaturePath}` : "";
 };
-// ✅ 추가: 결재일시 (DB 필드 approved_at)
-const getApprovedAt = (role) => {
-  return approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
-};
-// ✅ 추가: 일시 포맷 함수 (YY/MM/DD HH:mm)
+const getApprovedAt = (role) => approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
 const formatDateTime = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  const yy = String(d.getFullYear()).slice(-2); // 뒤 2자리만
+  const yy = String(d.getFullYear()).slice(-2);
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
   const hh = String(d.getHours()).padStart(2, "0");
@@ -238,14 +252,7 @@ const formatDateTime = (dateStr) => {
   return `${yy}/${mm}/${dd} ${hh}:${min}`;
 };
 
-const showComment = (role) => { commentText.value = getComment(role); };
-
-// ✅ 말풍선 토글
-const toggleComment = (role) => {
-  visibleCommentRole.value = visibleCommentRole.value === role ? null : role;
-};
-
-// ✅ 지출내역 패딩
+// ✅ 지출내역 최소 8줄 보장
 const paddedItems = computed(() => {
   const items = props.report?.items || [];
   if (items.length >= 8) return items;
@@ -340,30 +347,21 @@ const printReport = async () => {
   width: 210mm;
   min-height: 297mm;
   margin: 10px auto;
-  padding: 10mm 10mm; /* 상하 20mm, 좌우 10mm */
+  padding: 10mm 10mm;
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
   box-sizing: border-box;
 }
-
-.comment-icon::before {
-  content: "💬";
-}
-
 @media print {
-  .comment-icon::before {
-    content: "" !important;
-  }
   .no-print, .no-print * {
     display: none !important;
-    visibility: hidden !important;
   }
   .page {
     border: none;
     box-shadow: none;
     page-break-after: always;
-    padding: 20mm 10mm; /* 상하 20mm, 좌우 10mm */
+    padding: 20mm 10mm;
   }
 }
 .report-content { font-size: 14pt; }
@@ -373,6 +371,6 @@ table td, table th {
   height: 3rem;
   vertical-align: middle !important;
   text-align: center;
-  padding: 0 10px; /* ✅ 상하 0, 좌우 8px */
+  padding: 0 10px;
 }
 </style>

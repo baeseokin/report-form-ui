@@ -59,7 +59,7 @@ const props = defineProps({
   report: { type: Object, required: true },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "approved"]); // ✅ approved 이벤트 추가
 const canvas = ref(null);
 let ctx;
 let drawing = false;
@@ -101,17 +101,22 @@ const approve = async () => {
     formData.append("comment", comment.value);
     formData.append("signature", blob, "signature.png");
 
-    const res = await fetch("/api/approval/approve", {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("결재 완료!");
-      emit("close");
-    } else {
-      alert("결재 실패: " + data.message);
+    try {
+      const res = await fetch("/api/approval/approve", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        emit("approved"); // ✅ 성공 시 approved 이벤트 발생
+      } else {
+        alert("결재 실패: " + data.message);
+      }
+    } catch (err) {
+      console.error("결재 처리 중 오류:", err);
+      alert("결재 처리 중 오류가 발생했습니다.");
     }
   });
 };
