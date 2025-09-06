@@ -51,7 +51,6 @@ onMounted(() => {
 const user = computed(() => userStore.user);
 
 const allowedMenus = computed(() => {
-  // ✅ 로그인하지 않았으면 메뉴 없음
   if (!user.value) return [];
 
   // 전체 메뉴 정의
@@ -63,9 +62,9 @@ const allowedMenus = computed(() => {
     { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
   ];
 
-  // ✅ 로그인 사용자 권한에 따른 접근 제어
+  // ✅ role_access 테이블에 access_type = 'all' 등록된 메뉴만 표시
   return allMenus.filter((m) =>
-    userStore.access.some((a) => a.menu_name === m.label && a.access_type === "view")
+    userStore.access.some((a) => a.menu_name === m.label && a.access_type === "all")
   );
 });
 

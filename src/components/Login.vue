@@ -15,6 +15,7 @@
         type="password"
         placeholder="비밀번호"
         class="w-full mb-3 p-2 border rounded"
+        @keyup.enter="login"
       />
 
       <button

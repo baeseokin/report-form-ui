@@ -67,7 +67,6 @@
     <table class="w-full border-collapse border">
       <thead>
         <tr class="bg-gray-100">
-          <th class="border p-2">ID</th>
           <th class="border p-2">부서</th>
           <th class="border p-2">문서종류</th>
           <th class="border p-2">작성자</th>
@@ -80,12 +79,11 @@
       </thead>
       <tbody>
         <tr v-for="row in rows" :key="row.id" class="hover:bg-gray-50">
-          <td class="border p-2">{{ row.id }}</td>
           <td class="border p-2">{{ row.dept_name }}</td>
           <td class="border p-2">{{ row.document_type }}</td>
           <td class="border p-2">{{ row.author }}</td>
           <td class="border p-2">{{ formatDate(row.request_date) }}</td>
-          <td class="border p-2">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
+          <td class="border p-2 text-right">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
           <td class="border p-2">{{ row.status }}</td>
           <td class="border p-2">{{ row.current_approver_name }}</td>
           <td class="border p-2">

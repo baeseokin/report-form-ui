@@ -102,12 +102,12 @@
               <td class="border">{{ item.semok }}</td>
               <td class="border">{{ item.detail }}</td>
               <td class="border text-right">
-                <span v-if="item.amount">{{ item.amount.toLocaleString() }} 원</span>
+                <span v-if="item.amount">{{ formatAmount(item.amount) }} 원</span>
               </td>
             </tr>
             <tr class="bg-blue-100 font-bold">
               <td class="border text-center" colspan="5">합 계</td>
-              <td class="border text-right">{{ report.totalAmount.toLocaleString() }} 원</td>
+              <td class="border text-right">{{ formatAmount(report.totalAmount) }} 원</td>
             </tr>
           </tbody>
         </table>
@@ -203,6 +203,14 @@ const refreshApprovalData = async () => {
   }
 };
 
+// ✅ 금액 포맷팅
+const formatAmount = (val) => {
+  if (!val && val !== 0) return "";
+  const num = Number(val);
+  if (isNaN(num)) return val; // 숫자 변환 불가 시 그대로 반환
+  return num.toLocaleString("ko-KR");
+};
+
 // ✅ 결재 이력에서 서명/코멘트 찾기
 const getSignature = (role) => {
   return approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
@@ -240,7 +248,7 @@ const chunkedFiles = computed(() => {
   const pages = [];
   let currentPage = [];
   let currentHeight = 0;
-  const maxHeight = 2000;
+  const maxHeight = 1500;
   files.forEach((f) => {
     const estimatedHeight = isImage(f) ? 800 : 200;
     if (currentHeight + estimatedHeight > maxHeight) {
@@ -316,7 +324,7 @@ const printReport = async () => {
   width: 210mm;
   min-height: 297mm;
   margin: 10px auto;
-  padding: 20mm;
+  padding: 20mm 10mm; /* 상하 20mm, 좌우 10mm */
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
@@ -339,10 +347,16 @@ const printReport = async () => {
     border: none;
     box-shadow: none;
     page-break-after: always;
+    padding: 20mm 10mm; /* 상하 20mm, 좌우 10mm */
   }
 }
 .report-content { font-size: 14pt; }
 .title-lg { font-size: 20pt; font-weight: 800; }
 .title-md { font-size: 16pt; font-weight: 700; }
-table td, table th { height: 3rem; vertical-align: middle !important; text-align: center; }
+table td, table th {
+  height: 3rem;
+  vertical-align: middle !important;
+  text-align: center;
+  padding: 0 10px; /* ✅ 상하 0, 좌우 8px */
+}
 </style>

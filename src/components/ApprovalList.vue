@@ -71,7 +71,7 @@
             <td class="border p-2">{{ a.author }}</td>
             <td class="border p-2">{{ a.aliasName }}</td>
             <td class="border p-2">{{ formatDate(a.request_date) }}</td>
-            <td class="border p-2 text-right">{{ a.total_amount.toLocaleString() }}</td>
+            <td class="border p-2 text-right">{{ formatAmount(a.total_amount) }}</td>
             <td class="border p-2">
               <button
                 @click="openPreview(a.id)"
@@ -183,6 +183,22 @@ const formatDate = (dateStr) => {
     d.getDate()
   ).padStart(2, "0")}`;
 };
+
+const formatAmount = (val) => {
+  if (val === null || val === undefined) return "";
+  const num = Number(val);
+  if (isNaN(num)) return val;
+
+  // 정수라면 소수점 없이 표시
+  if (Number.isInteger(num)) {
+    return num.toLocaleString("ko-KR");
+  }
+
+  // 소수 포함이면 소수점 유지
+  return num.toLocaleString("ko-KR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+};
+
+
 
 // ✅ 상세조회 API 경로 변경
 const openPreview = async (id) => {
