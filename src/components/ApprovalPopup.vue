@@ -3,27 +3,50 @@
     <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full p-6 relative">
       <h3 class="text-lg font-bold mb-4">결재 승인</h3>
 
-      <div class="mb-4">
-        <label class="block font-medium mb-1">코멘트</label>
-        <textarea v-model="comment" class="border p-2 w-full rounded" rows="3"></textarea>
-      </div>
+      <div class="flex flex-col md:flex-row gap-6">
+        <!-- ✅ 코멘트 -->
+        <div class="flex-1">
+          <label class="block font-medium mb-1">코멘트</label>
+          <textarea
+            v-model="comment"
+            class="border p-2 w-full rounded resize-none h-60"
+            placeholder="코멘트를 입력하세요"
+          ></textarea>
+        </div>
 
-      <div class="mb-4">
-        <label class="block font-medium mb-1">서명</label>
-        <canvas
-          ref="canvas"
-          width="500"
-          height="150"
-          class="border rounded w-full"
-        ></canvas>
-        <div class="mt-2 flex space-x-2">
-          <button @click="clearCanvas" class="px-3 py-1 bg-gray-300 rounded">지우기</button>
+        <!-- ✅ 서명 -->
+        <div class="flex flex-col items-center relative">
+          <label class="block font-medium mb-1">서명</label>
+          <div class="relative">
+            <canvas
+              ref="canvas"
+              width="240"
+              height="240"
+              class="border rounded shadow"
+            ></canvas>
+            <!-- ❌ 지우기 버튼 (우측 상단 X) -->
+            <button
+              @click="clearCanvas"
+              class="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded hover:bg-red-600"
+              title="지우기"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="flex justify-end space-x-2">
-        <button @click="$emit('close')" class="px-4 py-2 bg-gray-300 rounded">닫기</button>
-        <button @click="approve" class="px-4 py-2 bg-purple-600 text-white rounded">승인</button>
+      <!-- 버튼 -->
+      <div class="flex justify-end space-x-2 mt-6">
+        <button @click="$emit('close')" class="px-4 py-2 bg-gray-300 rounded">
+          닫기
+        </button>
+        <button
+          @click="approve"
+          class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+        >
+          승인
+        </button>
       </div>
     </div>
   </div>

@@ -24,27 +24,27 @@
                   class="border cursor-pointer relative"
                   @click="openApproval(role)"
                 >
-                  <!-- ✅ 서명 이미지 -->
-                  <img
-                    v-if="getSignature(role)"
-                    :src="getSignatureUrl(role)"
-                    class="h-16 mx-auto object-contain"
-                  />
-                  <!-- ✅ 코멘트 아이콘 + 말풍선 -->
-                  <!-- <div
-                    v-if="getComment(role)"
-                    class="absolute top-1 right-1 text-purple-600 cursor-pointer comment-icon no-print"
-                    @mouseover="visibleCommentRole = role"
-                    @mouseleave="visibleCommentRole = null"
-                  > -->
-                    <!-- 말풍선 -->
-                    <div
-                      v-if="visibleCommentRole === role"
-                      class="absolute top-6 right-0 bg-white border border-gray-300 shadow-lg rounded p-2 text-sm w-40 z-50 no-print"
-                    >
-                      {{ getComment(role) }}
-                    </div>
-                  <!-- </div> -->
+                  <!-- ✅ 서명 이미지 (정사각형) + 결재일시 -->
+                  <div class="flex flex-col items-center justify-center">
+                    <img
+                      v-if="getSignature(role)"
+                      :src="getSignatureUrl(role)"
+                      class="w-20 h-20 object-contain rounded"
+                    />
+                    <!-- ✅ 결재일시 (approved_at) -->
+                    <small v-if="getApprovedAt(role)" class="text-gray-500 text-xs mt-1">
+                      {{ formatDateTime(getApprovedAt(role)) }}
+                    </small>
+                  </div>
+
+                  <!-- 말풍선 -->
+                  <div
+                    v-if="visibleCommentRole === role"
+                    class="absolute top-6 right-0 bg-white border border-gray-300 shadow-lg rounded p-2 text-sm w-40 z-50 no-print"
+                  >
+                    {{ getComment(role) }}
+                  </div>
+
                 </td>
               </tr>
             </tbody>
@@ -222,6 +222,22 @@ const getSignatureUrl = (role) => {
   const signaturePath = approvalHistory.value.find(h => h.approver_role === role)?.signature_path;
   return signaturePath ? `/api/files/${signaturePath}` : "";
 };
+// ✅ 추가: 결재일시 (DB 필드 approved_at)
+const getApprovedAt = (role) => {
+  return approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
+};
+// ✅ 추가: 일시 포맷 함수 (YY/MM/DD HH:mm)
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const yy = String(d.getFullYear()).slice(-2); // 뒤 2자리만
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${yy}/${mm}/${dd} ${hh}:${min}`;
+};
+
 const showComment = (role) => { commentText.value = getComment(role); };
 
 // ✅ 말풍선 토글
@@ -324,7 +340,7 @@ const printReport = async () => {
   width: 210mm;
   min-height: 297mm;
   margin: 10px auto;
-  padding: 20mm 10mm; /* 상하 20mm, 좌우 10mm */
+  padding: 10mm 10mm; /* 상하 20mm, 좌우 10mm */
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
