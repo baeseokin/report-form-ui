@@ -1,7 +1,13 @@
 <template>
   <div class="flex h-screen font-nanum">
-    <!-- 사이드바 -->
-    <aside class="w-64 bg-gray-800 text-white flex flex-col p-6">
+    <!-- ✅ Sidebar -->
+    <aside
+      :class="[
+        'bg-gray-800 text-white flex flex-col p-6 fixed top-0 left-0 h-full z-40 transform transition-transform duration-300',
+        isOpen ? 'translate-x-0' : '-translate-x-full',
+        'w-64 lg:translate-x-0' // PC에서는 항상 보이도록
+      ]"
+    >
       <h2 class="text-2xl font-bold mb-8">📑 메뉴</h2>
 
       <nav class="flex-1 space-y-4">
@@ -12,6 +18,7 @@
             :key="m.path"
             :to="m.path"
             class="block hover:bg-gray-700 px-3 py-2 rounded"
+            @click="closeSidebar"
           >
             {{ m.icon }} {{ m.label }}
           </router-link>
@@ -34,15 +41,30 @@
       </div>
     </aside>
 
-    <!-- 본문 -->
-    <main class="flex-1 bg-gray-100 p-6 overflow-y-auto">
+    <!-- ✅ Overlay (Tablet/Mobile 전용) -->
+    <div
+      v-if="isOpen"
+      class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+      @click="closeSidebar"
+    ></div>
+
+    <!-- ✅ 본문 -->
+    <main class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64">
+      <!-- 햄버거 버튼 (Tablet/Mobile 전용) -->
+      <button
+        class="lg:hidden mb-4 px-3 py-2 bg-purple-600 text-white rounded"
+        @click="toggleSidebar"
+      >
+        ☰ 메뉴
+      </button>
+
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import axios from "axios";
@@ -72,6 +94,11 @@ const allowedMenus = computed(() => {
     userStore.access.some((a) => a.menu_name === m.label && a.access_type === "all")
   );
 });
+
+// ✅ Sidebar 상태 (모바일/테블릿용)
+const isOpen = ref(false);
+const toggleSidebar = () => { isOpen.value = !isOpen.value; };
+const closeSidebar = () => { isOpen.value = false; };
 
 const logout = async () => {
   await axios.post("/api/logout", {}, { withCredentials: true });
