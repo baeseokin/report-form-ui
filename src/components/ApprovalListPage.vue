@@ -174,7 +174,7 @@ const updateDateRange = () => {
 };
 
 const searchList = async () => {
-  const res = await fetch("http://localhost:3001/api/approvalList", {
+  const res = await fetch("/api/approvalList", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -192,7 +192,7 @@ const searchList = async () => {
 };
 
 const openDetail = async (row) => {
-  const res = await fetch(`http://localhost:3001/api/approval/detail/${row.id}`, {
+  const res = await fetch(`/api/approval/detail/${row.id}`, {
     credentials: "include",
   });
   const data = await res.json();

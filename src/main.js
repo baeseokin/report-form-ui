@@ -5,7 +5,7 @@ import router from "./router";
 import "./index.css";
 import axios from "axios";
 
-axios.defaults.baseURL = "http://localhost:3001";
+axios.defaults.baseURL = "";
 axios.defaults.withCredentials = true;  // ✅ 모든 요청에서 세션 쿠키 자동 포함ß
 
 const app = createApp(App);

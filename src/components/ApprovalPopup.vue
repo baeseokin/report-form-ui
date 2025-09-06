@@ -78,7 +78,7 @@ const approve = async () => {
     formData.append("comment", comment.value);
     formData.append("signature", blob, "signature.png");
 
-    const res = await fetch("http://localhost:3001/api/approval/approve", {
+    const res = await fetch("/api/approval/approve", {
       method: "POST",
       body: formData,
       credentials: "include",
