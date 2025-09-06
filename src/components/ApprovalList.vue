@@ -216,7 +216,8 @@ const openPreview = async (id) => {
       comment: res.data.comment,
       aliasName: res.data.aliasName,
       items: res.data.items || [],
-      attachedFiles: res.data.attachedFiles || []
+      attachedFiles: res.data.attachedFiles || [],
+      approvalHistory: res.data.approvalHistory || []  
     };
 
     console.log("📄 상세조회 결과:", report); // ✅ 디버깅 로그

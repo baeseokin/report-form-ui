@@ -49,7 +49,13 @@ const login = async () => {
       { withCredentials: true });
     if (res.data.success) {
       await userStore.loadSession();   // ✅ 세션에서 사용자 정보 가져오기
-      router.push("/approvalList");
+      const roles = userStore.roles.map(r => r.role_name || r);
+
+      if (roles.includes("회계")) {
+        router.push("/reportForm");    // 회계 → 보고서 작성 화면
+      } else {
+        router.push("/approvalStatus"); // 나머지 → 결재목록 조회 화면
+      }
     }
   } catch (err) {
     error.value = "로그인 실패";

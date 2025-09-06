@@ -13,7 +13,7 @@
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
-                <th v-for="role in approverRoles" :key="role" class="border">{{ role }}</th>
+                <th v-for="role in approverRoles" :key="role" class="border">{{ role === "회계" ? "담당" : role }}</th>
               </tr>
             </thead>
             <tbody>
@@ -175,7 +175,7 @@ const userDept = computed(() => user.value?.deptName || props.report?.deptName |
 const userName = computed(() => user.value?.userName || props.report?.author || "");
 
 // ✅ 결재 관련 상태
-const approverRoles = ["담당", "부장", "위원장", "당회장"];
+const approverRoles = ["회계", "부장", "위원장", "당회장"];
 const showPopup = ref(false);
 const selectedRole = ref(null);
 const commentText = ref(null);
