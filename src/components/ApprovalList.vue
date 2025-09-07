@@ -2,7 +2,7 @@
   <div class="p-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800 mb-4">📑 청구목록 조회</h2>
 
-    <!-- ✅ 검색조건 + 조회 버튼 같은 라인 -->
+    <!-- ✅ 검색조건 -->
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <!-- 부서명 -->
       <div class="flex flex-col w-40">
@@ -61,6 +61,9 @@
             <th class="border p-2">청구요청 별칭</th>
             <th class="border p-2">청구일자</th>
             <th class="border p-2">총액</th>
+            <!-- 🔹 추가된 컬럼 -->
+            <th class="border p-2">진행상태</th>
+            <th class="border p-2">다음 결재자</th>
             <th class="border p-2">상세</th>
           </tr>
         </thead>
@@ -72,6 +75,14 @@
             <td class="border p-2">{{ a.aliasName }}</td>
             <td class="border p-2">{{ formatDate(a.request_date) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(a.total_amount) }}</td>
+            <!-- 🔹 진행상태 -->
+            <td class="border p-2">{{ a.status }}</td>
+            <!-- 🔹 다음 결재자 -->
+            <td class="border p-2">
+              <span v-if="a.status === '진행중'">
+                {{ a.current_approver_name }} {{ a.current_approver_role }}
+              </span>
+            </td>
             <td class="border p-2">
               <button
                 @click="openPreview(a.id)"
@@ -88,7 +99,7 @@
             </td>
           </tr>
           <tr v-if="approvals.length === 0">
-            <td colspan="8" class="text-center p-4">데이터가 없습니다.</td>
+            <td colspan="10" class="text-center p-4">데이터가 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -188,24 +199,15 @@ const formatAmount = (val) => {
   if (val === null || val === undefined) return "";
   const num = Number(val);
   if (isNaN(num)) return val;
-
-  // 정수라면 소수점 없이 표시
   if (Number.isInteger(num)) {
     return num.toLocaleString("ko-KR");
   }
-
-  // 소수 포함이면 소수점 유지
   return num.toLocaleString("ko-KR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 };
 
-
-
-// ✅ 상세조회 API 경로 변경
 const openPreview = async (id) => {
   try {
     const res = await axios.get(`/api/approval/detail/${id}`);
-
-    // ✅ 필드명 변환 (snake_case → camelCase)
     const report = {
       id: res.data.id,
       documentType: res.data.document_type,
@@ -219,15 +221,11 @@ const openPreview = async (id) => {
       attachedFiles: res.data.attachedFiles || [],
       approvalHistory: res.data.approvalHistory || []  
     };
-
-    console.log("📄 상세조회 결과:", report); // ✅ 디버깅 로그
-
     previewReport.value = report;
   } catch (err) {
     console.error("상세조회 실패:", err);
   }
 };
-
 
 const goToReport = (id) => {
   router.push({ name: "ReportForm", params: { id } });
