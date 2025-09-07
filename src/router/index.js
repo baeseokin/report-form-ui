@@ -17,7 +17,7 @@ const routes = [
   { path: "/approvalList", component: ApprovalList, meta: { menuName: "청구목록 조회" } },
 
   // ✅ 신규 결재현황 메뉴
-  { path: "/approvalStatus", component: ApprovalListPage, meta: { menuName: "결재목록 조회" } },
+  { path: "/approvalStatus", component: ApprovalListPage, meta: { menuName: "내결재목록 조회" } },
 
   // 사용자 / 권한 관리
   { path: "/userManagement", component: UserManagement, meta: { menuName: "사용자 관리" } },
@@ -46,6 +46,9 @@ router.beforeEach(async (to, from, next) => {
     const hasAccess = userStore.access.some(
       (a) => a.menu_name === to.meta.menuName && a.access_type === "all"
     );
+
+    // console.log("hasAccerss:", hasAccess);
+
     if (!hasAccess) {
       alert("해당 메뉴에 대한 권한이 없습니다.");
       return next("/login");

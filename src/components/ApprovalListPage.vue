@@ -1,6 +1,6 @@
 <template>
   <div class="p-6">
-    <h2 class="text-xl font-bold mb-4">결재목록 조회</h2>
+    <h2 class="text-xl font-bold mb-4">내결재목록 조회</h2>
 
     <!-- ✅ 검색조건 + 조회 버튼 한 줄 -->
     <div class="mb-6 flex flex-wrap gap-4 items-end">

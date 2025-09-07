@@ -57,7 +57,7 @@ const allowedMenus = computed(() => {
   const allMenus = [
     { label: "보고서 작성", path: "/reportForm", icon: "📝" },
     { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
-    { label: "결재목록 조회", path: "/approvalStatus", icon: "✅" },
+    { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
     { label: "사용자 관리", path: "/userManagement", icon: "👤" },
     { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
   ];
