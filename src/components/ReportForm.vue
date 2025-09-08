@@ -3,10 +3,10 @@
     class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center p-10 font-nanum"
   >
     <div
-      class="w-full max-w-6xl bg-white shadow-2xl rounded-2xl p-8 border border-gray-200"
+      class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white shadow-2xl rounded-2xl p-4 sm:p-6 md:p-8 border border-gray-200"
     >
-      <!-- 탭 -->
-      <div class="flex border-b mb-6">
+      <!-- 📌 PC: 상단 탭 -->
+      <div v-if="!isMobile" class="flex border-b mb-6">
         <button
           v-for="tab in tabs"
           :key="tab"
@@ -22,8 +22,9 @@
         </button>
       </div>
 
-      <!-- 탭별 컴포넌트 -->
-      <BasicInfoTab
+      <!-- 📌 탭별 컴포넌트 (PC/Mobile 분기) -->
+      <component
+        :is="isMobile ? BasicInfoTabMobile : BasicInfoTab"
         v-if="activeTab === '기본정보'"
         v-model:documentType="documentType"
         v-model:selectedDept="selectedDept"
@@ -34,7 +35,8 @@
         @next="goNextTab"
       />
 
-      <ExpenseTab
+      <component
+        :is="isMobile ? ExpenseTabMobile : ExpenseTab"
         v-if="activeTab === '지출내역'"
         v-model:items="items"
         :dept-data="deptData"
@@ -43,14 +45,16 @@
         @next="goNextTab"
       />
 
-      <FileAttachTab
+      <component
+        :is="isMobile ? FileAttachTabMobile : FileAttachTab"
         v-if="activeTab === '파일첨부'"
         v-model="attachedFiles"
         @prev="goPrevTab"
         @next="goNextTab"
       />
 
-      <ConfirmTab
+      <component
+        :is="isMobile ? ConfirmTabMobile : ConfirmTab"
         v-if="activeTab === '최종 확인'"
         :document-type="documentType"
         :selected-dept="selectedDept"
@@ -66,7 +70,23 @@
       />
     </div>
 
-    <!-- 미리보기 -->
+    <!-- 📌 모바일: 하단 네비게이션 -->
+    <div
+      v-if="isMobile"
+      class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-md flex justify-around py-2"
+    >
+      <button
+        v-for="tab in tabs"
+        :key="tab"
+        @click="activeTab = tab"
+        class="flex-1 py-2 text-center font-semibold transition"
+        :class="activeTab === tab ? 'text-purple-700' : 'text-gray-500'"
+      >
+        {{ tab }}
+      </button>
+    </div>
+
+    <!-- 📌 미리보기 -->
     <ReportPreview v-if="report" :report="report" @close="closeReport" />
   </div>
 </template>
@@ -76,12 +96,27 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 
-// 컴포넌트 import
+// 📌 PC 전용 컴포넌트
 import BasicInfoTab from "./BasicInfoTab.vue";
 import ExpenseTab from "./ExpenseTab.vue";
 import FileAttachTab from "./FileAttachTab.vue";
 import ConfirmTab from "./ConfirmTab.vue";
 import ReportPreview from "./ReportPreview.vue";
+
+// 📌 Mobile 전용 컴포넌트
+import BasicInfoTabMobile from "./mobile/BasicInfoTabMobile.vue";
+import ExpenseTabMobile from "./mobile/ExpenseTabMobile.vue";
+import FileAttachTabMobile from "./mobile/FileAttachTabMobile.vue";
+import ConfirmTabMobile from "./mobile/ConfirmTabMobile.vue";
+
+// 반응형 감지
+const isMobile = ref(false);
+if (typeof window !== "undefined") {
+  isMobile.value = window.innerWidth <= 768;
+  window.addEventListener("resize", () => {
+    isMobile.value = window.innerWidth <= 768;
+  });
+}
 
 const tabs = ["기본정보", "지출내역", "파일첨부", "최종 확인"];
 const activeTab = ref("기본정보");
@@ -90,14 +125,14 @@ const documentType = ref("청구지출결의서");
 const selectedDept = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
-const aliasName = ref(""); 
+const aliasName = ref("");
 const deptData = ref({});
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
 ]);
 const comment = ref("");
 const report = ref(null);
-const attachedFiles = ref([]); // ✅ 첨부파일 상태
+const attachedFiles = ref([]);
 
 const route = useRoute();
 
@@ -107,14 +142,11 @@ onMounted(async () => {
 
   if (route.params.id) {
     try {
-      // ✅ API 경로 변경
       const res = await axios.get(`/api/approval/detail/${route.params.id}`, {
         withCredentials: true,
       });
 
       const data = res.data;
-
-      // ✅ camelCase로 변환
       documentType.value = data.document_type;
       selectedDept.value = data.dept_name;
       author.value = data.author;
@@ -130,7 +162,6 @@ onMounted(async () => {
         amount: i.amount,
       }));
 
-      // ✅ 청구일자와 첨부파일은 제외 → 새로 작성해야 하므로 초기화
       date.value = new Date().toISOString().slice(0, 10);
       attachedFiles.value = [];
     } catch (err) {
@@ -152,7 +183,6 @@ const goPrevTab = () => {
   if (idx > 0) activeTab.value = tabs[idx - 1];
 };
 
-// ✅ 첨부파일을 항상 포함하도록 수정
 const generateReport = () => {
   report.value = {
     documentType: documentType.value,
@@ -163,7 +193,7 @@ const generateReport = () => {
     aliasName: aliasName.value,
     items: JSON.parse(JSON.stringify(items.value)),
     comment: comment.value,
-    attachedFiles: attachedFiles.value || [] // ✅ 첨부파일 항상 포함
+    attachedFiles: attachedFiles.value || [],
   };
 };
 
