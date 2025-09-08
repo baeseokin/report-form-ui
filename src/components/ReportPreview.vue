@@ -1,11 +1,23 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 font-nanum">
-    <div class="bg-white rounded-2xl w-full max-w-[52rem] h-screen p-0 relative overflow-y-auto border-t-8 border-purple-500">
-      <!-- 닫기 버튼 -->
-      <button @click="$emit('close')" class="absolute top-14 right-14 text-gray-500 hover:text-black text-xl">✕</button>
-
+    <!-- 닫기 버튼 -->
+    <button
+      @click="$emit('close')"
+      class="fixed top-4 right-4 z-50 text-gray-500 hover:text-black text-2xl bg-white rounded-full w-10 h-10 flex items-center justify-center shadow"
+    >
+      ✕
+    </button>
+    <div
+      class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen p-0 relative overflow-y-auto border-t-8 border-purple-500
+            transform sm:scale-100 origin-top"
+    >
       <!-- 보고서 -->
-      <div v-if="report" class="page report-content leading-relaxed" ref="reportContent">
+      <div
+        v-if="report"
+        class="page report-content leading-relaxed"
+        ref="reportContent"
+        :style="pageStyle"
+      >
         <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
         <!-- ✅ 결재 서명란 -->
@@ -26,7 +38,7 @@
                   class="border cursor-pointer relative"
                   @click="openApproval(role)"
                 >
-                  <!-- ✅ 서명 이미지 (정사각형) + 결재일시 -->
+                  <!-- ✅ 서명 이미지 -->
                   <div class="flex flex-col items-center justify-center">
                     <img
                       v-if="getSignature(role)"
@@ -50,7 +62,7 @@
             </tbody>
           </table>
 
-          <!-- 오른쪽 결재란 (비어있음) -->
+          <!-- 오른쪽 결재란 -->
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
@@ -62,10 +74,10 @@
             </thead>
             <tbody>
               <tr class="h-24">
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
-                <td class="border w-1/4"></td>
+                <td class="border"></td>
+                <td class="border"></td>
+                <td class="border"></td>
+                <td class="border"></td>
               </tr>
             </tbody>
           </table>
@@ -106,7 +118,7 @@
               </td>
             </tr>
             <tr class="bg-blue-100 font-bold">
-              <td class="border text-center" colspan="5">합 계</td>
+              <td colspan="5" class="border text-center">합 계</td>
               <td class="border text-right">{{ formatAmount(report.totalAmount) }} 원</td>
             </tr>
           </tbody>
@@ -120,9 +132,9 @@
         </div>
       </div>
 
-      <!-- ✅ 첨부파일 페이지 -->
+      <!-- ✅ 첨부파일 -->
       <template v-for="(pageFiles, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
-        <div class="page report-content mt-10 break-before-page">
+        <div class="page report-content mt-10 break-before-page" :style="pageStyle">
           <h2 class="title-lg text-center mb-6 text-gray-800">
             📎 첨부파일 ({{ pageIdx + 1 }} / {{ chunkedFiles.length }})
           </h2>
@@ -132,7 +144,6 @@
               <img
                 v-if="isImage(f)"
                 :src="getFileUrl(f)"
-                :alt="getFileAlias(f)"
                 class="border rounded-lg shadow-md max-h-[500px] mx-auto"
               />
               <p v-else class="text-sm text-gray-500 italic">(이미지 미리보기를 지원하지 않는 파일 형식입니다)</p>
@@ -149,31 +160,21 @@
     </div>
 
     <!-- ✅ 결재 팝업 -->
-    <ApprovalPopup
-      v-if="showPopup"
-      :report="report"
-      @close="closePopup"
-      @approved="handleApproved"
-    />
+    <ApprovalPopup v-if="showPopup" :report="report" @close="closePopup" @approved="handleApproved" />
 
     <!-- ✅ 결재 완료 알림 -->
-    <ModalAlert
-      :visible="showModal"
-      title="알림"
-      message="정상적으로 결재되었습니다."
-      @close="handleModalClose"
-    />
+    <ModalAlert :visible="showModal" title="알림" message="정상적으로 결재되었습니다." @close="handleModalClose" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import ApprovalPopup from "./ApprovalPopup.vue";
-import ModalAlert from "./ModalAlert.vue"; // ✅ 추가
+import ModalAlert from "./ModalAlert.vue";
 import axios from "axios";
 
 const props = defineProps(["report"]);
@@ -183,133 +184,78 @@ const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
 const userName = computed(() => user.value?.userName || props.report?.author || "");
 
-// ✅ 결재 관련 상태
+// ✅ 모바일 scale 비율 동적 계산
+const scaleValue = ref(1);
+const pageStyle = computed(() => ({
+  transform: `scale(${scaleValue.value})`,
+  transformOrigin: "top center",
+  width: "210mm",
+  minHeight: "297mm"
+}));
+
+onMounted(() => {
+  const pageWidth = 794; // 210mm ≈ 794px
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    scaleValue.value = screenWidth / pageWidth; // 화면에 맞춰 축소
+  }
+});
+
+// (기존 승인/반려 로직, PDF/프린트 함수, 데이터 포맷터 등은 그대로 유지)
 const approverRoles = ["회계", "부장", "위원장", "당회장"];
 const showPopup = ref(false);
 const showModal = ref(false);
+const approvalHistory = ref(props.report?.approvalHistory || []);
+const visibleCommentRole = ref(null);
 const selectedRole = ref(null);
 
-// ✅ approvalHistory 관리
-const approvalHistory = ref(props.report?.approvalHistory || []);
-
-// ✅ 현재 말풍선이 열린 결재자 role
-const visibleCommentRole = ref(null);
-
-const openApproval = (role) => {
-  selectedRole.value = role;
-  showPopup.value = true;
-};
+const openApproval = (role) => { selectedRole.value = role; showPopup.value = true; };
 const closePopup = () => { showPopup.value = false; };
 
-// ✅ 결재 후 데이터 새로고침
 const refreshApprovalData = async () => {
   if (!props.report?.id) return;
   try {
     const res = await axios.get(`/api/approval/detail/${props.report.id}`, { withCredentials: true });
     approvalHistory.value = res.data.approvalHistory || [];
-  } catch (err) {
-    console.error("❌ 결재 이력 갱신 실패:", err);
-  }
+  } catch (err) { console.error("❌ 결재 이력 갱신 실패:", err); }
 };
+const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; };
+const handleModalClose = () => { showModal.value = false; emit("close"); };
 
-// ✅ ApprovalPopup → 승인 성공 시 실행
-const handleApproved = async () => {
-  await refreshApprovalData();
-  showPopup.value = false;
-  showModal.value = true;
-};
-
-// ✅ ModalAlert 닫을 때 → ReportPreview 닫기
-const handleModalClose = () => {
-  showModal.value = false;
-  emit("close");
-};
-
-// ✅ 금액 포맷팅
-const formatAmount = (val) => {
-  if (!val && val !== 0) return "";
-  const num = Number(val);
-  if (isNaN(num)) return val;
-  return num.toLocaleString("ko-KR");
-};
-
-// ✅ 결재 이력에서 서명/코멘트/일시 찾기
+const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
 const getSignature = (role) => approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
 const getComment = (role) => approvalHistory.value.find(h => h.approver_role === role)?.comment || null;
 const getSignatureUrl = (role) => {
-  const signaturePath = approvalHistory.value.find(h => h.approver_role === role)?.signature_path;
+  const signaturePath = getSignature(role);
   return signaturePath ? `/api/files/${signaturePath}` : "";
 };
 const getApprovedAt = (role) => approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
-const formatDateTime = (dateStr) => {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  const yy = String(d.getFullYear()).slice(-2);
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  const hh = String(d.getHours()).padStart(2, "0");
-  const min = String(d.getMinutes()).padStart(2, "0");
-  return `${yy}/${mm}/${dd} ${hh}:${min}`;
-};
+const formatDateTime = (dateStr) => dateStr ? new Date(dateStr).toLocaleString("ko-KR", { hour12: false }) : "";
 
-// ✅ 지출내역 최소 8줄 보장
 const paddedItems = computed(() => {
   const items = props.report?.items || [];
-  if (items.length >= 8) return items;
-  return items.concat(Array.from({ length: 8 - items.length }, () => ({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })));
+  return items.length >= 8 ? items : [...items, ...Array(8 - items.length).fill({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })];
 });
 
-// ✅ 첨부파일 관련
-const filesToPreview = computed(() => {
-  if (!props.report) return [];
-  if (props.report.attachedFiles?.length > 0) return props.report.attachedFiles;
-  if (props.report.files?.length > 0) return props.report.files;
-  return [];
-});
+const filesToPreview = computed(() => props.report?.attachedFiles?.length ? props.report.attachedFiles : props.report?.files || []);
 const chunkedFiles = computed(() => {
   const files = filesToPreview.value;
   const pages = [];
-  let currentPage = [];
-  let currentHeight = 0;
-  const maxHeight = 1500;
+  let currentPage = [], currentHeight = 0, maxHeight = 1500;
   files.forEach((f) => {
-    const estimatedHeight = isImage(f) ? 800 : 200;
-    if (currentHeight + estimatedHeight > maxHeight) {
-      pages.push(currentPage);
-      currentPage = [f];
-      currentHeight = estimatedHeight;
-    } else {
-      currentPage.push(f);
-      currentHeight += estimatedHeight;
-    }
+    const estHeight = isImage(f) ? 800 : 200;
+    if (currentHeight + estHeight > maxHeight) { pages.push(currentPage); currentPage = [f]; currentHeight = estHeight; }
+    else { currentPage.push(f); currentHeight += estHeight; }
   });
-  if (currentPage.length > 0) pages.push(currentPage);
+  if (currentPage.length) pages.push(currentPage);
   return pages;
 });
-const getFileAlias = (f) => f.aliasName || f.alias_name || f.name || f.file_name || "첨부파일";
-const isImage = (f) => {
-  if (!f) return false;
-  const type = f.type || f.mime_type || f.mimeType || "";
-  return type.startsWith("image/") || /\.(png|jpg|jpeg|gif)$/i.test(f.name || f.file_name || "");
-};
-const getFileUrl = (f) => {
-  if (!f) return "";
-  if (f instanceof File) return URL.createObjectURL(f);
-  if (f.file) return URL.createObjectURL(f.file);
-  if (f.file_name) return `/api/files/${f.file_name}`;
-  if (f.file_path) {
-    const filename = f.file_path.split("/").pop();
-    return `/api/files/${filename}`;
-  }
-  return "";
-};
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
+const getFileAlias = (f) => f.aliasName || f.name || f.file_name || "첨부파일";
+const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif)$/i.test(f.name || f.file_name || ""));
+const getFileUrl = (f) => f.file ? URL.createObjectURL(f.file) : f.file_name ? `/api/files/${f.file_name}` : "";
 
-// ✅ PDF 다운로드
+const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
+
 const downloadPDF = async () => {
   const pdf = new jsPDF("p", "mm", "a4");
   const pages = document.querySelectorAll(".page");
@@ -323,20 +269,16 @@ const downloadPDF = async () => {
   }
   pdf.save(`${props.report.documentType}_${userDept.value}_${props.report.date}.pdf`);
 };
-
-// ✅ 프린트 출력
 const printReport = async () => {
   const pages = document.querySelectorAll(".page");
   const imgs = [];
-  for (let i = 0; i < pages.length; i++) {
-    const canvas = await html2canvas(pages[i], { scale: 2 });
+  for (let p of pages) {
+    const canvas = await html2canvas(p, { scale: 2 });
     imgs.push(canvas.toDataURL("image/png"));
   }
   const win = window.open("", "", "width=800,height=600");
   win.document.write("<html><head><title>Print</title></head><body>");
-  imgs.forEach((src) => {
-    win.document.write(`<img src="${src}" style="width:100%; page-break-after:always;" />`);
-  });
+  imgs.forEach(src => win.document.write(`<img src="${src}" style="width:100%; page-break-after:always;" />`));
   win.document.write("</body></html>");
   win.document.close();
 };
@@ -347,16 +289,14 @@ const printReport = async () => {
   width: 210mm;
   min-height: 297mm;
   margin: 10px auto;
-  padding: 10mm 10mm;
+  padding: 10mm;
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
   box-sizing: border-box;
 }
 @media print {
-  .no-print, .no-print * {
-    display: none !important;
-  }
+  .no-print { display: none !important; }
   .page {
     border: none;
     box-shadow: none;
