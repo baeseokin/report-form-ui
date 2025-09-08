@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-lg w-[600px] max-w-full p-6 relative">
-      <h3 class="text-lg font-bold mb-4">결재 승인</h3>
+      <h3 class="text-lg font-bold mb-4">결재 처리</h3>
 
       <div class="flex flex-col md:flex-row gap-6">
         <!-- ✅ 코멘트 -->
@@ -22,9 +22,8 @@
               ref="canvas"
               width="240"
               height="240"
-              class="border rounded shadow"
+              class="border rounded shadow touch-none"
             ></canvas>
-            <!-- ❌ 지우기 버튼 (우측 상단 X) -->
             <button
               @click="clearCanvas"
               class="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded hover:bg-red-600"
@@ -40,6 +39,12 @@
       <div class="flex justify-end space-x-2 mt-6">
         <button @click="$emit('close')" class="px-4 py-2 bg-gray-300 rounded">
           닫기
+        </button>
+        <button
+          @click="reject"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          반려
         </button>
         <button
           @click="approve"
@@ -58,24 +63,32 @@ import { ref, onMounted } from "vue";
 const props = defineProps({
   report: { type: Object, required: true },
 });
+const emit = defineEmits(["close", "approved", "rejected"]);
 
-const emit = defineEmits(["close", "approved"]); // ✅ approved 이벤트 추가
 const canvas = ref(null);
 let ctx;
 let drawing = false;
 const comment = ref("");
 
+// ✅ 캔버스 초기화 & 이벤트 등록
 onMounted(() => {
   ctx = canvas.value.getContext("2d");
   ctx.strokeStyle = "black";
   ctx.lineWidth = 2;
 
+  // 마우스 이벤트
   canvas.value.addEventListener("mousedown", startDraw);
   canvas.value.addEventListener("mousemove", draw);
   canvas.value.addEventListener("mouseup", stopDraw);
   canvas.value.addEventListener("mouseleave", stopDraw);
+
+  // 터치 이벤트 (모바일/태블릿)
+  canvas.value.addEventListener("touchstart", startDrawTouch, { passive: false });
+  canvas.value.addEventListener("touchmove", drawTouch, { passive: false });
+  canvas.value.addEventListener("touchend", stopDraw);
 });
 
+// 🖱 마우스
 const startDraw = (e) => {
   drawing = true;
   ctx.beginPath();
@@ -86,14 +99,31 @@ const draw = (e) => {
   ctx.lineTo(e.offsetX, e.offsetY);
   ctx.stroke();
 };
-const stopDraw = () => {
-  drawing = false;
+const stopDraw = () => { drawing = false; };
+
+// 📱 터치
+const startDrawTouch = (e) => {
+  e.preventDefault();
+  const rect = canvas.value.getBoundingClientRect();
+  const touch = e.touches[0];
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+};
+const drawTouch = (e) => {
+  e.preventDefault();
+  if (!drawing) return;
+  const rect = canvas.value.getBoundingClientRect();
+  const touch = e.touches[0];
+  ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+  ctx.stroke();
 };
 
 const clearCanvas = () => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
 };
 
+// ✅ 승인 처리
 const approve = async () => {
   canvas.value.toBlob(async (blob) => {
     const formData = new FormData();
@@ -110,13 +140,43 @@ const approve = async () => {
       const data = await res.json();
 
       if (data.success) {
-        emit("approved"); // ✅ 성공 시 approved 이벤트 발생
+        emit("approved"); // ✅ 팝업 대신 이벤트
+        emit("close");
       } else {
-        alert("결재 실패: " + data.message);
+        alert("승인 실패: " + data.message);
       }
     } catch (err) {
-      console.error("결재 처리 중 오류:", err);
-      alert("결재 처리 중 오류가 발생했습니다.");
+      console.error("승인 오류:", err);
+      alert("승인 오류 발생");
+    }
+  });
+};
+
+// ✅ 반려 처리
+const reject = async () => {
+  canvas.value.toBlob(async (blob) => {
+    const formData = new FormData();
+    formData.append("requestId", props.report.id);
+    formData.append("comment", comment.value);
+    formData.append("signature", blob, "signature.png");
+
+    try {
+      const res = await fetch("/api/approval/reject", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        emit("rejected"); // ✅ 팝업 대신 이벤트
+        emit("close");
+      } else {
+        alert("반려 실패: " + data.message);
+      }
+    } catch (err) {
+      console.error("반려 오류:", err);
+      alert("반려 오류 발생");
     }
   });
 };

@@ -1,8 +1,8 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 font-nanum">
-    <div class="bg-white rounded-2xl w-full max-w-4xl h-screen p-10 relative overflow-y-auto border-t-8 border-purple-500">
+    <div class="bg-white rounded-2xl w-full max-w-[52rem] h-screen p-0 relative overflow-y-auto border-t-8 border-purple-500">
       <!-- 닫기 버튼 -->
-      <button @click="$emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-black text-xl">✕</button>
+      <button @click="$emit('close')" class="absolute top-14 right-14 text-gray-500 hover:text-black text-xl">✕</button>
 
       <!-- 보고서 -->
       <div v-if="report" class="page report-content leading-relaxed" ref="reportContent">
@@ -142,7 +142,7 @@
       </template>
 
       <!-- ✅ PDF & 프린터 버튼 -->
-      <div class="flex justify-end gap-4 mt-6 no-print">
+      <div class="flex justify-end gap-4 mt-6 mb-10 pr-6 no-print">
         <button @click="downloadPDF" class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg shadow-md">📄 PDF 다운로드</button>
         <button @click="printReport" class="flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
       </div>

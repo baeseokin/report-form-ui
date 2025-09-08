@@ -17,7 +17,7 @@
       </div>
 
       <!-- 문서종류 -->
-      <div class="flex flex-col w-48">
+      <div class="flex flex-col w-35">
         <label class="font-bold mb-1">문서종류</label>
         <select v-model="filters.documentType" class="border rounded p-2 w-full">
           <option value="">전체</option>
@@ -28,13 +28,13 @@
       </div>
 
       <!-- 청구 시작일자 -->
-      <div class="flex flex-col w-44">
+      <div class="flex flex-col w-30">
         <label class="font-bold mb-1">청구 시작일자</label>
         <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
       </div>
 
       <!-- 청구 종료일자 -->
-      <div class="flex flex-col w-44">
+      <div class="flex flex-col w-30">
         <label class="font-bold mb-1">청구 종료일자</label>
         <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
       </div>
@@ -63,7 +63,6 @@
             <th class="border p-2">총액</th>
             <!-- 🔹 추가된 컬럼 -->
             <th class="border p-2">진행상태</th>
-            <th class="border p-2">다음 결재자</th>
             <th class="border p-2">상세</th>
           </tr>
         </thead>
@@ -78,25 +77,25 @@
             <!-- 🔹 진행상태 -->
             <td class="border p-2">{{ a.status }}</td>
             <!-- 🔹 다음 결재자 -->
-            <td class="border p-2">
-              <span v-if="a.status === '진행중'">
-                {{ a.current_approver_name }} {{ a.current_approver_role }}
-              </span>
-            </td>
-            <td class="border p-2">
-              <button
-                @click="openPreview(a.id)"
-                class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
-              >
-                상세보기
-              </button>
-              <button
-                @click="goToReport(a.id)"
-                class="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded"
-              >
-                보고서작성
-              </button>
-            </td>
+              <td class="border p-2 flex space-x-2">
+                <!-- 상세보기 버튼 (돋보기 아이콘) -->
+                <button
+                  @click="openPreview(a.id)"
+                  class="p-2 rounded hover:bg-green-100"
+                  title="상세보기"
+                >
+                  <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
+                </button>
+
+                <!-- 보고서작성 버튼 (연필 아이콘) -->
+                <button
+                  @click="goToReport(a.id)"
+                  class="p-2 rounded hover:bg-purple-100"
+                  title="보고서작성"
+                >
+                  <img src="/icons/report.svg" alt="보고서작성" class="w-6 h-6" />
+                </button>
+              </td>
           </tr>
           <tr v-if="approvals.length === 0">
             <td colspan="10" class="text-center p-4">데이터가 없습니다.</td>

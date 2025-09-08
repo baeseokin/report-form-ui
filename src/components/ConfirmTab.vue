@@ -26,7 +26,7 @@
     </div>
 
     <div class="flex gap-6 items-start">
-      <!-- 코멘트: 가변 -->
+      <!-- 코멘트 -->
       <div class="flex-1">
         <h2 class="text-xl font-bold text-gray-800">📌 추가 의견</h2>
         <textarea
@@ -42,7 +42,7 @@
         </p>
       </div>
 
-      <!-- 서명: 고정 -->
+      <!-- 서명 -->
       <div class="w-[260px]">
         <h2 class="text-xl font-bold text-gray-800">✍️ 서명</h2>
         <div class="relative inline-block">
@@ -50,7 +50,7 @@
             ref="canvas"
             width="240"
             height="240"
-            class="border rounded w-[240px] h-[240px]"
+            class="border rounded w-[240px] h-[240px] touch-none"
           ></canvas>
           <button
             @click="clearCanvas"
@@ -86,6 +86,7 @@
         </button>
       </div>
     </div>
+
     <!-- ✅ 모달 알림 -->
     <ModalAlert
       :visible="showPopup"
@@ -93,7 +94,6 @@
       message="결재요청이 완료되었습니다."
       @close="closePopup"
     />
-
   </div>
 </template>
 
@@ -103,7 +103,7 @@ import { ref, onMounted, computed } from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
-import ModalAlert from "@/components/ModalAlert.vue"; // ✅ 새 컴포넌트 import
+import ModalAlert from "@/components/ModalAlert.vue";
 
 const props = defineProps([
   "documentType",
@@ -131,12 +131,19 @@ onMounted(() => {
   ctx.strokeStyle = "black";
   ctx.lineWidth = 2;
 
+  // ✅ 마우스 이벤트
   canvas.value.addEventListener("mousedown", startDraw);
   canvas.value.addEventListener("mousemove", draw);
   canvas.value.addEventListener("mouseup", stopDraw);
   canvas.value.addEventListener("mouseleave", stopDraw);
+
+  // ✅ 터치 이벤트
+  canvas.value.addEventListener("touchstart", startDrawTouch, { passive: false });
+  canvas.value.addEventListener("touchmove", drawTouch, { passive: false });
+  canvas.value.addEventListener("touchend", stopDraw);
 });
 
+// 🖱 마우스 이벤트
 const startDraw = (e) => {
   drawing = true;
   ctx.beginPath();
@@ -150,6 +157,25 @@ const draw = (e) => {
 const stopDraw = () => {
   drawing = false;
 };
+
+// 📱 터치 이벤트
+const startDrawTouch = (e) => {
+  e.preventDefault(); // 스크롤 방지
+  const rect = canvas.value.getBoundingClientRect();
+  const touch = e.touches[0];
+  drawing = true;
+  ctx.beginPath();
+  ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+};
+const drawTouch = (e) => {
+  e.preventDefault();
+  if (!drawing) return;
+  const rect = canvas.value.getBoundingClientRect();
+  const touch = e.touches[0];
+  ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+  ctx.stroke();
+};
+
 const clearCanvas = () => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
 };
@@ -160,7 +186,6 @@ const showPopup = ref(false);
 /* ✅ 결재요청 */
 const sendApprovalRequest = async () => {
   try {
-    // 1️⃣ 결재 요청 저장
     const data = {
       documentType: props.documentType,
       deptName: userDept.value,
@@ -183,7 +208,6 @@ const sendApprovalRequest = async () => {
     if (!res.data.success) throw new Error("서버 저장 실패");
     const requestId = res.data.id;
 
-    // 2️⃣ 첨부파일 업로드
     if (props.attachedFiles?.length > 0) {
       const formData = new FormData();
       const aliasNames = [];
@@ -199,7 +223,6 @@ const sendApprovalRequest = async () => {
       });
     }
 
-    // 3️⃣ 최초 결재 요청자 → approval_history 기록
     if (user.value) {
       const formData = new FormData();
       formData.append("requestId", requestId);
@@ -219,19 +242,16 @@ const sendApprovalRequest = async () => {
       });
     }
 
-    // ✅ 요청 성공 후 팝업 열기
     showPopup.value = true;
-
   } catch (err) {
     console.error("❌ 결재요청 중 오류:", err);
     alert("❌ 결재요청 실패");
   }
 };
 
-// ✅ 팝업 닫기 → 청구목록 조회 이동
+// ✅ 팝업 닫기
 const closePopup = () => {
   showPopup.value = false;
   router.push("/approvalList");
 };
-
 </script>
