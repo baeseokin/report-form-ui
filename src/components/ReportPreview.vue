@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 font-nanum">
+  <div class="fixed flex items-center justify-center inset-0 bg-black bg-opacity-50 z-50 font-nanum">
     <!-- 닫기 버튼 -->
     <button
       @click="$emit('close')"
@@ -14,7 +14,7 @@
       <!-- 보고서 -->
       <div
         v-if="report"
-        class="page report-content leading-relaxed"
+        class="page report-content break-before-page"
         ref="reportContent"
         :style="pageStyle"
       >
@@ -155,7 +155,7 @@
       <!-- ✅ PDF & 프린터 버튼 -->
       <div class="flex justify-end gap-4 mt-6 mb-10 pr-6 no-print">
         <button @click="downloadPDF" class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg shadow-md">📄 PDF 다운로드</button>
-        <button @click="printReport" class="flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
+        <button @click="printReport" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
       </div>
     </div>
 
@@ -196,10 +196,16 @@ const pageStyle = computed(() => ({
 onMounted(() => {
   const pageWidth = 794; // 210mm ≈ 794px
   const screenWidth = window.innerWidth;
+
   if (screenWidth < 768) {
-    scaleValue.value = screenWidth / pageWidth; // 화면에 맞춰 축소
+    // ✅ 모바일은 scale 제거, width 100%
+    scaleValue.value = 1;
+  } else {
+    // ✅ PC는 A4 기준, 화면보다 작을 때만 scale 축소
+    scaleValue.value = screenWidth < pageWidth ? screenWidth / pageWidth : 1;
   }
 });
+
 
 // (기존 승인/반려 로직, PDF/프린트 함수, 데이터 포맷터 등은 그대로 유지)
 const approverRoles = ["회계", "부장", "위원장", "당회장"];
@@ -285,16 +291,32 @@ const printReport = async () => {
 </script>
 
 <style>
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* ✅ 모바일에서 가로 스크롤 방지 */
+}
+
 .page {
   width: 210mm;
   min-height: 297mm;
-  margin: 10px auto;
+  margin: 0 auto;
   padding: 10mm;
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
   box-sizing: border-box;
+  transform-origin: top center; /* ✅ scale 적용 시 중앙 기준 */
 }
+
+/* 모바일에서는 여백 최소화 */
+@media (max-width: 768px) {
+  .page {
+    margin-top: 1rem !important; /* ✅ 너무 넓은 간격 제거 */
+  }
+}
+
+
 @media print {
   .no-print { display: none !important; }
   .page {
