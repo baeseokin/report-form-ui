@@ -20,7 +20,7 @@
       >
         <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
-        <!-- ✅ 결재 서명란 -->
+        <!-- ✅ 결재 서명란 (조회 전용) -->
         <div class="flex justify-between mb-6">
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
@@ -35,16 +35,28 @@
                 <td
                   v-for="role in approverRoles"
                   :key="role"
-                  class="border cursor-pointer relative"
-                  @click="openApproval(role)"
+                  class="border relative"
                 >
-                  <!-- ✅ 서명 이미지 -->
                   <div class="flex flex-col items-center justify-center">
+                    <!-- ✅ 서명 이미지 -->
                     <img
                       v-if="getSignature(role)"
                       :src="getSignatureUrl(role)"
                       class="w-20 h-20 object-contain rounded"
                     />
+                    <!-- ✅ 상태 뱃지 -->
+                    <span
+                      v-if="getStatus(role)"
+                      :class="[
+                        'mt-2 px-2 py-1 rounded-full text-xs font-bold',
+                        getStatus(role) === '승인'
+                          ? 'bg-green-100 text-green-700 border border-green-300'
+                          : 'bg-red-100 text-red-700 border border-red-300'
+                      ]"
+                    >
+                      {{ getStatus(role) }}
+                    </span>
+                    <!-- ✅ 결재 시간 -->
                     <small v-if="getApprovedAt(role)" class="text-gray-500 text-xs mt-1">
                       {{ formatDateTime(getApprovedAt(role)) }}
                     </small>
@@ -153,14 +165,76 @@
       </template>
 
       <!-- ✅ PDF & 프린터 버튼 -->
-      <div class="flex justify-end gap-4 mt-6 mb-10 pr-6 no-print">
+      <!-- <div class="flex justify-end gap-4 mt-6 mb-20 pr-6 no-print">
         <button @click="downloadPDF" class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg shadow-md">📄 PDF 다운로드</button>
         <button @click="printReport" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
-      </div>
+      </div> -->
     </div>
 
+<!-- ✅ 하단 고정 Float Bar -->
+<div
+  class="fixed bottom-0 left-0 w-full bg-gradient-to-r from-purple-100 via-pink-100 to-sky-100 border-t border-gray-200 shadow-inner z-50 no-print"
+>
+  <!-- PC 레이아웃 -->
+  <div class="hidden sm:flex justify-center items-center gap-x-5 py-3 px-6">
+    <button
+      v-if="isApprovalPage"
+      @click="openApproval('approve')"
+      class="px-4 py-2 rounded-lg bg-white/80 text-green-700 font-semibold shadow hover:bg-green-100 transition"
+    >
+      ✅ 승인
+    </button>
+    <button
+      v-if="isApprovalPage"
+      @click="openApproval('reject')"
+      class="px-4 py-2 rounded-lg bg-white/80 text-red-700 font-semibold shadow hover:bg-red-100 transition"
+    >
+      ❌ 반려
+    </button>
+    <button
+      @click="downloadPDF"
+      class="px-4 py-2 rounded-lg bg-white/80 text-gray-700 font-semibold shadow hover:bg-gray-100 transition"
+    >
+      📄 PDF
+    </button>
+    <button
+      @click="printReport"
+      class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md"
+    >
+      🖨️ 프린트
+    </button>
+  </div>
+
+  <!-- 모바일 레이아웃 -->
+  <div class="flex sm:hidden flex-col gap-3 px-6 py-4">
+    <div class="flex justify-around gap-4" v-if="isApprovalPage">
+      <button
+        @click="openApproval('approve')"
+        class="flex-1 py-3 rounded-xl bg-green-500 text-white font-bold shadow hover:bg-green-600 active:scale-95 transition"
+      >
+        ✅ 승인
+      </button>
+      <button
+        @click="openApproval('reject')"
+        class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold shadow hover:bg-red-600 active:scale-95 transition"
+      >
+        ❌ 반려
+      </button>
+    </div>
+    <div class="flex justify-around gap-4">
+      <button
+        @click="downloadPDF"
+        class="flex-1 py-2 rounded-lg bg-white/90 text-gray-800 font-semibold shadow hover:bg-gray-200 active:scale-95"
+      >
+        📄 PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+
     <!-- ✅ 결재 팝업 -->
-    <ApprovalPopup v-if="showPopup" :report="report" @close="closePopup" @approved="handleApproved" />
+    <ApprovalPopup v-if="showPopup" :report="report" :mode="popupMode" @close="closePopup" @approved="handleApproved" />
 
     <!-- ✅ 결재 완료 알림 -->
     <ModalAlert :visible="showModal" title="알림" message="정상적으로 결재되었습니다." @close="handleModalClose" />
@@ -176,6 +250,16 @@ import { storeToRefs } from "pinia";
 import ApprovalPopup from "./ApprovalPopup.vue";
 import ModalAlert from "./ModalAlert.vue";
 import axios from "axios";
+import { useRoute } from "vue-router";
+const route = useRoute();
+const isApprovalPage = computed(() => {
+  const result = route.path.startsWith("/approvalStatus");
+  console.log("isApprovalPage:", result, "route:", route.path);
+  return result;
+}
+  
+);
+
 
 const props = defineProps(["report"]);
 const emit = defineEmits(["close"]);
@@ -196,26 +280,22 @@ const pageStyle = computed(() => ({
 onMounted(() => {
   const pageWidth = 794; // 210mm ≈ 794px
   const screenWidth = window.innerWidth;
-
   if (screenWidth < 768) {
-    // ✅ 모바일은 scale 제거, width 100%
     scaleValue.value = 1;
   } else {
-    // ✅ PC는 A4 기준, 화면보다 작을 때만 scale 축소
     scaleValue.value = screenWidth < pageWidth ? screenWidth / pageWidth : 1;
   }
 });
 
-
-// (기존 승인/반려 로직, PDF/프린트 함수, 데이터 포맷터 등은 그대로 유지)
+// (승인/반려 로직)
 const approverRoles = ["회계", "부장", "위원장", "당회장"];
 const showPopup = ref(false);
 const showModal = ref(false);
 const approvalHistory = ref(props.report?.approvalHistory || []);
 const visibleCommentRole = ref(null);
-const selectedRole = ref(null);
+const popupMode = ref(null);
 
-const openApproval = (role) => { selectedRole.value = role; showPopup.value = true; };
+const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
 const closePopup = () => { showPopup.value = false; };
 
 const refreshApprovalData = async () => {
@@ -236,7 +316,23 @@ const getSignatureUrl = (role) => {
   return signaturePath ? `/api/files/${signaturePath}` : "";
 };
 const getApprovedAt = (role) => approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
-const formatDateTime = (dateStr) => dateStr ? new Date(dateStr).toLocaleString("ko-KR", { hour12: false }) : "";
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+
+  return `${yy}/${mm}/${dd} ${hh}:${min}`;
+};
+
+const getStatus = (role) => {
+  if (role === "회계") return "기안";
+  return approvalHistory.value.find(h => h.approver_role === role)?.status || null;
+};
 
 const paddedItems = computed(() => {
   const items = props.report?.items || [];
@@ -262,7 +358,7 @@ const getFileUrl = (f) => f.file ? URL.createObjectURL(f.file) : f.file_name ? `
 
 const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
-const downloadPDF = async () => {
+const generatePDF = async () => {
   const pdf = new jsPDF("p", "mm", "a4");
   const pages = document.querySelectorAll(".page");
   for (let i = 0; i < pages.length; i++) {
@@ -273,30 +369,51 @@ const downloadPDF = async () => {
     if (i > 0) pdf.addPage();
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
   }
+  return pdf;
+};
+
+const downloadPDF = async () => {
+  const pdf = await generatePDF();
   pdf.save(`${props.report.documentType}_${userDept.value}_${props.report.date}.pdf`);
 };
+
 const printReport = async () => {
-  const pages = document.querySelectorAll(".page");
-  const imgs = [];
-  for (let p of pages) {
-    const canvas = await html2canvas(p, { scale: 2 });
-    imgs.push(canvas.toDataURL("image/png"));
+  const pdf = await generatePDF();
+  const blob = pdf.output("blob");
+  const url = URL.createObjectURL(blob);
+
+  // ✅ 숨김 iframe 생성 (한 번만 만들고 계속 유지)
+  let iframe = document.getElementById("pdfPrintFrame");
+  if (!iframe) {
+    iframe = document.createElement("iframe");
+    iframe.id = "pdfPrintFrame";
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
   }
-  const win = window.open("", "", "width=800,height=600");
-  win.document.write("<html><head><title>Print</title></head><body>");
-  imgs.forEach(src => win.document.write(`<img src="${src}" style="width:100%; page-break-after:always;" />`));
-  win.document.write("</body></html>");
-  win.document.close();
+
+  iframe.src = url;
+
+  iframe.onload = () => {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    // ❌ 자동 제거 안 함 → PDF 미리보기 계속 유지
+  };
 };
+
+
 </script>
 
 <style>
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* ✅ 모바일에서 가로 스크롤 방지 */
+  overflow-x: hidden;
 }
-
 .page {
   width: 210mm;
   min-height: 297mm;
@@ -306,17 +423,11 @@ body {
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.15);
   box-sizing: border-box;
-  transform-origin: top center; /* ✅ scale 적용 시 중앙 기준 */
+  transform-origin: top center;
 }
-
-/* 모바일에서는 여백 최소화 */
 @media (max-width: 768px) {
-  .page {
-    margin-top: 1rem !important; /* ✅ 너무 넓은 간격 제거 */
-  }
+  .page { margin-top: 1rem !important; }
 }
-
-
 @media print {
   .no-print { display: none !important; }
   .page {

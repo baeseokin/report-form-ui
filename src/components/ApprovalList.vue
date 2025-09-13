@@ -77,25 +77,25 @@
             <!-- 🔹 진행상태 -->
             <td class="border p-2">{{ a.status }}</td>
             <!-- 🔹 다음 결재자 -->
-              <td class="border p-2 flex space-x-2">
-                <!-- 상세보기 버튼 (돋보기 아이콘) -->
-                <button
-                  @click="openPreview(a.id)"
-                  class="p-2 rounded hover:bg-green-100"
-                  title="상세보기"
-                >
-                  <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
-                </button>
+            <td class="border p-2 flex justify-center space-x-2">
+              <!-- 상세보기 버튼 (돋보기 아이콘) -->
+              <button
+                @click="openPreview(a.id)"
+                class="p-2 rounded hover:bg-green-100"
+                title="상세보기"
+              >
+                <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
+              </button>
 
-                <!-- 보고서작성 버튼 (연필 아이콘) -->
-                <button
-                  @click="goToReport(a.id)"
-                  class="p-2 rounded hover:bg-purple-100"
-                  title="보고서작성"
-                >
-                  <img src="/icons/report.svg" alt="보고서작성" class="w-6 h-6" />
-                </button>
-              </td>
+              <!-- 보고서작성 버튼 (연필 아이콘) -->
+              <button
+                @click="goToReport(a.id)"
+                class="p-2 rounded hover:bg-purple-100"
+                title="보고서작성"
+              >
+                <img src="/icons/report.svg" alt="보고서작성" class="w-6 h-6" />
+              </button>
+            </td>
           </tr>
           <tr v-if="approvals.length === 0">
             <td colspan="10" class="text-center p-4">데이터가 없습니다.</td>
