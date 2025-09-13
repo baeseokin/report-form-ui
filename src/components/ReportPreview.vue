@@ -140,7 +140,7 @@
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
           {{ formatDate(report.date) }}<br />
-          영수인 성명 : {{ userName }} (인)
+          영수인 성명 : {{ report.author }} (인)
         </div>
       </div>
 
@@ -163,12 +163,6 @@
           </ul>
         </div>
       </template>
-
-      <!-- ✅ PDF & 프린터 버튼 -->
-      <!-- <div class="flex justify-end gap-4 mt-6 mb-20 pr-6 no-print">
-        <button @click="downloadPDF" class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-5 py-2 rounded-lg shadow-md">📄 PDF 다운로드</button>
-        <button @click="printReport" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md">🖨️ 프린터 출력</button>
-      </div> -->
     </div>
 
 <!-- ✅ 하단 고정 Float Bar -->
