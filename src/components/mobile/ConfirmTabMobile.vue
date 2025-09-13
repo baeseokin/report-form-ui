@@ -55,7 +55,7 @@
             ref="canvas"
             width="200"
             height="200"
-            class="border rounded w-[200px] h-[200px] touch-none"
+            class="border rounded w-[200px] h-[200px] touch-none max-[480px]:w-[180px] max-[480px]:h-[180px]"
           ></canvas>
           <button
             @click="clearCanvas"
