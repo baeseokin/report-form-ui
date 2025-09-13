@@ -262,7 +262,7 @@ const isApprovalPage = computed(() => {
 
 
 const props = defineProps(["report"]);
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "refreshList"]);
 
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
@@ -305,7 +305,7 @@ const refreshApprovalData = async () => {
     approvalHistory.value = res.data.approvalHistory || [];
   } catch (err) { console.error("❌ 결재 이력 갱신 실패:", err); }
 };
-const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; };
+const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; emit("refreshList"); };
 const handleModalClose = () => { showModal.value = false; emit("close"); };
 
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
@@ -330,9 +330,15 @@ const formatDateTime = (dateStr) => {
 };
 
 const getStatus = (role) => {
-  if (role === "회계") return "기안";
-  return approvalHistory.value.find(h => h.approver_role === role)?.status || null;
+  const record = approvalHistory.value.find(h => h.approver_role === role);
+  if (!record) return null;
+
+  // ✅ 결재 이력에 있는 "회계" → "기안"
+  if (record.approver_role === "회계") return "기안";
+
+  return record.status || null;
 };
+
 
 const paddedItems = computed(() => {
   const items = props.report?.items || [];

@@ -86,6 +86,7 @@
       v-if="previewReport"
       :report="previewReport"
       @close="previewReport = null"
+      @refreshList="searchList"
     />
   </div>
 </template>
