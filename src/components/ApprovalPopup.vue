@@ -76,6 +76,7 @@ const emit = defineEmits(["close", "approved"]);
 
 const comment = ref("");
 const signaturePad = ref(null);
+let canvas = null;  // ✅ 전역 변수 추가
 let ctx = null;
 let drawing = false;
 
@@ -146,26 +147,58 @@ const modeLabel = computed(() =>
 );
 
 const submitApproval = async () => {
-  try {
-    const signatureData = signaturePad.value.toDataURL("image/png");
-
-    const url =
-      props.mode === "approve"
-        ? "/api/approval/approve"
-        : "/api/approval/reject";
-
-    await axios.post(
-      url,
-      { requestId: props.report.id, comment: comment.value, signature: signatureData },
-      { withCredentials: true }
-    );
-
-    emit("approved");
-  } catch (err) {
-    console.error("❌ 결재 처리 실패:", err);
-    alert("결재 처리 중 오류가 발생했습니다.");
+  // ✅ 안전하게 참조
+  const canvasEl = signaturePad.value;
+  if (!canvasEl) {
+    alert("서명 캔버스가 초기화되지 않았습니다.");
+    return;
   }
+
+  // ✅ 비어 있는 서명 방지
+  if (ctx) {
+    const empty = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data
+      .every((v) => v === 0);
+    if (empty) {
+      alert("서명을 입력해주세요.");
+      return;
+    }
+  }
+
+  canvasEl.toBlob(async (blob) => {
+    if (!blob) {
+      alert("서명 데이터가 비어 있습니다.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("requestId", props.report.id);
+    formData.append("comment", comment.value);
+    formData.append("signature", blob, "signature.png");
+
+    const url = props.mode === "approve" ? "/api/approval/approve" : "/api/approval/reject";
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        emit("approved");  // ✅ 승인/반려 모두 동일 이벤트
+        emit("close");
+      } else {
+        alert(`${modeLabel.value} 실패: ${data.message || ""}`);
+      }
+    } catch (err) {
+      console.error(`${modeLabel.value} 오류:`, err);
+      alert(`${modeLabel.value} 오류 발생`);
+    }
+  });
 };
+
+
 </script>
 
 <style scoped>
