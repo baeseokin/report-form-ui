@@ -47,7 +47,9 @@
                     <!-- ✅ 상태 뱃지 -->
                     <span
                       v-if="getStatus(role)"
-                      :class="[
+                        @mouseenter="visibleCommentRole = role"
+                        @mouseleave="visibleCommentRole = null"
+                        :class="[
                         'mt-2 px-2 py-1 rounded-full text-xs font-bold',
                         getStatus(role) === '승인'
                           ? 'bg-green-100 text-green-700 border border-green-300'
@@ -55,19 +57,18 @@
                       ]"
                     >
                       {{ getStatus(role) }}
+                        <!-- ✅ 말풍선 -->
+                      <div
+                        v-if="visibleCommentRole === role && getComment(role)"
+                        class="absolute left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-50 no-print"
+                      >
+                        💬 {{ getComment(role) }}
+                      </div>
                     </span>
                     <!-- ✅ 결재 시간 -->
                     <small v-if="getApprovedAt(role)" class="text-gray-500 text-xs mt-1">
                       {{ formatDateTime(getApprovedAt(role)) }}
                     </small>
-                  </div>
-
-                  <!-- 말풍선 -->
-                  <div
-                    v-if="visibleCommentRole === role"
-                    class="absolute top-6 right-0 bg-white border border-gray-300 shadow-lg rounded p-2 text-sm w-40 z-50 no-print"
-                  >
-                    {{ getComment(role) }}
                   </div>
                 </td>
               </tr>
