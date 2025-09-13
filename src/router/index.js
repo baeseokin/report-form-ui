@@ -4,6 +4,7 @@ import ReportForm from "../components/ReportForm.vue";
 import ApprovalList from "../components/ApprovalList.vue";
 import ApprovalListMobile from "../components/mobile/ApprovalListMobile.vue"; // ✅ 모바일 전용
 import ApprovalListPage from "../components/ApprovalListPage.vue"; 
+import ApprovalListPageMobile from "../components/mobile/ApprovalListPageMobile.vue"; // ✅ 모바일 전용
 import UserManagement from "../components/UserManagement.vue";
 import RoleAccess from "../components/RoleAccess.vue";
 import { useUserStore } from "../store/userStore";
@@ -28,8 +29,8 @@ const routes = [
     meta: { menuName: "청구목록 조회" } 
   },
 
-  // ✅ 신규 결재현황 메뉴
-  { path: "/approvalStatus", component: ApprovalListPage, meta: { menuName: "내결재목록 조회" } },
+  // ✅ 내결재목록 조회 메뉴
+  { path: "/approvalStatus", component: isMobile() ? ApprovalListPageMobile : ApprovalListPage, meta: { menuName: "내결재목록 조회" } },
 
   // 사용자 / 권한 관리
   { path: "/userManagement", component: UserManagement, meta: { menuName: "사용자 관리" } },
