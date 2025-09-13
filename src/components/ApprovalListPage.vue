@@ -6,7 +6,7 @@
     <div class="mb-6 flex flex-wrap gap-4 items-end">
       <!-- 요청기간 -->
       <div class="flex flex-col">
-        <label class="block font-medium mb-1">요청기간</label>
+        <label class="block font-medium mb-1">청구기간</label>
         <div class="flex space-x-2">
           <label v-for="m in [1,3,6,12]" :key="m" class="flex items-center space-x-1">
             <input

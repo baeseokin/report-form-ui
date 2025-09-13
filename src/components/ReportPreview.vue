@@ -100,7 +100,7 @@
           <tbody>
             <tr>
               <td class="border w-64 bg-blue-100 font-bold">부서명</td>
-              <td class="border">{{ userDept }}</td>
+              <td class="border">{{ report.deptName }}</td>
             </tr>
           </tbody>
         </table>
