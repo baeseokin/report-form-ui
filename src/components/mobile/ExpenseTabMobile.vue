@@ -4,7 +4,7 @@
 
     <!-- 항목 카드 -->
     <div
-      v-for="(item, idx) in items"
+      v-for="(item, idx) in formattedItems"
       :key="idx"
       class="border rounded-lg p-4 bg-white shadow-sm space-y-3 relative"
     >
@@ -78,8 +78,10 @@
         <label class="block text-sm font-semibold text-gray-600">금액</label>
         <input
           type="text"
-          :value="formatCurrency(item.amount)"
+          :value="item.formattedAmount"
           @input="updateAmount($event, idx)"
+          inputmode="numeric"
+          pattern="[0-9]*"
           class="w-full p-2 text-right rounded border text-sm"
         />
       </div>
@@ -141,6 +143,14 @@ const totalAmount = computed(() =>
   props.items.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
 
+// ✅ 금액 표시용 (포맷된 값)
+const formattedItems = computed(() =>
+  props.items.map((item) => ({
+    ...item,
+    formattedAmount: item.amount ? Number(item.amount).toLocaleString() : "",
+  }))
+);
+
 // ✅ JSON 기반 셀렉트 박스
 const getGwans = computed(() =>
   userDept.value ? Object.keys(props.deptData[userDept.value] || {}) : []
@@ -184,14 +194,12 @@ const onSelect = (idx, level, value) => {
 };
 
 // ✅ 금액 입력 처리
-const formatCurrency = (value) => (value ? Number(value).toLocaleString() : "");
 const updateAmount = (event, idx) => {
   const rawValue = event.target.value.replace(/[^0-9]/g, "");
   const amount = rawValue ? parseInt(rawValue, 10) : 0;
   const newItems = [...props.items];
   newItems[idx] = { ...newItems[idx], amount };
   emits("update:items", newItems);
-  event.target.value = formatCurrency(amount);
 };
 
 // ✅ 행 추가/삭제

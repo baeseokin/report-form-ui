@@ -353,7 +353,14 @@ const chunkedFiles = computed(() => {
   if (currentPage.length) pages.push(currentPage);
   return pages;
 });
-const getFileAlias = (f) => f.aliasName || f.name || f.file_name || "첨부파일";
+const getFileAlias = (f) => {
+  const fileAlias = f.alias_name || f.name || f.file_name || "첨부파일";
+  console.log("alias_name :", f.alias_name);
+  console.log("name :", f.name);
+  console.log("file_name :", f.file_name);
+  console.log("fileAlias :", fileAlias);
+  return fileAlias;
+}
 const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif)$/i.test(f.name || f.file_name || ""));
 const getFileUrl = (f) => f.file ? URL.createObjectURL(f.file) : f.file_name ? `/api/files/${f.file_name}` : "";
 
