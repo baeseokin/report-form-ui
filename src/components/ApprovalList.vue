@@ -27,6 +27,17 @@
         </select>
       </div>
 
+      <!-- 진행상태 -->
+     <div class="flex flex-col w-32">
+       <label class="font-bold mb-1">진행상태</label>
+       <select v-model="filters.status" class="border rounded p-2 w-full">
+         <option value="">전체</option>
+         <option value="완료">완료</option>
+         <option value="반려">반려</option>
+         <option value="진행중">진행중</option>
+       </select>
+     </div>
+
       <!-- 청구 시작일자 -->
       <div class="flex flex-col w-30">
         <label class="font-bold mb-1">청구 시작일자</label>
@@ -161,6 +172,7 @@ const filters = ref({
   documentType: "",
   startDate: formatDateValue(startOfYear),
   endDate: formatDateValue(today),
+  status: "",
 });
 
 onMounted(() => {
