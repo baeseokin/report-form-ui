@@ -14,7 +14,7 @@
     <div v-if="modelValue.length > 0" class="space-y-4">
       <div
         v-for="(f, idx) in modelValue"
-        :key="idx"
+        :key="f.name + '-' + f.size"
         class="border rounded-lg p-4 shadow-sm bg-white relative"
       >
         <!-- 파일명 -->
@@ -72,7 +72,10 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "prev", "next"]);
 
+/* ✅ 파일 첨부 */
 const onFileChange = (e) => {
+  console.log("📂 [onFileChange] 파일 선택 이벤트 발생", e);
+
   const files = Array.from(e.target.files).map((f) => ({
     file: f,
     name: f.name,
@@ -80,23 +83,36 @@ const onFileChange = (e) => {
     aliasName: "",
   }));
 
-  // 기존 파일 + 새 파일 (중복 제외)
+  console.log("📂 선택된 파일 목록:", files);
+
   const updated = [...props.modelValue];
   files.forEach((f) => {
     if (!updated.some((uf) => uf.name === f.name && uf.size === f.size)) {
       updated.push(f);
+      console.log("➕ 파일 추가됨:", f.name, f.size);
+    } else {
+      console.log("⚠️ 중복 파일 무시:", f.name, f.size);
     }
   });
 
   emit("update:modelValue", updated);
+  console.log("📤 emit 완료 → modelValue:", updated);
 
   // input 초기화 (같은 파일 다시 선택 가능하게)
+  console.log("🧹 input 초기화 실행 전 value:", e.target.value);
   e.target.value = "";
+  console.log("🧹 input 초기화 실행 후 value:", e.target.value);
 };
 
+/* ✅ 파일 삭제 */
 const removeFile = (index) => {
+  console.log("🗑 [removeFile] 파일 삭제 요청, index:", index);
+
   const updated = [...props.modelValue];
-  updated.splice(index, 1);
+  const removed = updated.splice(index, 1);
+
+  console.log("🗑 삭제된 파일:", removed);
   emit("update:modelValue", updated);
+  console.log("📤 emit 완료 → modelValue:", updated);
 };
 </script>
