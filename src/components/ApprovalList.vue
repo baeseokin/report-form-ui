@@ -12,7 +12,7 @@
           v-model="filters.deptName"
           placeholder="부서명 입력"
           class="border rounded p-2 w-full"
-          readonly
+          :readonly="!canEditDept"
         />
       </div>
 
@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import ReportPreview from "./ReportPreview.vue";
 import { useRouter } from "vue-router";
@@ -173,6 +173,14 @@ const filters = ref({
   startDate: formatDateValue(startOfYear),
   endDate: formatDateValue(today),
   status: "",
+});
+
+// ✅ 권한 체크: 재정부 or 관리자
+const canEditDept = computed(() => {
+  if (!user.value?.roles) return false;
+  return user.value.roles.some(
+    (r) => r.role_name === "재정부" || r.role_name === "관리자"
+  );
 });
 
 onMounted(() => {
