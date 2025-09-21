@@ -183,10 +183,10 @@ const goPrevTab = () => {
   if (idx > 0) activeTab.value = tabs[idx - 1];
 };
 
-const generateReport = () => {
+const generateReport = (previewData) => {
   report.value = {
     documentType: documentType.value,
-    deptName: selectedDept.value,
+    deptName: previewData.deptName,
     author: author.value,
     date: date.value,
     totalAmount: totalAmount.value,

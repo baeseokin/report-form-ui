@@ -72,12 +72,11 @@
 
       <div class="flex gap-3">
         <button
-          @click="$emit('generate')"
+          @click="generatePreview"
           class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg shadow-md transition"
         >
           🔍 미리보기
         </button>
-
         <button
           @click="sendApprovalRequest"
           class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg shadow-md transition"
@@ -120,6 +119,34 @@ const emits = defineEmits(["update:comment", "prev", "generate"]);
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || "");
 const router = useRouter();
+
+const generatePreview = () => {
+  const normalizeItems = (items) => {
+    return items.map((i) => ({
+      gwan: i.gwan,
+      hang: i.hang,
+      mok: i.mok === "__custom__" ? i.customMok : i.mok,
+      semok: i.semok === "__custom__" ? i.customSemok : i.semok,
+      detail: i.detail === "__custom__" ? i.customDetail : i.detail,
+      amount: i.amount,
+    }));
+  };
+
+  const previewData = {
+    documentType: props.documentType,
+    deptName: userDept.value,   // ✅ 반드시 포함
+    author: props.author,
+    date: props.date,
+    totalAmount: props.totalAmount,
+    comment: props.comment,
+    aliasName: props.aliasName,
+    items: normalizeItems(props.items) || [],
+    attachedFiles: props.attachedFiles || [],
+  };
+
+  console.log("📤 generate previewData:", previewData); // ✅ 로깅 추가
+  emits("generate", previewData);
+};
 
 // ✅ 서명 캔버스
 const canvas = ref(null);

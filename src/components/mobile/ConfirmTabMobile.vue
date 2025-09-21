@@ -76,7 +76,7 @@
         ← 이전
       </button>
       <button
-        @click="$emit('generate')"
+        @click="generatePreview"
         class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg shadow-md transition"
       >
         🔍 미리보기
@@ -123,7 +123,38 @@ const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || "");
 const router = useRouter();
 
+/* ✅ 미리보기 데이터 생성 */
+const generatePreview = () => {
+  const normalizeItems = (items) => {
+    return items.map((i) => ({
+      gwan: i.gwan,
+      hang: i.hang,
+      mok: i.mok === "__custom__" ? i.customMok : i.mok,
+      semok: i.semok === "__custom__" ? i.customSemok : i.semok,
+      detail: i.detail === "__custom__" ? i.customDetail : i.detail,
+      amount: i.amount,
+    }));
+  };
+
+  const previewData = {
+    documentType: props.documentType,
+    deptName: userDept.value,   // ✅ 부서명 포함
+    author: props.author,
+    date: props.date,
+    totalAmount: props.totalAmount,
+    comment: props.comment,
+    aliasName: props.aliasName,
+    items: normalizeItems(props.items) || [],
+    attachedFiles: props.attachedFiles || [],
+  };
+
+  console.log("📄 [ConfirmTabMobile] Preview Data:", previewData);
+  emits("generate", previewData);
+};
+
+// =========================
 // 서명 캔버스
+// =========================
 const canvas = ref(null);
 let ctx;
 let drawing = false;
@@ -179,13 +210,13 @@ const clearCanvas = () => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
 };
 
-// 모달 상태
+// =========================
+// 결재 요청
+// =========================
 const showPopup = ref(false);
 
-// 결재 요청
 const sendApprovalRequest = async () => {
   try {
-
     const normalizeItems = (items) => {
       return items.map((i) => ({
         gwan: i.gwan,
@@ -212,6 +243,7 @@ const sendApprovalRequest = async () => {
     if (!res.data.success) throw new Error("서버 저장 실패");
     const requestId = res.data.id;
 
+    // 첨부파일 업로드
     if (props.attachedFiles?.length > 0) {
       const formData = new FormData();
       const aliasNames = [];
@@ -227,6 +259,7 @@ const sendApprovalRequest = async () => {
       });
     }
 
+    // 결재이력 저장
     if (user.value) {
       const formData = new FormData();
       formData.append("requestId", requestId);
