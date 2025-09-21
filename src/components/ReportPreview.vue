@@ -334,11 +334,21 @@ const getStatus = (role) => {
   return record.status || null;
 };
 
-
 const paddedItems = computed(() => {
-  const items = props.report?.items || [];
-  return items.length >= 8 ? items : [...items, ...Array(8 - items.length).fill({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })];
+  const items = (props.report?.items || []).map((i) => ({
+    gwan: i.gwan,
+    hang: i.hang,
+    mok: i.mok === "__custom__" ? i.customMok : i.mok,
+    semok: i.semok === "__custom__" ? i.customSemok : i.semok,
+    detail: i.detail === "__custom__" ? i.customDetail : i.detail,
+    amount: i.amount,
+  }));
+
+  return items.length >= 8
+    ? items
+    : [...items, ...Array(8 - items.length).fill({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })];
 });
+
 
 const filesToPreview = computed(() => props.report?.attachedFiles?.length ? props.report.attachedFiles : props.report?.files || []);
 const chunkedFiles = computed(() => {
