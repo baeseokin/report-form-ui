@@ -40,37 +40,43 @@
         </select>
 
         <label class="block text-sm font-semibold text-gray-600">목</label>
-        <select
-          :value="item.mok"
-          @change="onSelect(idx, 'mok', $event.target.value)"
-          class="w-full p-2 border rounded text-sm"
-        >
-          <option disabled value="">선택</option>
-          <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
-        </select>
+        <template v-if="item.mok === '__custom__'">
+          <input type="text" :value="item.customMok || ''" @input="updateField(idx, 'customMok', $event.target.value)" placeholder="목 직접 입력" class="w-full p-2 border rounded text-sm" />
+        </template>
+        <template v-else>
+          <select :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" class="w-full p-2 border rounded text-sm">
+            <option disabled value="">선택</option>
+            <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
+            <option value="__custom__">직접입력</option>
+          </select>
+        </template>
 
         <label class="block text-sm font-semibold text-gray-600">세목</label>
-        <select
-          :value="item.semok"
-          @change="onSelect(idx, 'semok', $event.target.value)"
-          class="w-full p-2 border rounded text-sm"
-        >
-          <option disabled value="">선택</option>
-          <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
-        </select>
+        <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
+          <input type="text" :value="item.customSemok || ''" @input="updateField(idx, 'customSemok', $event.target.value)" placeholder="세목 직접 입력" class="w-full p-2 border rounded text-sm" />
+        </template>
+        <template v-else>
+          <select :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" class="w-full p-2 border rounded text-sm">
+            <option disabled value="">선택</option>
+            <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
+            <option value="__custom__">직접입력</option>
+          </select>
+        </template>
       </div>
 
       <!-- 지출내역 -->
       <div>
         <label class="block text-sm font-semibold text-gray-600">지출내역</label>
-        <select
-          :value="item.detail"
-          @change="updateField(idx, 'detail', $event.target.value)"
-          class="w-full p-2 border rounded text-sm"
-        >
-          <option disabled value="">선택</option>
-          <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
-        </select>
+        <template v-if="item.mok === '__custom__' || item.semok === '__custom__' || item.detail === '__custom__'">
+          <input type="text" :value="item.customDetail || ''" @input="updateField(idx, 'customDetail', $event.target.value)" placeholder="지출내역 직접 입력" class="w-full p-2 border rounded text-sm" />
+        </template>
+        <template v-else>
+          <select :value="item.detail" @change="updateField(idx, 'detail', $event.target.value)" class="w-full p-2 border rounded text-sm">
+            <option disabled value="">선택</option>
+            <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
+            <option value="__custom__">직접입력</option>
+          </select>
+        </template>
       </div>
 
       <!-- 금액 -->
@@ -183,10 +189,24 @@ const updateField = (idx, field, value) => {
 // ✅ 단계 변경 시 하위 필드 초기화
 const onSelect = (idx, level, value) => {
   const item = { ...props.items[idx], [level]: value };
-  if (level === "gwan") item.hang = item.mok = item.semok = item.detail = "";
-  if (level === "hang") item.mok = item.semok = item.detail = "";
-  if (level === "mok") item.semok = item.detail = "";
-  if (level === "semok") item.detail = "";
+
+  if (level === "mok") {
+    if (value === "__custom__") {
+      item.semok = "__custom__";
+      item.detail = "__custom__";
+    } else {
+      item.semok = "";
+      item.detail = "";
+    }
+  }
+
+  if (level === "semok") {
+    if (value === "__custom__") {
+      item.detail = "__custom__";
+    } else {
+      item.detail = "";
+    }
+  }
 
   const newItems = [...props.items];
   newItems[idx] = item;
@@ -206,7 +226,18 @@ const updateAmount = (event, idx) => {
 const addItem = () => {
   const newItems = [
     ...props.items,
-    { selected: false, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
+    {
+      selected: false,
+      gwan: "",
+      hang: "",
+      mok: "",
+      semok: "",
+      detail: "",
+      amount: 0,
+      customMok: "",
+      customSemok: "",
+      customDetail: "",
+    },
   ];
   emits("update:items", newItems);
 };

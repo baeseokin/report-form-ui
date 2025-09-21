@@ -185,6 +185,18 @@ const showPopup = ref(false);
 // 결재 요청
 const sendApprovalRequest = async () => {
   try {
+
+    const normalizeItems = (items) => {
+      return items.map((i) => ({
+        gwan: i.gwan,
+        hang: i.hang,
+        mok: i.mok === "__custom__" ? i.customMok : i.mok,
+        semok: i.semok === "__custom__" ? i.customSemok : i.semok,
+        detail: i.detail === "__custom__" ? i.customDetail : i.detail,
+        amount: i.amount,
+      }));
+    };
+
     const data = {
       documentType: props.documentType,
       deptName: userDept.value,
@@ -193,14 +205,7 @@ const sendApprovalRequest = async () => {
       totalAmount: props.totalAmount,
       comment: props.comment,
       aliasName: props.aliasName,
-      items: props.items?.map((i) => ({
-        gwan: i.gwan,
-        hang: i.hang,
-        mok: i.mok,
-        semok: i.semok,
-        detail: i.detail,
-        amount: i.amount,
-      })) || [],
+      items: normalizeItems(props.items) || [],
     };
 
     const res = await axios.post("/api/approval", data, { withCredentials: true });
