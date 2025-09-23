@@ -7,6 +7,7 @@ import ApprovalListPage from "../components/ApprovalListPage.vue";
 import ApprovalListPageMobile from "../components/mobile/ApprovalListPageMobile.vue"; // ✅ 모바일 전용
 import UserManagement from "../components/UserManagement.vue";
 import RoleAccess from "../components/RoleAccess.vue";
+import AccountCategoriesGrid from "../components/AccountCategoriesGrid.vue";  // ✅ 추가
 import { useUserStore } from "../store/userStore";
 
 // ✅ 모바일 기기 여부 체크 함수
@@ -34,7 +35,10 @@ const routes = [
 
   // 사용자 / 권한 관리
   { path: "/userManagement", component: UserManagement, meta: { menuName: "사용자 관리" } },
-  { path: "/roleAccess", component: RoleAccess, meta: { menuName: "권한 관리" } }
+  { path: "/roleAccess", component: RoleAccess, meta: { menuName: "권한 관리" } },
+
+  // ✅ 계정과목 관리
+  { path: "/accountCategories", component: AccountCategoriesGrid, meta: { menuName: "계정과목 관리" } }
 ];
 
 const router = createRouter({

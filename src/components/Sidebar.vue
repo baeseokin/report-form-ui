@@ -60,12 +60,26 @@ const allowedMenus = computed(() => {
     { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
     { label: "사용자 관리", path: "/userManagement", icon: "👤" },
     { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
+    { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
   ];
 
   // ✅ role_access 테이블에 access_type = 'all' 등록된 메뉴만 표시
-  return allMenus.filter((m) =>
-    userStore.access.some((a) => a.menu_name === m.label && a.access_type === "all")
+  // 🔍 디버깅 로그 추가
+  console.log("✅ allMenus:", allMenus);
+  console.log("✅ userStore.access:", userStore.access);
+
+  const result = allMenus.filter((m) =>
+    userStore.access.some((a) => {
+      const match = a.menu_name === m.label && a.access_type === "all";
+      if (match) {
+        console.log(`✅ 메뉴 허용됨: ${m.label}`);
+      }
+      return match;
+    })
   );
+
+  console.log("👉 최종 allowedMenus:", result);
+  return result;
 });
 
 const logout = async () => {
