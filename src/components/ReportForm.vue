@@ -126,7 +126,7 @@ const selectedDept = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
-const deptData = ref({});
+const deptData = ref({}); // ✅ 서버에서 가져올 dept+계정 데이터
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
 ]);
@@ -136,10 +136,27 @@ const attachedFiles = ref([]);
 
 const route = useRoute();
 
+// ✅ 부서 + 계정과목 데이터 불러오기
 onMounted(async () => {
-  const res = await fetch("/deptData.json");
-  deptData.value = await res.json();
+  try {
+    const deptRes = await axios.get("/api/departments");
+    const depts = deptRes.data;
 
+    // 모든 부서의 account_categories 가져오기
+    const deptMap = {};
+    for (const dept of depts) {
+      const catRes = await axios.get(`/api/accountCategories/${dept.id}`, {
+        params: { date: new Date().toISOString().split("T")[0] },
+      });
+      deptMap[dept.dept_name] = catRes.data.categories || [];
+    }
+
+    deptData.value = deptMap;
+  } catch (err) {
+    console.error("❌ 부서/계정과목 불러오기 실패:", err);
+  }
+
+  // 보고서 수정 모드 (id param 있을 경우)
   if (route.params.id) {
     try {
       const res = await axios.get(`/api/approval/detail/${route.params.id}`, {

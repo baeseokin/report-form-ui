@@ -112,38 +112,51 @@ import { computed } from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 
-const props = defineProps(["items", "deptData"]);
+const props = defineProps(["items", "deptData", "selectedDept"]);
 const emits = defineEmits(["update:items", "prev", "next"]);
 
 const { user } = storeToRefs(useUserStore());
-const userDept = computed(() => user.value?.deptName || "");
+const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
 
 // ✅ 합계
 const totalAmount = computed(() =>
   props.items.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
 
-// ✅ JSON 기반 셀렉트 박스
+// ✅ account_categories 기반 계층 탐색
+const deptCategories = computed(() => props.deptData[userDept.value] || []);
+
+// "관" 목록
 const getGwans = computed(() =>
-  userDept.value ? Object.keys(props.deptData[userDept.value] || {}) : []
+  deptCategories.value.filter(c => c.level === "관").map(c => c.category_name)
 );
-const getHangs = (item) =>
-  item.gwan && props.deptData[userDept.value]?.[item.gwan]
-    ? Object.keys(props.deptData[userDept.value][item.gwan] || {})
-    : [];
-const getMoks = (item) =>
-  item.hang && props.deptData[userDept.value]?.[item.gwan]?.[item.hang]
-    ? Object.keys(props.deptData[userDept.value][item.gwan][item.hang] || {})
-    : [];
-const getSemoks = (item) =>
-  item.mok && props.deptData[userDept.value]?.[item.gwan]?.[item.hang]?.[item.mok]
-    ? Object.keys(props.deptData[userDept.value][item.gwan][item.hang][item.mok] || {})
-    : [];
-const getDetails = (item) =>
-  item.semok &&
-  props.deptData[userDept.value]?.[item.gwan]?.[item.hang]?.[item.mok]?.[item.semok]
-    ? props.deptData[userDept.value][item.gwan][item.hang][item.mok][item.semok]
-    : [];
+
+// "항"
+const getHangs = (item) => {
+  if (!item.gwan) return [];
+  const gwan = deptCategories.value.find(c => c.level === "관" && c.category_name === item.gwan);
+  return gwan ? deptCategories.value.filter(c => c.parent_id === gwan.id && c.level === "항").map(c => c.category_name) : [];
+};
+
+// "목"
+const getMoks = (item) => {
+  if (!item.hang) return [];
+  const hang = deptCategories.value.find(c => c.level === "항" && c.category_name === item.hang);
+  return hang ? deptCategories.value.filter(c => c.parent_id === hang.id && c.level === "목").map(c => c.category_name) : [];
+};
+
+// "세목"
+const getSemoks = (item) => {
+  if (!item.mok) return [];
+  const mok = deptCategories.value.find(c => c.level === "목" && c.category_name === item.mok);
+  return mok ? deptCategories.value.filter(c => c.parent_id === mok.id && c.level === "세목").map(c => c.category_name) : [];
+};
+
+// "지출내역" (세목명과 동일하게)
+const getDetails = (item) => {
+  if (!item.semok) return [];
+  return [item.semok]; // 기본적으로 세목명 사용
+};
 
 // ✅ 값 업데이트
 const updateField = (idx, field, value) => {
@@ -156,6 +169,17 @@ const updateField = (idx, field, value) => {
 const onSelect = (idx, level, value) => {
   const item = { ...props.items[idx], [level]: value };
 
+  if (level === "gwan") {
+    item.hang = "";
+    item.mok = "";
+    item.semok = "";
+    item.detail = "";
+  }
+  if (level === "hang") {
+    item.mok = "";
+    item.semok = "";
+    item.detail = "";
+  }
   if (level === "mok") {
     if (value === "__custom__") {
       item.semok = "__custom__";
@@ -165,7 +189,6 @@ const onSelect = (idx, level, value) => {
       item.detail = "";
     }
   }
-
   if (level === "semok") {
     if (value === "__custom__") {
       item.detail = "__custom__";
