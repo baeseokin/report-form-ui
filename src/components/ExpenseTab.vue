@@ -2,6 +2,19 @@
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">💸 지출내역 입력</h2>
 
+    <!-- 📊 예산/지출/잔액 표시 -->
+    <div class="grid grid-cols-3 gap-4 text-lg font-bold">
+      <div class="p-4 bg-blue-50 border border-blue-200 rounded">
+        📊 예산 총액: {{ formatCurrency(totalBudget) }} 원
+      </div>
+      <div class="p-4 bg-red-50 border border-red-200 rounded">
+        💸 지출 총액: {{ formatCurrency(totalExpense) }} 원
+      </div>
+      <div class="p-4 bg-green-50 border border-green-200 rounded">
+        💰 잔액: {{ formatCurrency(remainingBudget) }} 원
+      </div>
+    </div>
+
     <table class="w-full border text-sm bg-white rounded-lg overflow-hidden mt-3 table-fixed">
       <thead class="bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800">
         <tr>
@@ -108,20 +121,67 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch} from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
+import axios from "axios";
 
 const props = defineProps(["items", "deptData", "selectedDept"]);
 const emits = defineEmits(["update:items", "prev", "next"]);
 
 const { user } = storeToRefs(useUserStore());
+// ✅ 로그인된 사용자의 부서 ID
+const userDeptId = computed(() => user.value?.deptId || null);
+console.log("userDeptId: ",userDeptId.value);
 const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
 
 // ✅ 합계
 const totalAmount = computed(() =>
   props.items.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
+
+// ✅ 예산/지출/잔액
+const totalBudget = ref(0);
+const serverExpense = ref(0);  // DB에서 가져온 지출 총액
+const totalExpense = ref(0);
+const currentYear = new Date().getFullYear();
+const remainingBudget = computed(() => totalBudget.value - totalExpense.value);
+
+// ✅ totalAmount 변경 → 서버 지출 합계 + 입력값 반영
+watch(totalAmount, (newAmount) => {
+  const baseExpense = Number(serverExpense.value) || 0; // DB 값 (숫자 보장)
+  const addExpense = Number(newAmount) || 0;           // 입력 합계 (숫자 보장)
+
+  // 사용자가 입력한 값이 0이면 DB 값만 보여줌
+  totalExpense.value = baseExpense + addExpense;
+});
+
+
+// ✅ 부서 변경 시 예산/지출 조회
+watch(userDept, async (newDept) => {
+  if (!newDept) return;
+  try {
+    // 최상위 계정(관) 가져오기
+    const { data: categories } = await axios.get(`/api/accountCategories/${userDeptId.value}`);
+    const rootCat = categories.categories.find((c) => c.level === "관" && c.parent_id === null);
+
+    console.log("rootCat:", rootCat);
+    if (rootCat) {
+      // 지출 합계 조회
+      const { data: summaryRes } = await axios.get(`/api/expenses/summary`, {
+        params: { deptId: userDeptId.value, year: currentYear },
+      });
+      totalBudget.value = summaryRes.totalBudget || 0;
+      serverExpense.value = summaryRes.totalExpense || 0;
+
+      // ✅ 초기 진입 시: DB 지출 총액 그대로 표시
+      totalExpense.value = serverExpense.value;
+    }
+  } catch (err) {
+    console.error("❌ 예산/지출 조회 실패:", err);
+  }
+}, { immediate: true });
+
 
 // ✅ account_categories 기반 계층 탐색
 const deptCategories = computed(() => props.deptData[userDept.value] || []);

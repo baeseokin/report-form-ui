@@ -48,6 +48,7 @@ const login = async () => {
       { userId: userId.value, password: password.value },
       { withCredentials: true });
     if (res.data.success) {
+      console.log("/api/login - res:", res);
       await userStore.loadSession();   // ✅ 세션에서 사용자 정보 가져오기
       const roles = userStore.roles.map(r => r.role_name || r);
 
