@@ -86,6 +86,7 @@ const allMenus = [
   { label: "사용자 관리", path: "/userManagement", icon: "👤" },
   { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
+  { label: "예산 관리", path: "/budgets", icon: "💰" }, 
 ];
 
 // ✅ role_access 기준으로 필터링
