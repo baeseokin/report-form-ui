@@ -1,13 +1,13 @@
 <template>
-  <div class="p-6">
-    <h2 class="text-xl font-bold mb-4">내결재목록 조회</h2>
+  <div class="p-6 font-nanum">
+    <h2 class="text-2xl font-bold text-purple-700 mb-6">📑 내 결재목록 조회</h2>
 
-    <!-- ✅ 검색조건 + 조회 버튼 한 줄 -->
-    <div class="mb-6 flex flex-wrap gap-4 items-end">
+    <!-- ✅ 검색조건 -->
+    <div class="p-4 bg-gray-50 rounded-lg shadow-inner mb-6 flex flex-wrap gap-6 items-end">
       <!-- 요청기간 -->
       <div class="flex flex-col">
-        <label class="block font-medium mb-1">청구기간</label>
-        <div class="flex space-x-2">
+        <label class="font-semibold text-gray-800 mb-1">청구기간</label>
+        <div class="flex space-x-4">
           <label v-for="m in [1,3,6,12]" :key="m" class="flex items-center space-x-1">
             <input
               type="radio"
@@ -16,66 +16,68 @@
               v-model="search.months"
               @change="updateDateRange"
             />
-            <span>{{ m }}개월</span>
+            <span class="text-gray-700">{{ m }}개월</span>
           </label>
         </div>
       </div>
-
-      <!-- 🔒 부서명: 화면에서 숨김 (자동 세팅됨) -->
-
-      <!-- 🔒 진행상태: 항상 진행중 (화면에서 숨김) -->
-
-      <!-- 🔒 현재 결재자: 로그인 사용자로 자동 세팅 (화면에서 숨김) -->
 
       <!-- 조회 버튼 -->
       <div class="flex items-end">
         <button
           @click="page=1; searchList()"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          class="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
         >
           조회
         </button>
       </div>
     </div>
 
-    <!-- ✅ 테이블 -->
-    <table class="w-full border-collapse border">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">부서</th>
-          <th class="border p-2">문서종류</th>
-          <th class="border p-2">작성자</th>
-          <th class="border p-2">요청일</th>
-          <th class="border p-2">금액</th>
-          <th class="border p-2">상세</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="row in rows" :key="row.id" class="hover:bg-gray-50">
-          <td class="border p-2">{{ row.dept_name }}</td>
-          <td class="border p-2">{{ row.document_type }}</td>
-          <td class="border p-2">{{ row.author }}</td>
-          <td class="border p-2">{{ formatDate(row.request_date) }}</td>
-          <td class="border p-2 text-right">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
-          <td class="border p-2">
-            <button
-              @click="openDetail(row)"
-              class="px-2 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              보기
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- ✅ 결과 테이블 -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="bg-purple-100 text-gray-700">
+            <th class="border p-3">부서</th>
+            <th class="border p-3">문서종류</th>
+            <th class="border p-3">작성자</th>
+            <th class="border p-3">요청일</th>
+            <th class="border p-3">금액</th>
+            <th class="border p-3">상세</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in rows" :key="row.id" class="hover:bg-purple-50 transition">
+            <td class="border p-3">{{ row.dept_name }}</td>
+            <td class="border p-3">{{ row.document_type }}</td>
+            <td class="border p-3">{{ row.author }}</td>
+            <td class="border p-3">{{ formatDate(row.request_date) }}</td>
+            <td class="border p-3 text-right">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
+            <td class="border p-3 text-center">
+              <button
+                @click="openDetail(row)"
+                class="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                보기
+              </button>
+            </td>
+          </tr>
+          <tr v-if="rows.length === 0">
+            <td colspan="6" class="text-center p-6 text-gray-500">데이터가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- ✅ 페이지네이션 -->
-    <div class="mt-4 flex justify-center space-x-2">
+    <div class="mt-6 flex justify-center space-x-2">
       <button
         v-for="p in totalPages"
         :key="p"
         @click="page=p; searchList()"
-        :class="['px-3 py-1 rounded', page===p ? 'bg-purple-600 text-white' : 'bg-gray-200']"
+        :class="[
+          'px-4 py-1 rounded-lg transition',
+          page===p ? 'bg-purple-600 text-white' : 'bg-white border hover:bg-gray-100'
+        ]"
       >
         {{ p }}
       </button>

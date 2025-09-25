@@ -1,13 +1,17 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">📊 계정 과목 관리 (Grid)</h2>
+    <h2 class="text-2xl font-bold text-purple-700 mb-6">📊 계정 과목 관리</h2>
 
     <!-- 조회 조건 -->
-    <div class="mb-4 flex items-center gap-4">
+    <div class="mb-6 flex items-center gap-6 bg-purple-50 p-4 rounded-lg shadow-sm">
       <!-- 부서 선택 -->
       <div class="flex items-center gap-2">
         <label class="font-semibold text-gray-700">부서</label>
-        <select v-model="selectedDeptId" @change="fetchCategories" class="border rounded p-2">
+        <select
+          v-model="selectedDeptId"
+          @change="fetchCategories"
+          class="border rounded p-2 focus:ring-2 focus:ring-purple-400"
+        >
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ d.dept_name }}
           </option>
@@ -21,15 +25,15 @@
           type="date"
           v-model="selectedDate"
           @change="fetchCategories"
-          class="border rounded p-2"
+          class="border rounded p-2 focus:ring-2 focus:ring-purple-400"
         />
       </div>
     </div>
 
     <!-- 계정 목록 Grid -->
     <table class="w-full border text-sm">
-      <thead>
-        <tr class="bg-gray-100">
+      <thead class="bg-purple-100 text-gray-800">
+        <tr>
           <th class="border p-2 text-center">계정명</th>
           <th class="border p-2 text-center">단계</th>
           <th class="border p-2 text-center">상위 계정</th>
@@ -38,7 +42,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="c in categoriesTree" :key="c.id" class="hover:bg-gray-50">
+        <tr v-for="c in categoriesTree" :key="c.id" 
+        class="hover:bg-gray-100"
+        :class="{
+              'bg-blue-200': c.level === '관',
+              'bg-gray-100': c.level === '항',
+              'bg-yellow-50': c.level === '목',
+              'bg-white': c.level === '세목'
+        }"
+        >
           <td class="border p-2">
             <span :style="{ paddingLeft: `${(c.depth - 1) * 40}px` }">
               {{ c.category_name }}
@@ -50,9 +62,9 @@
             {{ formatDate(c.valid_from) }} ~ {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
           </td>
           <td class="border p-2 text-center space-x-2">
-            <button @click="openModal('add', c)" class="text-green-600">➕</button>
-            <button @click="openModal('edit', c)" class="text-blue-600">✏️</button>
-            <button @click="expireCategory(c)" class="text-red-600">🗑</button>
+            <button @click="openModal('add', c)" class="text-green-600 hover:underline">➕</button>
+            <button @click="openModal('edit', c)" class="text-blue-600 hover:underline">✏️</button>
+            <button @click="expireCategory(c)" class="text-red-600 hover:underline">🗑</button>
           </td>
         </tr>
         <tr v-if="categoriesTree.length === 0">
@@ -62,21 +74,30 @@
     </table>
 
     <!-- 추가/수정 모달 -->
-    <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+    <div
+      v-if="showModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"
+    >
       <div class="bg-white rounded-lg shadow-lg w-[400px] p-6">
-        <h3 class="text-lg font-bold mb-4">
+        <h3 class="text-lg font-bold mb-4 text-purple-700">
           {{ modalMode === "add" ? "➕ 계정 추가" : "✏️ 계정 수정" }}
         </h3>
 
         <div class="space-y-3">
           <label class="block">
             <span class="text-gray-700">계정명</span>
-            <input v-model="modalForm.category_name" class="w-full border rounded p-2 mt-1" />
+            <input
+              v-model="modalForm.category_name"
+              class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-purple-400"
+            />
           </label>
 
           <label class="block">
             <span class="text-gray-700">단계</span>
-            <select v-model="modalForm.level" class="w-full border rounded p-2 mt-1">
+            <select
+              v-model="modalForm.level"
+              class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-purple-400"
+            >
               <option value="관">관</option>
               <option value="항">항</option>
               <option value="목">목</option>
@@ -85,9 +106,18 @@
           </label>
         </div>
 
+        <!-- 버튼 -->
         <div class="flex justify-end gap-3 mt-6">
-          <button @click="closeModal" class="px-4 py-2 bg-gray-400 text-white rounded">취소</button>
-          <button @click="saveCategory" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button
+            @click="closeModal"
+            class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+          >
+            취소
+          </button>
+          <button
+            @click="saveCategory"
+            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
             저장
           </button>
         </div>
@@ -139,8 +169,6 @@ const fetchCategories = async () => {
     const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
       params: { date: selectedDate.value },
     });
-    console.log("📥 accountCategories 응답:", res.data);
-
     categories.value = Array.isArray(res.data.categories) ? res.data.categories : [];
   } catch (err) {
     console.error("❌ 계정과목 조회 실패:", err);

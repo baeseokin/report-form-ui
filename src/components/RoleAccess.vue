@@ -1,37 +1,42 @@
 <template>
-  <div class="p-6 bg-white shadow rounded-lg">
-    <h2 class="text-2xl font-bold mb-6">🔑 권한별 접근 관리</h2>
+  <div class="p-6 font-nanum bg-white shadow rounded-lg">
+    <!-- ✅ 화면 제목 -->
+    <h2 class="text-2xl font-bold text-purple-700 mb-6">🔑 권한 관리</h2>
 
     <!-- 역할 선택 -->
-    <label class="block font-semibold mb-2">역할 선택</label>
-    <select v-model="selectedRole" @change="loadAccess"
-            class="border p-2 rounded mb-6 w-64">
-      <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.role_name }}</option>
-    </select>
+    <div class="mb-6">
+      <label class="block font-semibold mb-2">역할 선택</label>
+      <select v-model="selectedRole" @change="loadAccess"
+              class="border p-2 rounded w-64 focus:ring-2 focus:ring-purple-400">
+        <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.role_name }}</option>
+      </select>
+    </div>
 
     <!-- 메뉴 접근 권한 테이블 -->
-    <table class="w-full border text-center mb-4">
-      <thead class="bg-gray-200">
+    <table class="w-full border text-center mb-6">
+      <thead class="bg-purple-100 text-gray-800">
         <tr>
           <th class="border p-2">메뉴</th>
-          <th class="border p-2">접근(all)</th>
+          <th class="border p-2">접근 (all)</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="m in menus" :key="m">
-          <td class="border p-2">{{ m }}</td>
+        <tr v-for="m in menus" :key="m" class="hover:bg-gray-50">
+          <td class="border p-2 font-medium text-gray-700">{{ m }}</td>
           <td class="border">
             <input type="checkbox"
-                   v-model="localAccess[m]" />
+                   v-model="localAccess[m]"
+                   class="w-5 h-5 accent-purple-600" />
           </td>
         </tr>
       </tbody>
     </table>
 
     <!-- ✅ 저장 버튼 -->
-    <div>
+    <div class="flex justify-end">
       <button @click="saveAccess"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+      >
         저장하기
       </button>
     </div>

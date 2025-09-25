@@ -1,12 +1,12 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-xl font-bold text-gray-800 mb-4">🏛 부서별 예산 현황</h2>
+    <h2 class="text-2xl font-bold text-purple-700 mb-6">🏛 예산집행 현황</h2>
 
     <!-- ✅ 검색조건 -->
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <!-- 기준년도 -->
       <div class="flex flex-col w-32">
-        <label class="font-bold mb-1">기준년도</label>
+        <label class="font-bold mb-1 text-gray-700">기준년도</label>
         <input
           type="number"
           v-model="filters.year"
@@ -18,7 +18,7 @@
       <div class="flex items-end">
         <button
           @click="fetchBudgetStatus"
-          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
         >
           조회
         </button>
@@ -29,7 +29,7 @@
     <div>
       <table class="w-full border text-sm">
         <thead>
-          <tr class="bg-gray-100 text-left">
+          <tr class="bg-purple-100 text-gray-800">
             <th class="border p-2">부서명</th>
             <th class="border p-2 text-center">총예산액</th>
             <th class="border p-2 text-center">총지출액</th>
@@ -37,7 +37,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in budgetRows" :key="row.dept_id" class="hover:bg-gray-50">
+          <tr v-for="row in budgetRows" :key="row.dept_id"
+              :class="row.remaining_amount < 0 ? 'bg-red-100 text-red-700 font-semibold' : 'bg-white'">
             <td class="border p-2">{{ row.dept_name }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.total_budget) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.total_expense) }}</td>
@@ -45,7 +46,7 @@
           </tr>
 
           <tr v-if="budgetRows.length === 0">
-            <td colspan="4" class="text-center p-4">데이터가 없습니다.</td>
+            <td colspan="4" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
           </tr>
 
           <!-- 합계 -->

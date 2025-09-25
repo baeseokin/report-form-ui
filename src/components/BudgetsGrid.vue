@@ -1,36 +1,53 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">💰 부서별 예산 관리</h2>
+    <h2 class="text-2xl font-bold text-purple-700 mb-6">💰 예산 관리</h2>
 
     <!-- 총 예산 표시 -->
-    <div class="mb-6 p-4 bg-blue-100 border border-blue-300 rounded text-xl font-bold text-blue-800">
+    <div class="mb-6 p-4 bg-purple-50 border border-purple-300 rounded text-xl font-bold text-purple-800 shadow-sm">
       📊 총 예산: {{ formatAmount(totalBudget) }} 원
     </div>
 
     <!-- 부서 & 기준일자 선택 -->
-    <div class="mb-4 flex items-center gap-4">
+    <div class="mb-6 flex flex-wrap items-end gap-6">
       <div>
         <label class="font-semibold text-gray-700">부서 선택</label>
-        <select v-model="selectedDeptId" @change="fetchCategories" class="border rounded p-2 ml-2">
+        <select
+          v-model="selectedDeptId"
+          @change="fetchCategories"
+          class="ml-2 border rounded p-2 shadow-sm"
+        >
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ d.dept_name }}
           </option>
         </select>
       </div>
+
       <div>
         <label class="font-semibold text-gray-700">기준일자</label>
-        <input type="date" v-model="baseDate" @change="fetchCategories" class="border rounded p-2 ml-2" />
+        <input
+          type="date"
+          v-model="baseDate"
+          @change="fetchCategories"
+          class="ml-2 border rounded p-2 shadow-sm"
+        />
       </div>
+
       <div>
         <label class="font-semibold text-gray-700">회계연도</label>
-        <input type="number" v-model="year" min="2000" max="2100" class="border rounded p-2 ml-2 w-28" />
+        <input
+          type="number"
+          v-model="year"
+          min="2000"
+          max="2100"
+          class="ml-2 border rounded p-2 w-28 shadow-sm"
+        />
       </div>
     </div>
 
     <!-- 계정 목록 Grid -->
     <table class="w-full border text-sm mb-6">
       <thead>
-        <tr class="bg-gray-100">
+        <tr class="bg-purple-100 text-gray-800">
           <th class="border p-2 text-center">계정명</th>
           <th class="border p-2 text-center">단계</th>
           <th class="border p-2 text-center">상위 계정</th>
@@ -39,29 +56,32 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="c in categoriesTree" :key="c.id" class="hover:bg-gray-50"
-            :class="{
-              'bg-blue-50 font-bold': c.level === '관',
-              'bg-green-50': c.level === '항',
-              'bg-yellow-50': c.level === '목',
-              'bg-white': c.level === '세목'
-              }"
-                >
+        <tr
+          v-for="c in categoriesTree"
+          :key="c.id"
+          :class="{
+            'bg-gray-100 font-bold': c.level === '관',
+            'bg-blue-50': c.level === '항',
+            'bg-green-50': c.level === '목',
+            'bg-white': c.level === '세목'
+          }"
+        >
           <td class="border p-2">
-            <span :style="{ paddingLeft: `${(c.depth - 1) * 50}px` }">
+            <span :style="{ paddingLeft: `${(c.depth - 1) * 40}px` }">
               {{ c.category_name }}
             </span>
           </td>
           <td class="border p-2 text-center">{{ c.level }}</td>
           <td class="border p-2 text-center">{{ parentName(c.parent_id) }}</td>
           <td class="border p-2 text-center">
-            {{ formatDate(c.valid_from) }} ~ {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
+            {{ formatDate(c.valid_from) }} ~
+            {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
           </td>
           <td class="border p-2 text-right font-mono">
             <template v-if="c.level === '세목'">
               <input
                 type="text"
-                class="border rounded p-1 w-48 text-right"
+                class="border rounded p-1 w-40 text-right shadow-sm"
                 :value="formatAmount(budgets[c.id] ?? 0)"
                 @input="onBudgetInput($event, c)"
               />
@@ -72,7 +92,9 @@
           </td>
         </tr>
         <tr v-if="categoriesTree.length === 0">
-          <td colspan="5" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
+          <td colspan="5" class="text-center p-4 text-gray-500">
+            데이터가 없습니다.
+          </td>
         </tr>
       </tbody>
     </table>
@@ -81,7 +103,7 @@
     <div class="flex justify-end">
       <button
         @click="saveAllBudgets"
-        class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
       >
         💾 저장
       </button>
@@ -104,20 +126,20 @@ const budgets = ref({});
 const categoriesTree = computed(() => {
   const buildTree = (list, parentId = null, depth = 1) => {
     return list
-      .filter(c => c.parent_id === parentId)
-      .map(c => ({
+      .filter((c) => c.parent_id === parentId)
+      .map((c) => ({
         ...c,
         depth,
         children: buildTree(list, c.id, depth + 1),
       }))
-      .flatMap(c => [c, ...c.children]);
+      .flatMap((c) => [c, ...c.children]);
   };
   return buildTree(categories.value);
 });
 
 // ✅ 총 예산 합계 (최상위 노드 기준으로 계산)
 const totalBudget = computed(() => {
-  const roots = categories.value.filter(c => c.parent_id === null);
+  const roots = categories.value.filter((c) => c.parent_id === null);
   return roots.reduce((sum, root) => sum + sumChildren(root.id), 0);
 });
 
@@ -146,7 +168,7 @@ const fetchCategories = async () => {
       params: { year: year.value },
     });
     budgets.value = {};
-    budgetRes.data.budgets.forEach(b => {
+    budgetRes.data.budgets.forEach((b) => {
       budgets.value[b.category_id] = Number(b.budget_amount) || 0;
     });
   } catch (err) {
@@ -156,7 +178,7 @@ const fetchCategories = async () => {
 
 // 부모 계정명 찾기
 const parentName = (parentId) => {
-  const parent = categories.value.find(c => c.id === parentId);
+  const parent = categories.value.find((c) => c.id === parentId);
   return parent ? parent.category_name : "-";
 };
 
@@ -169,15 +191,12 @@ const formatDate = (dateStr) => {
 // 일괄 저장
 const saveAllBudgets = async () => {
   try {
-    // 모든 카테고리(관, 항, 목, 세목 포함)를 저장 대상으로 만듦
-    const payload = categories.value.map(c => ({
+    const payload = categories.value.map((c) => ({
       dept_id: selectedDeptId.value,
       category_id: c.id,
       year: year.value,
-      // 세목은 입력값, 나머지는 합산값 저장
-      budget_amount: c.level === "세목"
-        ? (budgets.value[c.id] ?? 0)
-        : sumChildren(c.id),
+      budget_amount:
+        c.level === "세목" ? budgets.value[c.id] ?? 0 : sumChildren(c.id),
     }));
 
     await axios.post("/api/budgets/bulk", { budgets: payload });
@@ -188,16 +207,15 @@ const saveAllBudgets = async () => {
   }
 };
 
-
-// 입력 처리 (3자리 콤마 제거 → 숫자 변환)
+// 입력 처리 (숫자만 허용)
 const onBudgetInput = (e, category) => {
   const raw = e.target.value.replace(/[^0-9]/g, "");
   budgets.value[category.id] = raw ? Number(raw) : 0;
 };
 
-// 하위 항목 합산 (항/관 금액 계산)
+// 하위 항목 합산
 const sumChildren = (parentId) => {
-  const children = categories.value.filter(c => c.parent_id === parentId);
+  const children = categories.value.filter((c) => c.parent_id === parentId);
   return children.reduce((sum, child) => {
     if (child.level === "세목") {
       sum += Number(budgets.value[child.id] ?? 0);
