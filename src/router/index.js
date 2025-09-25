@@ -9,6 +9,7 @@ import UserManagement from "../components/UserManagement.vue";
 import RoleAccess from "../components/RoleAccess.vue";
 import AccountCategoriesGrid from "../components/AccountCategoriesGrid.vue";  // ✅ 추가
 import BudgetsGrid from "../components/BudgetsGrid.vue";   // ✅ 추가
+import BudgetStatus from "../components/BudgetStatus.vue";
 import { useUserStore } from "../store/userStore";
 
 // ✅ 모바일 기기 여부 체크 함수
@@ -41,7 +42,10 @@ const routes = [
   // ✅ 계정과목 관리
   { path: "/accountCategories", component: AccountCategoriesGrid, meta: { menuName: "계정과목 관리" } },
   // ✅ 예산 관리
-  { path: "/budgets", component: BudgetsGrid },                     
+  { path: "/budgets", component: BudgetsGrid, meta: { menuName: "예산 관리" }}, 
+
+  // ✅ 예산집행 현황
+  { path: "/budgetStatus",  component: BudgetStatus , meta: { menuName: "예산집행 현황" }}                    
 ];
 
 const router = createRouter({

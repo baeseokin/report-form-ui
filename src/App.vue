@@ -87,15 +87,32 @@ const allMenus = [
   { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
   { label: "예산 관리", path: "/budgets", icon: "💰" }, 
+  { label: "예산집행 현황", path: "/budgetStatus", icon: "🏛" },
+  
 ];
 
 // ✅ role_access 기준으로 필터링
 const allowedMenus = computed(() => {
-  if (!user.value) return [];
-  return allMenus.filter((m) =>
-    userStore.access.some((a) => a.menu_name === m.label && a.access_type === "all")
+  if (!user.value) {
+    console.log("❌ allowedMenus: 사용자 없음");
+    return [];
+  }
+
+  console.log("👤 현재 사용자:", user.value);
+  console.log("📑 전체 메뉴 목록:", allMenus);
+  console.log("🔑 사용자 접근권한(userStore.access):", userStore.access);
+
+  const filtered = allMenus.filter((m) =>
+    userStore.access.some(
+      (a) => a.menu_name === m.label && a.access_type === "all"
+    )
   );
+
+  console.log("✅ 필터링된 메뉴(allowedMenus):", filtered);
+
+  return filtered;
 });
+
 
 // ✅ Sidebar 상태 (모바일/테블릿용)
 const isOpen = ref(false);

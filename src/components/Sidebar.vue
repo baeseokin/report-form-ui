@@ -62,6 +62,7 @@ const allowedMenus = computed(() => {
     { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
     { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
     { label: "예산 관리", path: "/budgets", icon: "💰" }, 
+    { label: "예산집행 현황", path: "/budgetStatus", icon: "🏛" },
   ];
 
   // ✅ role_access 테이블에 access_type = 'all' 등록된 메뉴만 표시
