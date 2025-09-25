@@ -10,7 +10,10 @@
       <div class="p-4 bg-red-50 border border-red-200 rounded">
         💸 지출 총액: {{ formatCurrency(totalExpense) }} 원
       </div>
-      <div class="p-4 bg-green-50 border border-green-200 rounded">
+      <div
+        class="p-4 border rounded"
+        :class="remainingBudget < 0 ? 'bg-red-100 border-red-400 text-red-600' : 'bg-green-50 border-green-200 text-green-600'"
+      >
         💰 잔액: {{ formatCurrency(remainingBudget) }} 원
       </div>
     </div>
@@ -114,9 +117,17 @@
       </div>
       <div class="flex gap-3">
         <button @click="$emit('prev')" class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md transition">← 이전</button>
-        <button @click="$emit('next')" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition">다음 →</button>
+        <button @click="handleNext" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition">다음 →</button>
       </div>
     </div>
+
+    <!-- 안내 모달 -->
+    <ModalAlert
+      :visible="showAlert"
+      title="알림"
+      :message="alertMessage"
+      @close="showAlert = false"
+    />
   </div>
 </template>
 
@@ -125,6 +136,7 @@ import { computed, ref, watch} from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
+import ModalAlert from "./ModalAlert.vue"; // ✅ 모달 추가
 
 const props = defineProps(["items", "deptData", "selectedDept"]);
 const emits = defineEmits(["update:items", "prev", "next"]);
@@ -146,6 +158,20 @@ const serverExpense = ref(0);  // DB에서 가져온 지출 총액
 const totalExpense = ref(0);
 const currentYear = new Date().getFullYear();
 const remainingBudget = computed(() => totalBudget.value - totalExpense.value);
+
+// ✅ 모달 상태
+const showAlert = ref(false);
+const alertMessage = ref("");
+
+// ✅ "다음" 버튼 제어
+const handleNext = () => {
+  if (remainingBudget.value < 0) {
+    alertMessage.value = "허용된 예산을 초과하였습니다.";
+    showAlert.value = true;
+    return;
+  }
+  emits("next");
+};
 
 // ✅ totalAmount 변경 → 서버 지출 합계 + 입력값 반영
 watch(totalAmount, (newAmount) => {
