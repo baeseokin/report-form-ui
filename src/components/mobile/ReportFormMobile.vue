@@ -93,22 +93,28 @@ const report = ref(null);
 const route = useRoute();
 
 onMounted(async () => {
-  const res = await fetch("/deptData.json");
-  deptData.value = await res.json();
+  try {
+    const deptRes = await axios.get("/api/departments");
+    const depts = deptRes.data;
 
-  if (route.params.id) {
-    try {
-      const res = await axios.get(`/api/approval/detail/${route.params.id}`, {
-        withCredentials: true,
+    const deptMap = {};
+    for (const dept of depts) {
+      const catRes = await axios.get(`/api/accountCategories/${dept.id}`, {
+        params: { date: new Date().toISOString().split("T")[0] },
       });
-      const data = res.data;
+      deptMap[dept.dept_name] = catRes.data.categories || [];
+    }
+    deptData.value = deptMap;
 
+    // 보고서 수정 모드
+    if (route.params.id) {
+      const res = await axios.get(`/api/approval/detail/${route.params.id}`, { withCredentials: true });
+      const data = res.data;
       documentType.value = data.document_type;
       selectedDept.value = data.dept_name;
       author.value = data.author;
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
-
       items.value = (data.items || []).map((i) => ({
         gwan: i.gwan,
         hang: i.hang,
@@ -117,12 +123,10 @@ onMounted(async () => {
         detail: i.detail,
         amount: i.amount,
       }));
-
-      date.value = new Date().toISOString().slice(0, 10);
       attachedFiles.value = [];
-    } catch (err) {
-      console.error("❌ 모바일 보고서 데이터 불러오기 실패:", err);
     }
+  } catch (err) {
+    console.error("❌ 부서/계정과목 불러오기 실패:", err);
   }
 });
 

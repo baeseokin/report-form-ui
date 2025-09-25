@@ -39,9 +39,8 @@
       <input
         type="text"
         :value="author"
-        @input="$emit('update:author', $event.target.value)"
-        placeholder="작성자"
-        class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+        disabled
+        class="w-full mt-1 p-2 border rounded bg-gray-100 text-gray-600 cursor-not-allowed"
       />
 
       <!-- 제출일자 -->
@@ -111,4 +110,9 @@ const documentTypes = ["청구지출결의서", "정산지출결의서", "가불
 // ✅ 로그인 사용자 정보 불러오기
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
+
+// ✅ 로그인 사용자 이름 자동 세팅
+if (!props.author && user.value?.userName) {
+  emits("update:author", user.value.userName);
+}
 </script>
