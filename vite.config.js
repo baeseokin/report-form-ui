@@ -4,6 +4,7 @@ import path from "path";
 
 export default defineConfig({
   plugins: [vue()],
+  base: '/',   // 반드시 / 로 설정
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"), // ✅ @ → src 경로로 매핑
