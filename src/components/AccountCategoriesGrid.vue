@@ -35,6 +35,7 @@
       <thead class="bg-purple-100 text-gray-800">
         <tr>
           <th class="border p-2 text-center">계정명</th>
+          <th class="border p-2 text-center">계정ID</th>
           <th class="border p-2 text-center">단계</th>
           <th class="border p-2 text-center">상위 계정</th>
           <th class="border p-2 text-center">유효기간</th>
@@ -56,6 +57,7 @@
               {{ c.category_name }}
             </span>
           </td>
+          <td class="border p-2 text-center">{{ c.category_id }}</td>
           <td class="border p-2">{{ c.level }}</td>
           <td class="border p-2">{{ parentName(c.parent_id) }}</td>
           <td class="border p-2 text-center">
@@ -68,7 +70,7 @@
           </td>
         </tr>
         <tr v-if="categoriesTree.length === 0">
-          <td colspan="5" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
+          <td colspan="6" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
         </tr>
       </tbody>
     </table>
@@ -84,6 +86,33 @@
         </h3>
 
         <div class="space-y-3">
+          <label class="block" v-if="modalForm.parent_id">
+            <span class="text-gray-700">부모 계정ID</span>
+            <input
+              v-model="modalForm.parent_category_id"
+              class="w-full border rounded p-2 mt-1 bg-gray-100"
+              readonly
+            />
+          </label>
+
+          <label class="block" v-if="modalForm.parent_id">
+            <span class="text-gray-700">부모 계정명</span>
+            <input
+              v-model="modalForm.parent_category_name"
+              class="w-full border rounded p-2 mt-1 bg-gray-100"
+              readonly
+            />
+          </label>
+
+          <label class="block">
+            <span class="text-gray-700">계정ID</span>
+            <input
+              v-model="modalForm.category_id"
+              class="w-full border rounded p-2 mt-1 bg-gray-100"
+              readonly
+            />
+          </label>
+
           <label class="block">
             <span class="text-gray-700">계정명</span>
             <input
@@ -91,6 +120,7 @@
               class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-purple-400"
             />
           </label>
+
 
           <label class="block">
             <span class="text-gray-700">단계</span>
@@ -132,14 +162,13 @@ import axios from "axios";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
-const selectedDate = ref(new Date().toISOString().split("T")[0]); // 오늘 날짜 기본값
+const selectedDate = ref(new Date().toISOString().split("T")[0]);
 const categories = ref([]);
 
 const showModal = ref(false);
 const modalMode = ref("add");
-const modalForm = ref({ id: null, parent_id: null, category_name: "", level: "관" });
+const modalForm = ref({ id: null, parent_id: null, category_id: "", category_name: "", level: "관" });
 
-// ✅ 계층 구조를 Grid로 변환 (depth 계산)
 const categoriesTree = computed(() => {
   const buildTree = (list, parentId = null, depth = 1) => {
     return list
@@ -186,15 +215,94 @@ const parentName = (parentId) => {
   return parent ? parent.category_name : "-";
 };
 
+// ✅ 새 category_id 생성: parentId 하위 같은 레벨의 최대값 + 1
+const generateCategoryId = (deptId, childLevel, parentId) => {
+  const dept = departments.value.find(d => d.id === deptId);
+  const deptCd = dept?.dept_cd || "XXX"; // 예: ANG
+
+  const parent = categories.value.find(c => c.id === parentId);
+  // parent가 없으면(최상위 관 추가) 각 자리 기본 "00"
+  let g = "00", h = "00", m = "00", s = "00";
+
+  // 부모의 prefix(관/항/목 자리) 복사
+  if (parent?.category_id) {
+    g = parent.category_id.substr(3, 2);
+    h = parent.category_id.substr(5, 2);
+    m = parent.category_id.substr(7, 2);
+    s = parent.category_id.substr(9, 2);
+  }
+
+  // parent 하위에서 childLevel 형제들을 찾고, 해당 자리 숫자의 최대값 + 1
+  const siblings = categories.value.filter(c => c.parent_id === parentId && c.level === childLevel);
+
+  const pickNum = (cat) => {
+    if (!cat?.category_id) return 0;
+    if (childLevel === "항")   return parseInt(cat.category_id.substr(5, 2)) || 0;  // 항 자리
+    if (childLevel === "목")   return parseInt(cat.category_id.substr(7, 2)) || 0;  // 목 자리
+    if (childLevel === "세목") return parseInt(cat.category_id.substr(9, 2)) || 0;  // 세목 자리
+    if (childLevel === "관")   return parseInt(cat.category_id.substr(3, 2)) || 0;  // (예외) 관 추가 시
+    return 0;
+  };
+
+  const maxNum = siblings.reduce((max, cat) => Math.max(max, pickNum(cat)), 0);
+  const next = String(maxNum + 1).padStart(2, "0");
+
+  // childLevel에 따라 해당 자리만 증가
+  if (childLevel === "관")   g = next;
+  if (childLevel === "항")   h = next;
+  if (childLevel === "목")   m = next;
+  if (childLevel === "세목") s = next;
+
+  return `${deptCd}${g}${h}${m}${s}`;
+};
+
+
+// 상위 → 하위 레벨 매핑
+const nextLevel = (lvl) => {
+  if (lvl === "관") return "항";
+  if (lvl === "항") return "목";
+  if (lvl === "목") return "세목";
+  // 세목에서 +를 누르면 동일 레벨(세목)로 추가하도록 유지하거나, 막고 싶으면 여기서 처리
+  return "세목";
+};
+
 const openModal = (mode, category) => {
   modalMode.value = mode;
+
   if (mode === "add") {
-    modalForm.value = { id: null, parent_id: category?.id || null, category_name: "", level: "항" };
+    // 부모(선행한 데이터)
+    const parentCategory = category ? categories.value.find(c => c.id === category.id) : null;
+
+    // 부모가 있으면 하위 레벨로 자동 설정, 없으면(최상위 추가) 관부터
+    const childLevel = parentCategory ? nextLevel(parentCategory.level) : "관";
+    const parentIdForChild = parentCategory?.id || null;
+
+    modalForm.value = { 
+      id: null, 
+      parent_id: parentIdForChild,
+      parent_category_id: parentCategory?.category_id || "",
+      parent_category_name: parentCategory?.category_name || "",
+      // ✅ 부모 하위의 같은 레벨 최대값 + 1 로 category_id 생성
+      category_id: generateCategoryId(
+        selectedDeptId.value,
+        childLevel,
+        parentIdForChild
+      ),
+      category_name: "",
+      level: childLevel
+    };
   } else if (mode === "edit") {
-    modalForm.value = { ...category };
+    const parentCategory = categories.value.find(c => c.id === category.parent_id);
+    modalForm.value = { 
+      ...category,
+      parent_category_id: parentCategory?.category_id || "",
+      parent_category_name: parentCategory?.category_name || ""
+    };
   }
+
   showModal.value = true;
 };
+
 
 const closeModal = () => {
   showModal.value = false;

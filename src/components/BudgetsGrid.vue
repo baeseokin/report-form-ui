@@ -49,6 +49,7 @@
       <thead>
         <tr class="bg-purple-100 text-gray-800">
           <th class="border p-2 text-center">계정명</th>
+          <th class="border p-2 text-center">계정ID</th>
           <th class="border p-2 text-center">단계</th>
           <th class="border p-2 text-center">상위 계정</th>
           <th class="border p-2 text-center">유효기간</th>
@@ -71,6 +72,7 @@
               {{ c.category_name }}
             </span>
           </td>
+          <td class="border p-2 text-center font-mono">{{ c.category_id || '-' }}</td>
           <td class="border p-2 text-center">{{ c.level }}</td>
           <td class="border p-2 text-center">{{ parentName(c.parent_id) }}</td>
           <td class="border p-2 text-center">
@@ -82,7 +84,7 @@
               <input
                 type="text"
                 class="border rounded p-1 w-40 text-right shadow-sm"
-                :value="formatAmount(budgets[c.id] ?? 0)"
+                :value="formatAmount(budgets[c.category_id] ?? 0)"
                 @input="onBudgetInput($event, c)"
               />
             </template>
@@ -92,7 +94,7 @@
           </td>
         </tr>
         <tr v-if="categoriesTree.length === 0">
-          <td colspan="5" class="text-center p-4 text-gray-500">
+          <td colspan="6" class="text-center p-4 text-gray-500">
             데이터가 없습니다.
           </td>
         </tr>
@@ -167,10 +169,14 @@ const fetchCategories = async () => {
     const budgetRes = await axios.get(`/api/budgets/${selectedDeptId.value}`, {
       params: { year: year.value },
     });
+
+    console.log("budgetRes :", budgetRes);
     budgets.value = {};
     budgetRes.data.budgets.forEach((b) => {
+      console.log()
       budgets.value[b.category_id] = Number(b.budget_amount) || 0;
     });
+    console.log("budgets :", budgets);
   } catch (err) {
     console.error("❌ 데이터 조회 실패:", err);
   }
@@ -193,10 +199,10 @@ const saveAllBudgets = async () => {
   try {
     const payload = categories.value.map((c) => ({
       dept_id: selectedDeptId.value,
-      category_id: c.id,
+      category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
       budget_amount:
-        c.level === "세목" ? budgets.value[c.id] ?? 0 : sumChildren(c.id),
+        c.level === "세목" ? (budgets.value[c.category_id] ?? 0) : sumChildren(c.id),
     }));
 
     await axios.post("/api/budgets/bulk", { budgets: payload });
@@ -210,15 +216,18 @@ const saveAllBudgets = async () => {
 // 입력 처리 (숫자만 허용)
 const onBudgetInput = (e, category) => {
   const raw = e.target.value.replace(/[^0-9]/g, "");
-  budgets.value[category.id] = raw ? Number(raw) : 0;
+  budgets.value[category.category_id] = raw ? Number(raw) : 0;
 };
 
 // 하위 항목 합산
 const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
+  console.log("children :", children);
   return children.reduce((sum, child) => {
+    console.log("sumChildren-child.category_id:",child.category_id);  
+    console.log("sumChildren-budgets.value:",budgets.value);  
     if (child.level === "세목") {
-      sum += Number(budgets.value[child.id] ?? 0);
+      sum += Number(budgets.value[child.category_id] ?? 0);
     } else {
       sum += sumChildren(child.id);
     }
