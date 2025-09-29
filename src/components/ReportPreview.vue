@@ -146,22 +146,29 @@
       </div>
 
       <!-- ✅ 첨부파일 -->
-      <template v-for="(pageFiles, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
+      <template v-for="(page, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
         <div class="page report-content mt-10 break-before-page" :style="pageStyle">
           <h2 class="title-lg text-center mb-6 text-gray-800">
             📎 첨부파일 ({{ pageIdx + 1 }} / {{ chunkedFiles.length }})
           </h2>
-          <ul class="space-y-6">
-            <li v-for="(f, idx) in pageFiles" :key="'file-'+pageIdx+'-'+idx" class="space-y-2">
-              <p class="text-gray-700 font-medium">{{ getFileAlias(f) }}</p>
+
+          <div v-for="(row, rowIdx) in page" :key="'row-'+rowIdx" class="flex justify-center gap-6 mt-8">
+            <div
+              v-for="(f, idx) in row"
+              :key="'file-'+pageIdx+'-'+rowIdx+'-'+idx"
+              class="flex flex-col items-center"
+              :style="getImageWrapperStyle(row.length)"
+            >
+              <p class="text-gray-700 font-medium mb-2 text-center break-words">{{ getFileAlias(f) }}</p>
               <img
                 v-if="isImage(f)"
                 :src="getFileUrl(f)"
-                class="border rounded-lg shadow-md max-h-[500px] mx-auto"
+                :style="getImageStyle(f, row.length, row)"
+                class="border rounded-lg shadow-md object-contain"
               />
-              <p v-else class="text-sm text-gray-500 italic">(이미지 미리보기를 지원하지 않는 파일 형식입니다)</p>
-            </li>
-          </ul>
+              <p v-else class="text-sm text-gray-500 italic text-center">(이미지 미리보기를 지원하지 않는 파일 형식입니다)</p>
+            </div>
+          </div>
         </div>
       </template>
     </div>
@@ -254,7 +261,9 @@ const isApprovalPage = computed(() => {
 }
   
 );
-
+// ✅ 공통 설정
+const A4_WIDTH = 650;   // 가로
+const A4_HEIGHT = 1500; // 세로
 
 const props = defineProps(["report"]);
 const emit = defineEmits(["close", "refreshList"]);
@@ -351,30 +360,84 @@ const paddedItems = computed(() => {
 
 
 const filesToPreview = computed(() => props.report?.attachedFiles?.length ? props.report.attachedFiles : props.report?.files || []);
+// ✅ 페이지 분리 + 행(row) 배치
 const chunkedFiles = computed(() => {
   const files = filesToPreview.value;
   const pages = [];
-  let currentPage = [], currentHeight = 0, maxHeight = 1500;
+  let currentPage = [];
+  let currentHeight = 0;
+  let currentRow = [];
+  let currentRowWidth = 0;
+  const rowHeight = 800;
+
+  const flushRow = () => {
+    if (currentRow.length) {
+      currentPage.push(currentRow);
+      currentRow = [];
+      currentRowWidth = 0;
+      currentHeight += rowHeight;
+    }
+  };
+
+  const flushPage = () => {
+    if (currentPage.length) {
+      pages.push(currentPage);
+      currentPage = [];
+      currentHeight = 0;
+    }
+  };
+
   files.forEach((f) => {
-    const estHeight = isImage(f) ? 800 : 200;
-    if (currentHeight + estHeight > maxHeight) { pages.push(currentPage); currentPage = [f]; currentHeight = estHeight; }
-    else { currentPage.push(f); currentHeight += estHeight; }
+    const isPortrait = (f.height || 1000) > (f.width || 600);
+    const estWidth = isPortrait ? 300 : 700;
+    const estHeight = isImage(f) ? rowHeight : 200;
+
+    if (currentHeight + estHeight > A4_HEIGHT) {
+      flushRow();
+      flushPage();
+    }
+
+    if (currentRowWidth + estWidth > A4_WIDTH) {
+      flushRow();
+    }
+
+    currentRow.push(f);
+    currentRowWidth += estWidth;
   });
-  if (currentPage.length) pages.push(currentPage);
+
+  if (currentRow.length) flushRow();
+  if (currentPage.length) flushPage();
+
   return pages;
 });
 const getFileAlias = (f) => {
   const fileAlias = f.alias_name || f.name || f.file_name || "첨부파일";
-  console.log("alias_name :", f.alias_name);
-  console.log("name :", f.name);
-  console.log("file_name :", f.file_name);
-  console.log("fileAlias :", fileAlias);
+
   return fileAlias;
 }
 const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif)$/i.test(f.name || f.file_name || ""));
 const getFileUrl = (f) => f.file ? URL.createObjectURL(f.file) : f.file_name ? `/api/files/${f.file_name}` : "";
-
 const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
+
+// ✅ 이미지 스타일
+const getImageStyle = (file, rowLength, siblings = []) => {
+  if (rowLength === 1) {
+    const width = file.width || 800;
+    const scale = Math.min(1, A4_WIDTH / width);
+    return { maxWidth: `${width * scale}px`, maxHeight: "1000px", objectFit: "contain" };
+  } else if (rowLength === 2 && siblings.length === 2) {
+    const w1 = siblings[0].width || 600;
+    const w2 = siblings[1].width || 600;
+    const sum = w1 + w2;
+    const scale = Math.min(1, A4_WIDTH / sum);
+    return { maxWidth: `${(file.width || 600) * scale}px`, maxHeight: "900px", objectFit: "contain" };
+  }
+  return {};
+};
+
+// ✅ Wrapper 스타일
+const getImageWrapperStyle = (rowLength) =>
+  rowLength === 1 ? { width: "100%", textAlign: "center" } : { width: "45%" };
 
 const generatePDF = async () => {
   const pdf = new jsPDF("p", "mm", "a4");
