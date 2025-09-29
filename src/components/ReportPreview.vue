@@ -411,12 +411,24 @@ const chunkedFiles = computed(() => {
   return pages;
 });
 const getFileAlias = (f) => {
-  const fileAlias = f.alias_name || f.name || f.file_name || "첨부파일";
+  const alias = f.alias_name || f.file_name || f.name || "첨부파일";
+  return alias.length > 20 ? alias.slice(0, 17) + "..." : alias;
+};
 
-  return fileAlias;
-}
+
 const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif)$/i.test(f.name || f.file_name || ""));
-const getFileUrl = (f) => f.file ? URL.createObjectURL(f.file) : f.file_name ? `/api/files/${f.file_name}` : "";
+
+const getFileUrl = (f) => {
+  if (f.file) {
+    return URL.createObjectURL(f.file);
+  } else if (f.file_path) {
+    // 안전한 파일명(file_path)만 URL에 사용
+    return `/api/files/${encodeURIComponent(f.file_path)}`;
+  }
+  return "";
+};
+
+
 const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
 // ✅ 이미지 스타일
