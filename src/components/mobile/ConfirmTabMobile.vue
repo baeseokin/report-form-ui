@@ -76,12 +76,6 @@
         ← 이전
       </button>
       <button
-        @click="generatePreview"
-        class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 rounded-lg shadow-md transition"
-      >
-        🔍 미리보기
-      </button>
-      <button
         @click="sendApprovalRequest"
         class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 rounded-lg shadow-md transition"
       >
@@ -232,6 +226,7 @@ const sendApprovalRequest = async () => {
       documentType: props.documentType,
       deptName: userDept.value,
       author: props.author,
+      userId: user.value.userId,
       date: props.date,
       totalAmount: props.totalAmount,
       comment: props.comment,
@@ -264,7 +259,7 @@ const sendApprovalRequest = async () => {
       const formData = new FormData();
       formData.append("requestId", requestId);
       formData.append("approver_role", user.value.roles[0]?.role_name || "작성자");
-      formData.append("approver_name", user.value.userName);
+      formData.append("approver_user_id", user.value.userId);
       formData.append("comment", props.comment || "");
 
       if (canvas.value) {

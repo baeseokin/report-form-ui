@@ -109,7 +109,7 @@ const search = reactive({
   months: 1,
   deptName: userStore.user?.deptName || "",
   status: "진행중",
-  approverName: userStore.user?.userName || "",
+  approverUserId: userStore.user?.userId || "",
   startDate: "",
   endDate: "",
 });
