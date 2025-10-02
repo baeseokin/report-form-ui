@@ -74,7 +74,8 @@ import BasicInfoTabMobile from "./BasicInfoTabMobile.vue";
 import ExpenseTabMobile from "./ExpenseTabMobile.vue";
 import FileAttachTabMobile from "./FileAttachTabMobile.vue";
 import ConfirmTabMobile from "./ConfirmTabMobile.vue";
-import ReportPreview from "../ReportPreview.vue";
+import { defineAsyncComponent } from 'vue';
+const ReportPreview = defineAsyncComponent(() => import ("../ReportPreview.vue"));
 
 const tabs = ["기본정보", "지출내역", "파일첨부", "최종 확인"];
 const activeStep = ref(1);

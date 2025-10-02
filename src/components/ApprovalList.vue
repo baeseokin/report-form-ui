@@ -137,7 +137,8 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-import ReportPreview from "./ReportPreview.vue";
+import { defineAsyncComponent } from 'vue';
+const ReportPreview = defineAsyncComponent(() => import ("./ReportPreview.vue"));
 import { useRouter } from "vue-router";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";

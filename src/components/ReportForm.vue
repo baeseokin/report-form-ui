@@ -101,7 +101,8 @@ import BasicInfoTab from "./BasicInfoTab.vue";
 import ExpenseTab from "./ExpenseTab.vue";
 import FileAttachTab from "./FileAttachTab.vue";
 import ConfirmTab from "./ConfirmTab.vue";
-import ReportPreview from "./ReportPreview.vue";
+import { defineAsyncComponent } from 'vue';
+const ReportPreview = defineAsyncComponent(() => import ("./ReportPreview.vue"));
 
 // 📌 Mobile 전용 컴포넌트
 import BasicInfoTabMobile from "./mobile/BasicInfoTabMobile.vue";

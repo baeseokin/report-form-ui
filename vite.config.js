@@ -21,4 +21,21 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    target: "es2019",
+    sourcemap: false,
+    cssCodeSplit: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vue: ["vue", "vue-router", "pinia"],
+          network: ["axios"],
+          pdf: ["jspdf", "html2canvas"], // 👉 PDF 전용 청크
+        },
+      },
+    },
+  },
+  esbuild: {
+    drop: ["console", "debugger"], // 👉 운영 빌드에서 제거
+  },
 });

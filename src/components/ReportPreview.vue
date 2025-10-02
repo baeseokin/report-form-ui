@@ -245,8 +245,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+// dynamic import
+// import html2canvas from "html2canvas";
+// dynamic import
+// import jsPDF from "jspdf";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import ApprovalPopup from "./ApprovalPopup.vue";
@@ -452,10 +454,11 @@ const getImageWrapperStyle = (rowLength) =>
   rowLength === 1 ? { width: "100%", textAlign: "center" } : { width: "45%" };
 
 const generatePDF = async () => {
+  const { default: jsPDF } = await import('jspdf');
   const pdf = new jsPDF("p", "mm", "a4");
   const pages = document.querySelectorAll(".page");
   for (let i = 0; i < pages.length; i++) {
-    const canvas = await html2canvas(pages[i], { scale: 2 });
+    const canvas = await (await import('html2canvas')).default(pages[i], { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const imgHeight = (canvas.height * pdfWidth) / canvas.width;

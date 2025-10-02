@@ -71,7 +71,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import ReportPreview from "@/components/ReportPreview.vue";
+//import ReportPreview from "@/components/ReportPreview.vue";
+const ReportPreview = defineAsyncComponent(() => import ("@/components/ReportPreview.vue"));
 import { useUserStore } from "@/store/userStore";
 
 const rows = ref([]);
