@@ -43,37 +43,59 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="c in categoriesTree" :key="c.id" 
-        class="hover:bg-gray-100"
-        :class="{
+        <!-- 데이터가 있을 때: 기존 트리 렌더링 -->
+        <template v-if="categoriesTree.length > 0">
+          <tr
+            v-for="c in categoriesTree"
+            :key="c.id"
+            class="hover:bg-gray-100"
+            :class="{
               'bg-blue-200': c.level === '관',
               'bg-gray-100': c.level === '항',
               'bg-yellow-50': c.level === '목',
               'bg-white': c.level === '세목'
-        }"
-        >
-          <td class="border p-2">
-            <span :style="{ paddingLeft: `${(c.depth - 1) * 40}px` }">
-              {{ c.category_name }}
-            </span>
-          </td>
-          <td class="border p-2 text-center">{{ c.category_id }}</td>
-          <td class="border p-2">{{ c.level }}</td>
-          <td class="border p-2">{{ parentName(c.parent_id) }}</td>
-          <td class="border p-2 text-center">
-            {{ formatDate(c.valid_from) }} ~ {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
-          </td>
-          <td class="border p-2 text-center space-x-2">
-            <button @click="openModal('add', c)" class="text-green-600 hover:underline">➕</button>
-            <button @click="openModal('edit', c)" class="text-blue-600 hover:underline">✏️</button>
-            <button @click="expireCategory(c)" class="text-red-600 hover:underline">🗑</button>
-          </td>
-        </tr>
-        <tr v-if="categoriesTree.length === 0">
-          <td colspan="6" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
-        </tr>
+            }"
+          >
+            <td class="border p-2">
+              <span :style="{ paddingLeft: `${(c.depth - 1) * 40}px` }">
+                {{ c.category_name }}
+              </span>
+            </td>
+            <td class="border p-2 text-center">{{ c.category_id }}</td>
+            <td class="border p-2">{{ c.level }}</td>
+            <td class="border p-2">{{ parentName(c.parent_id) }}</td>
+            <td class="border p-2 text-center">
+              {{ formatDate(c.valid_from) }} ~ {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
+            </td>
+            <td class="border p-2 text-center space-x-2">
+              <button @click="openModal('add', c)" class="text-green-600 hover:underline">➕</button>
+              <button @click="openModal('edit', c)" class="text-blue-600 hover:underline">✏️</button>
+              <button @click="expireCategory(c)" class="text-red-600 hover:underline">🗑</button>
+            </td>
+          </tr>
+        </template>
+
+        <!-- 데이터가 없을 때: '+' 버튼 노출 -->
+        <template v-else>
+          <tr>
+            <td colspan="6" class="text-center p-6">
+              <button
+                @click="openModal('add', null)"
+                class="inline-flex items-center gap-2 text-2xl text-purple-700 hover:text-purple-900 px-5 py-3 border rounded-lg bg-white hover:bg-purple-50 shadow"
+                :disabled="!selectedDeptId"
+                :class="{ 'opacity-60 cursor-not-allowed': !selectedDeptId }"
+                title="부서를 먼저 선택하세요"
+              >
+                ＋ <span class="text-base">관 추가</span>
+              </button>
+              <div class="mt-2 text-gray-500 text-sm">
+                해당 부서에 최상위 ‘관’을 먼저 등록하세요.
+              </div>
+            </td>
+          </tr>
+        </template>
       </tbody>
-    </table>
+</table>
 
     <!-- 추가/수정 모달 -->
     <div
@@ -267,18 +289,24 @@ const nextLevel = (lvl) => {
 };
 
 const openModal = (mode, category) => {
+  // ✅ 부서 선택 가드
+  if (!selectedDeptId.value) {
+    alert("부서를 먼저 선택하세요.");
+    return;
+  }
+
   modalMode.value = mode;
 
   if (mode === "add") {
     // 부모(선행한 데이터)
-    const parentCategory = category ? categories.value.find(c => c.id === category.id) : null;
+    const parentCategory = category ? categories.value.find(c => c.id === category?.id) : null;
 
     // 부모가 있으면 하위 레벨로 자동 설정, 없으면(최상위 추가) 관부터
     const childLevel = parentCategory ? nextLevel(parentCategory.level) : "관";
     const parentIdForChild = parentCategory?.id || null;
 
-    modalForm.value = { 
-      id: null, 
+    modalForm.value = {
+      id: null,
       parent_id: parentIdForChild,
       parent_category_id: parentCategory?.category_id || "",
       parent_category_name: parentCategory?.category_name || "",
@@ -293,7 +321,7 @@ const openModal = (mode, category) => {
     };
   } else if (mode === "edit") {
     const parentCategory = categories.value.find(c => c.id === category.parent_id);
-    modalForm.value = { 
+    modalForm.value = {
       ...category,
       parent_category_id: parentCategory?.category_id || "",
       parent_category_name: parentCategory?.category_name || ""
