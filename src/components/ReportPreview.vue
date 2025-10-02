@@ -22,52 +22,59 @@
 
         <!-- ✅ 결재 서명란 (조회 전용) -->
         <div class="flex justify-between mb-6">
+          <!-- 좌측 결재란: approval_line 기준 -->
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
-                <th v-for="role in approverRoles" :key="role" class="border">
-                  {{ role === "회계" ? "담당" : role }}
+                <th
+                  v-for="line in approvalLines"
+                  :key="`h-${line.id || line.approver_role}`"
+                  class="border"
+                >
+                  {{ line.approver_role === "회계" ? "담당" : line.approver_role }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr class="h-24">
                 <td
-                  v-for="role in approverRoles"
-                  :key="role"
+                  v-for="line in approvalLines"
+                  :key="`c-${line.id || line.approver_role}`"
                   class="border relative"
                 >
                   <div class="flex flex-col items-center justify-center">
                     <!-- ✅ 서명 이미지 -->
                     <img
-                      v-if="getSignature(role)"
-                      :src="getSignatureUrl(role)"
+                      v-if="getSignature(line.approver_role)"
+                      :src="getSignatureUrl(line.approver_role)"
                       class="w-20 h-20 object-contain rounded"
                     />
                     <!-- ✅ 상태 뱃지 -->
                     <span
-                      v-if="getStatus(role)"
-                        @mouseenter="visibleCommentRole = role"
-                        @mouseleave="visibleCommentRole = null"
-                        :class="[
+                      v-if="getStatus(line.approver_role)"
+                      @mouseenter="visibleCommentRole = line.approver_role"
+                      @mouseleave="visibleCommentRole = null"
+                      :class="[
                         'mt-2 px-2 py-1 rounded-full text-xs font-bold',
-                        getStatus(role) === '승인'
-                          ? 'bg-green-100 text-green-700 border border-green-300'
-                          : 'bg-red-100 text-red-700 border border-red-300'
+                        getStatus(line.approver_role) === '기안'
+                          ? 'bg-gray-100 text-gray-700 border border-gray-300'
+                          : getStatus(line.approver_role) === '승인'
+                            ? 'bg-green-100 text-green-700 border border-green-300'
+                            : 'bg-red-100 text-red-700 border border-red-300'
                       ]"
                     >
-                      {{ getStatus(role) }}
-                        <!-- ✅ 말풍선 -->
+                      {{ getStatus(line.approver_role) }}
+                      <!-- ✅ 말풍선 -->
                       <div
-                        v-if="visibleCommentRole === role && getComment(role)"
+                        v-if="visibleCommentRole === line.approver_role && getComment(line.approver_role)"
                         class="absolute left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-50 no-print"
                       >
-                        💬 {{ getComment(role) }}
+                        💬 {{ getComment(line.approver_role) }}
                       </div>
                     </span>
                     <!-- ✅ 결재 시간 -->
-                    <small v-if="getApprovedAt(role)" class="text-gray-500 text-xs mt-1">
-                      {{ formatDateTime(getApprovedAt(role)) }}
+                    <small v-if="getApprovedAt(line.approver_role)" class="text-gray-500 text-xs mt-1">
+                      {{ formatDateTime(getApprovedAt(line.approver_role)) }}
                     </small>
                   </div>
                 </td>
@@ -75,7 +82,7 @@
             </tbody>
           </table>
 
-          <!-- 오른쪽 결재란 -->
+          <!-- 오른쪽 결재란 (기존 유지) -->
           <table class="w-2/5 border text-center table-fixed">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
@@ -95,6 +102,7 @@
             </tbody>
           </table>
         </div>
+
 
         <!-- ✅ 부서명 -->
         <table class="w-full border text-center mb-4">
@@ -291,13 +299,14 @@ onMounted(() => {
   } else {
     scaleValue.value = screenWidth < pageWidth ? screenWidth / pageWidth : 1;
   }
+  refreshApprovalData();
 });
 
 // (승인/반려 로직)
-const approverRoles = ["회계", "부장", "위원장", "당회장"];
 const showPopup = ref(false);
 const showModal = ref(false);
 const approvalHistory = ref(props.report?.approvalHistory || []);
+const approvalLines = ref(props.report?.approvalLine || []);
 const visibleCommentRole = ref(null);
 const popupMode = ref(null);
 
@@ -309,6 +318,7 @@ const refreshApprovalData = async () => {
   try {
     const res = await axios.get(`/api/approval/detail/${props.report.id}`, { withCredentials: true });
     approvalHistory.value = res.data.approvalHistory || [];
+    approvalLines.value = res.data.approvalLine || [];
   } catch (err) { console.error("❌ 결재 이력 갱신 실패:", err); }
 };
 const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; emit("refreshList"); };

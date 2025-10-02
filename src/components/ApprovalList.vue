@@ -85,7 +85,7 @@
             <td class="border p-3">{{ formatDate(a.request_date) }}</td>
             <td class="border p-3 text-right">{{ formatAmount(a.total_amount) }}</td>
             <td class="border p-3">{{ a.status }}</td>
-            <td class="border p-3 flex justify-center space-x-3">
+            <td class="border p-3 flex justify-center items-center space-x-3">
               <button
                 @click="openPreview(a.id)"
                 class="p-2 rounded-lg hover:bg-green-100 transition"

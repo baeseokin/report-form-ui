@@ -144,10 +144,10 @@
             </select>
           </label>
 
-          <!-- ✅ 다중 역할 선택 (id:Number 배열 바인딩) -->
+          <!-- ✅ 역할 선택 (id:Number 배열 바인딩) -->
           <label class="block">
             <span class="font-semibold text-gray-700">역할</span>
-            <select v-model="selectedUser.roles" multiple class="border px-3 py-2 rounded-lg w-64 ml-2 h-32">
+            <select v-model="selectedUser.roles[0]"  class="border px-3 py-2 rounded-lg w-64 ml-2">
               <option v-for="role in roles" :key="role.id" :value="role.id">
                 {{ role.name }}
               </option>
@@ -208,7 +208,7 @@
         </div>
       </div>
       <div v-else class="text-gray-500 text-lg flex items-center justify-center h-full">
-        좌측에서 사용자를 선택하거나, 상단의 <span class="mx-2 font-semibold text-emerald-700">사용자 등록</span> 버튼을 눌러 새로 생성하세요.
+        좌측에서 사용자를 선택하거나, <br>상단의 사용자 등록 버튼을 눌러 새로 생성하세요.
       </div>
     </div>
   </div>
