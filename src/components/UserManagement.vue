@@ -64,9 +64,10 @@
           <table class="w-full text-sm border-collapse">
             <thead>
               <tr class="bg-purple-100 text-gray-700">
-                <th class="border px-3 py-2">사용자ID</th>
-                <th class="border px-3 py-2">사용자명</th>
-                <th class="border px-3 py-2">부서명</th>
+                <th class="border px-3 py-2 w-32">사용자ID</th>
+                <th class="border px-3 py-2 w-32">사용자명</th>
+                <th class="border px-3 py-2 w-32">부서명</th>
+                <th class="border px-3 py-2">역할</th>
               </tr>
             </thead>
             <tbody>
@@ -80,9 +81,12 @@
                 <td class="border px-3 py-2">{{ user.userId }}</td>
                 <td class="border px-3 py-2">{{ user.name }}</td>
                 <td class="border px-3 py-2">{{ user.dept }}</td>
+                <td class="border px-3 py-2">
+                  <span class="text-gray-700">{{ user.roleNames || '-' }}</span>
+                </td>
               </tr>
               <tr v-if="users.length === 0">
-                <td colspan="3" class="text-center text-gray-500 p-4">검색 결과가 없습니다.</td>
+                <td colspan="4" class="text-center text-gray-500 p-4">검색 결과가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -140,7 +144,7 @@
             </select>
           </label>
 
-          <!-- ✅ 다중 역할 선택 -->
+          <!-- ✅ 다중 역할 선택 (id:Number 배열 바인딩) -->
           <label class="block">
             <span class="font-semibold text-gray-700">역할</span>
             <select v-model="selectedUser.roles" multiple class="border px-3 py-2 rounded-lg w-64 ml-2 h-32">
@@ -219,7 +223,10 @@ export default {
     return {
       users: [],
       departments: [],
-      roles: [],
+      roles: [],         // [{ id:Number, name:String }]
+      roleNameToId: {},  // { [name]: id }
+      roleIdToName: {},  // { [id]: name }
+      roleIdSet: new Set(),
       selectedUser: null,
       filters: {
         dept: "",
@@ -240,25 +247,63 @@ export default {
     async fetchRoles() {
       try {
         const res = await axios.get("/api/roles");
-        this.roles = res.data.map(r => ({ id: r.role_id, name: r.role_name }));
+        // ✅ id를 숫자로 통일하고 양방향 매핑 구성
+        this.roles = res.data.map(r => ({
+          id: Number(r.role_id),
+          name: r.role_name
+        }));
+        this.roleNameToId = Object.fromEntries(this.roles.map(r => [r.name, r.id]));
+        this.roleIdToName = Object.fromEntries(this.roles.map(r => [r.id, r.name]));
+        this.roleIdSet = new Set(this.roles.map(r => r.id));
       } catch (err) {
         console.error("역할 데이터 불러오기 실패:", err);
       }
     },
+    // ✅ 역할 정규화: "1,2" / ["1","2"] / ["admin","user"] 등을 Number[] id로 변환
+    normalizeRoles(raw) {
+      if (raw == null) return [];
+      const arr = Array.isArray(raw)
+        ? raw
+        : String(raw).split(",").map(s => s.trim()).filter(Boolean);
+      return arr
+        .map(v => (isNaN(v) ? this.roleNameToId[v] : Number(v)))
+        .filter(id => this.roleIdSet.has(id));
+    },
+    // ✅ 역할 이름 문자열 생성
+    roleIdsToNames(ids) {
+      if (!ids || ids.length === 0) return "";
+      return ids.map(id => this.roleIdToName[id]).filter(Boolean).join(", ");
+    },
     async searchUsers() {
       try {
         const res = await axios.get("/api/users/search", { params: this.filters });
-        this.users = res.data.map(u => ({
-          ...u,
-          // API가 문자열 "1,2" 또는 "admin,user" 등으로 내려줘도 배열로 바꿔서 사용
-          roles: u.roles ? u.roles.toString().split(",").map(r => r.trim()) : []
-        }));
+        this.users = res.data.map(u => {
+          // roleIds: "1,2" 같은 CSV → Number[]로 정규화
+          const roleIds = this.normalizeRoles(u.roleIds ?? u.roles);
+          // 서버가 roleNames도 주므로 우선 사용, 없으면 id→name 변환
+          const roleNames = u.roleNames && u.roleNames.length
+            ? u.roleNames
+            : this.roleIdsToNames(roleIds);
+
+          return {
+            ...u,
+            roles: roleIds,        // 우측 다중 select와 바인딩
+            roleNames,             // 목록 표시에 사용
+          };
+        });
       } catch (err) {
         console.error("사용자 검색 실패:", err);
       }
     },
     selectUser(user) {
-      this.selectedUser = { ...user, newPassword: "", confirmPassword: "", isNew: false };
+      const normalized = this.normalizeRoles(user.roles);
+      this.selectedUser = {
+        ...user,
+        roles: normalized, // Number[] → 우측 select box에 즉시 반영됨
+        newPassword: "",
+        confirmPassword: "",
+        isNew: false
+      };
     },
     newUser() {
       this.selectedUser = {
@@ -279,15 +324,16 @@ export default {
     // ✅ 사용자 등록
     async createUser() {
       try {
-        // 프론트 유효성 검사
         const su = this.selectedUser;
+        su.roles = this.normalizeRoles(su.roles); // safety
+
+        // 프론트 유효성 검사
         if (!su.userId) return alert("사용자ID를 입력하세요.");
         if (!su.name) return alert("이름을 입력하세요.");
         if (!su.dept) return alert("부서를 선택하세요.");
         if (!su.newPassword) return alert("비밀번호를 입력하세요.");
         if (su.newPassword !== su.confirmPassword) return alert("비밀번호가 일치하지 않습니다.");
 
-        // 서버에 보낼 페이로드 (roles는 백엔드 요구사항에 맞춰 배열/문자열 변환)
         const payload = {
           userId: su.userId,
           name: su.name,
@@ -296,8 +342,9 @@ export default {
           roles: Array.isArray(su.roles) ? su.roles : [],
           password: su.newPassword,
         };
+        // ※ 백엔드가 CSV를 원하면 아래 사용
+        // payload.roles = payload.roles.join(',');
 
-        // 필요 시 roles를 CSV로 전송: payload.roles = payload.roles.join(',');
         await axios.post(`/api/users`, payload);
         alert("사용자가 등록되었습니다.");
         this.selectedUser = null;
@@ -316,9 +363,14 @@ export default {
           return;
         }
         const { isNew, confirmPassword, newPassword, ...rest } = this.selectedUser;
-        const payload = { ...rest };
+        const payload = {
+          ...rest,
+          roles: this.normalizeRoles(rest.roles)
+        };
         if (newPassword) payload.newPassword = newPassword;
-        // 필요 시 roles 포맷 변환: payload.roles = Array.isArray(payload.roles) ? payload.roles.join(',') : payload.roles;
+        // ※ 백엔드가 CSV를 원하면 아래 사용
+        // payload.roles = payload.roles.join(',');
+
         await axios.put(`/api/users/${this.selectedUser.id}`, payload);
         alert("사용자가 성공적으로 업데이트되었습니다.");
         this.searchUsers();
