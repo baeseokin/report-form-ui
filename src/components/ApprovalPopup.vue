@@ -24,7 +24,7 @@
             <span class="px-1">지우기</span>버튼을 눌러 서명을 다시 할 수 있습니다.  
           </p>
           <button
-            @click="clearSignature"
+            @click="clearSignature(false)"
             class="px-3 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
           >
             지우기
@@ -162,7 +162,7 @@ const startDraw = (e) => {
   e.preventDefault?.();
   // 재서명 안내: 지운 뒤 처음 그릴 때 1회
   if (wasCleared.value && !hasNotified.value) {
-    alert("변경된 서명이 기본서명에 저장됩니다.");
+    //alert("변경된 서명이 기본서명에 저장됩니다.");
     hasNotified.value = true;
   }
   if (wasCleared.value) {
