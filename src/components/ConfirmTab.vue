@@ -262,7 +262,7 @@ const stopDraw = () => {
 const startDrawTouch = (e) => {
   e.preventDefault(); // 스크롤 방지
   if (wasCleared.value && !hasNotified.value) {
-    alert("변경된 서명이 기본서명에 저장됩니다.");
+    //alert("변경된 서명이 기본서명에 저장됩니다.");
     hasNotified.value = true;
   }
   if (wasCleared.value) {

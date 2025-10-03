@@ -8,7 +8,7 @@
       <p><strong>부서명:</strong> {{ userDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
-      <p><strong>청구총액:</strong> ₩{{ totalAmount.toLocaleString() }}</p>
+      <p><strong>청구총액:</strong> ₩{{ Number(totalAmount || 0).toLocaleString() }}</p>
       <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
     </div>
 
@@ -55,15 +55,21 @@
             ref="canvas"
             width="200"
             height="200"
-            class="border rounded w-[200px] h-[200px] touch-none max-[480px]:w-[180px] max-[480px]:h-[180px]"
+            class="border rounded w-[200px] h-[200px] touch-none bg-white max-[480px]:w-[180px] max-[480px]:h-[180px]"
           ></canvas>
           <button
-            @click="clearCanvas"
+            @click="clearCanvas(false)"
             class="absolute top-1 right-1 text-gray-500 hover:text-red-600 bg-white rounded-full px-1 text-sm"
+            aria-label="서명 지우기"
+            title="서명 지우기"
           >
             ✕
           </button>
         </div>
+        <!-- 안내 메시지 -->
+        <p class="text-[11px] text-gray-500 mt-2">
+          <span class="px-1">✕</span>를 눌러 지우고 다시 서명할 수 있으며, <strong>기본서명</strong>으로 저장됩니다.
+        </p>
       </div>
     </div>
 
@@ -120,7 +126,7 @@ const router = useRouter();
 /* ✅ 미리보기 데이터 생성 */
 const generatePreview = () => {
   const normalizeItems = (items) => {
-    return items.map((i) => ({
+    return (items || []).map((i) => ({
       gwan: i.gwan,
       hang: i.hang,
       mok: i.mok === "__custom__" ? i.customMok : i.mok,
@@ -132,13 +138,13 @@ const generatePreview = () => {
 
   const previewData = {
     documentType: props.documentType,
-    deptName: userDept.value,   // ✅ 부서명 포함
+    deptName: userDept.value,
     author: props.author,
     date: props.date,
     totalAmount: props.totalAmount,
     comment: props.comment,
     aliasName: props.aliasName,
-    items: normalizeItems(props.items) || [],
+    items: normalizeItems(props.items),
     attachedFiles: props.attachedFiles || [],
   };
 
@@ -146,30 +152,100 @@ const generatePreview = () => {
   emits("generate", previewData);
 };
 
-// =========================
-// 서명 캔버스
-// =========================
+/* =========================
+   ✍️ 서명 캔버스 & 기본서명
+   ========================= */
 const canvas = ref(null);
 let ctx;
 let drawing = false;
+const wasCleared = ref(false);          // ✕ 눌러 지웠는지
+const hasNotified = ref(false);         // 재서명 안내 1회만 표시
+const didRedrawAfterClear = ref(false); // ✕ 후 실제로 다시 그렸는지 (저장 조건)
 
-onMounted(() => {
+/* 기본서명 불러오기 (서버 → 없으면 패스) */
+async function loadDefaultSignature() {
+  try {
+    const { data } = await axios.get("/api/users/me/signature", { withCredentials: true });
+    const url = data?.signature; // 서버는 URL 반환 (없으면 null)
+    if (url) {
+      await drawImageToCanvas(url);
+      return;
+    }
+  } catch (e) {
+    // 서버 미구현/오류는 무시
+  }
+  // 기본서명 없으면 캔버스 클리어
+  clearCanvas(true);
+}
+
+/* 캔버스에 이미지 로드 */
+function drawImageToCanvas(src) {
+  return new Promise((resolve, reject) => {
+    if (!canvas.value) return resolve();
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+      ctx.drawImage(img, 0, 0, canvas.value.width, canvas.value.height);
+      resolve();
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/* dataURL 추출 */
+function getSignatureDataURL() {
+  if (!canvas.value) return null;
+  return canvas.value.toDataURL("image/png");
+}
+
+/* 기본서명 저장 (PUT dataURL) — 반드시 ✕ 후 재서명했을 때만 호출 */
+async function saveDefaultSignature() {
+  const dataURL = getSignatureDataURL();
+  if (!dataURL) return;
+  try {
+    await axios.put(
+      "/api/users/me/signature",
+      { signature: dataURL },
+      { withCredentials: true }
+    );
+  } catch (e) {
+    console.warn("기본서명 저장 실패:", e?.message || e);
+  }
+}
+
+/* ===== 드로잉 이벤트 바인딩 ===== */
+onMounted(async () => {
   ctx = canvas.value.getContext("2d");
   ctx.strokeStyle = "black";
   ctx.lineWidth = 2;
+  ctx.lineCap = "round";
 
+  // 기본서명 자동 로드
+  await loadDefaultSignature();
+
+  // 마우스 이벤트
   canvas.value.addEventListener("mousedown", startDraw);
   canvas.value.addEventListener("mousemove", draw);
   canvas.value.addEventListener("mouseup", stopDraw);
   canvas.value.addEventListener("mouseleave", stopDraw);
 
+  // 터치 이벤트
   canvas.value.addEventListener("touchstart", startDrawTouch, { passive: false });
   canvas.value.addEventListener("touchmove", drawTouch, { passive: false });
   canvas.value.addEventListener("touchend", stopDraw);
 });
 
-// 마우스 이벤트
+/* 마우스 이벤트 */
 const startDraw = (e) => {
+  if (wasCleared.value && !hasNotified.value) {
+    //alert("변경된 서명이 기본서명에 저장됩니다.");
+    hasNotified.value = true;
+  }
+  if (wasCleared.value) {
+    didRedrawAfterClear.value = true;
+  }
   drawing = true;
   ctx.beginPath();
   ctx.moveTo(e.offsetX, e.offsetY);
@@ -183,9 +259,16 @@ const stopDraw = () => {
   drawing = false;
 };
 
-// 터치 이벤트
+/* 터치 이벤트 */
 const startDrawTouch = (e) => {
   e.preventDefault();
+  if (wasCleared.value && !hasNotified.value) {
+    //alert("변경된 서명이 기본서명에 저장됩니다.");
+    hasNotified.value = true;
+  }
+  if (wasCleared.value) {
+    didRedrawAfterClear.value = true;
+  }
   const rect = canvas.value.getBoundingClientRect();
   const touch = e.touches[0];
   drawing = true;
@@ -200,19 +283,26 @@ const drawTouch = (e) => {
   ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
   ctx.stroke();
 };
-const clearCanvas = () => {
+
+/* ✕ 버튼: 서명 클리어 */
+const clearCanvas = (skipMark = false) => {
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+  if (!skipMark) {
+    wasCleared.value = true;
+    hasNotified.value = false;
+    didRedrawAfterClear.value = false;
+  }
 };
 
-// =========================
-// 결재 요청
-// =========================
+/* =========================
+   결재 요청
+   ========================= */
 const showPopup = ref(false);
 
 const sendApprovalRequest = async () => {
   try {
     const normalizeItems = (items) => {
-      return items.map((i) => ({
+      return (items || []).map((i) => ({
         gwan: i.gwan,
         hang: i.hang,
         mok: i.mok === "__custom__" ? i.customMok : i.mok,
@@ -231,7 +321,7 @@ const sendApprovalRequest = async () => {
       totalAmount: props.totalAmount,
       comment: props.comment,
       aliasName: props.aliasName,
-      items: normalizeItems(props.items) || [],
+      items: normalizeItems(props.items),
     };
 
     const res = await axios.post("/api/approval", data, { withCredentials: true });
@@ -258,7 +348,7 @@ const sendApprovalRequest = async () => {
     if (user.value) {
       const formData = new FormData();
       formData.append("requestId", requestId);
-      formData.append("approver_role", user.value.roles[0]?.role_name || "작성자");
+      formData.append("approver_role", user.value.roles?.[0]?.role_name || "작성자");
       formData.append("approver_user_id", user.value.userId);
       formData.append("comment", props.comment || "");
 
@@ -271,6 +361,13 @@ const sendApprovalRequest = async () => {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
+    }
+
+    // 현재 서명을 기본서명으로 저장
+    // ▶ 조회한 기본서명을 그대로 쓴 경우에는 저장하지 않음
+    // ▶ ✕로 지운 뒤 실제로 다시 그린 경우에만 저장
+    if (wasCleared.value && didRedrawAfterClear.value) {
+      await saveDefaultSignature();
     }
 
     showPopup.value = true;
