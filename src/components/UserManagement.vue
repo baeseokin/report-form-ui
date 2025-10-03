@@ -131,11 +131,6 @@
           </label>
 
           <label class="block">
-            <span class="font-semibold text-gray-700">이메일</span>
-            <input v-model="selectedUser.email" class="border px-3 py-2 rounded-lg w-64 ml-2" />
-          </label>
-
-          <label class="block">
             <span class="font-semibold text-gray-700">부서</span>
             <select v-model="selectedUser.dept" class="border px-3 py-2 rounded-lg w-64 ml-2">
               <option v-for="dept in departments" :key="dept.id" :value="dept.name">
@@ -147,7 +142,7 @@
           <!-- ✅ 역할 선택 (id:Number 배열 바인딩) -->
           <label class="block">
             <span class="font-semibold text-gray-700">역할</span>
-            <select v-model="selectedUser.roles[0]"  class="border px-3 py-2 rounded-lg w-64 ml-2">
+            <select v-model="selectedUser.roles[0]" class="border px-3 py-2 rounded-lg w-64 ml-2">
               <option v-for="role in roles" :key="role.id" :value="role.id">
                 {{ role.name }}
               </option>
@@ -173,6 +168,61 @@
                 class="border px-3 py-2 rounded-lg w-64 ml-2"
               />
             </label>
+          </div>
+
+          <!-- ✅ 서명(직접 그리기) -->
+          <div class="mt-6 border-t pt-4">
+            <!-- <h3 class="font-bold text-gray-800 mb-3">✍️ 서명</h3> -->
+
+            <div class="flex items-start gap-6">
+              <!-- 기본 서명 미리보기 -->
+              <div class="flex flex-col items-center gap-2">
+                <span class="text-sm text-gray-600">기본 서명</span>
+                <div class="w-24 h-24 border rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
+                  <img
+                    v-if="defaultSignaturePath"
+                    :src="`/api/files/${encodeURIComponent(defaultSignaturePath)}`"
+                    class="object-contain w-full h-full"
+                  />
+                  <span v-else class="text-xs text-gray-400">없음</span>
+                </div>
+              </div>
+
+              <!-- 서명 캔버스 -->
+              <div class="flex-1 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-gray-700">서명 캔버스</span>
+                  <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 text-sm">
+                      <input type="checkbox" v-model="setAsDefault" />
+                      <span>저장 후 기본 지정</span>
+                    </label>
+                    <button @click="clearCanvas" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">
+                      지우기
+                    </button>
+                    <button
+                      v-if="!selectedUser?.isNew"
+                      @click="saveSignatureNow"
+                      :disabled="!hasSignature"
+                      class="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50 hover:bg-emerald-600"
+                    >
+                      서명 저장
+                    </button>
+                  </div>
+                </div>
+
+                <div class="border rounded-lg bg-white overflow-hidden relative">
+                  <canvas ref="signCanvas" class="w-full h-42 touch-none"></canvas>
+                  <div class="absolute top-2 right-3 text-xs text-gray-400 select-none">
+                    마우스/손가락으로 서명하세요
+                  </div>
+                </div>
+
+                <!-- <p class="text-xs text-gray-500">
+                  신규 사용자는 <strong>등록하기</strong>를 누르면 사용자 생성 후 현재 서명이 자동 저장됩니다.
+                </p> -->
+              </div>
+            </div>
           </div>
 
           <!-- 버튼 -->
@@ -207,6 +257,7 @@
           </div>
         </div>
       </div>
+
       <div v-else class="text-gray-500 text-lg flex items-center justify-center h-full">
         좌측에서 사용자를 선택하거나, <br>상단의 사용자 등록 버튼을 눌러 새로 생성하세요.
       </div>
@@ -228,11 +279,18 @@ export default {
       roleIdToName: {},  // { [id]: name }
       roleIdSet: new Set(),
       selectedUser: null,
-      filters: {
-        dept: "",
-        role: "",
-        name: "",
-      },
+      filters: { dept: "", role: "", name: "" },
+
+      // ✅ 서명 관련 상태
+      setAsDefault: true,
+      defaultSignaturePath: "",
+      defaultSignatureId: null,
+      isDrawing: false,
+      hasSignature: false,
+      lastX: 0,
+      lastY: 0,
+      dpr: 1,
+      _onResize: null,   // 리스너 참조
     };
   },
   methods: {
@@ -278,33 +336,36 @@ export default {
       try {
         const res = await axios.get("/api/users/search", { params: this.filters });
         this.users = res.data.map(u => {
-          // roleIds: "1,2" 같은 CSV → Number[]로 정규화
           const roleIds = this.normalizeRoles(u.roleIds ?? u.roles);
-          // 서버가 roleNames도 주므로 우선 사용, 없으면 id→name 변환
           const roleNames = u.roleNames && u.roleNames.length
             ? u.roleNames
             : this.roleIdsToNames(roleIds);
-
-          return {
-            ...u,
-            roles: roleIds,        // 우측 다중 select와 바인딩
-            roleNames,             // 목록 표시에 사용
-          };
+          return { ...u, roles: roleIds, roleNames };
         });
       } catch (err) {
         console.error("사용자 검색 실패:", err);
       }
     },
+
+    // ✅ 사용자 선택
     selectUser(user) {
       const normalized = this.normalizeRoles(user.roles);
       this.selectedUser = {
         ...user,
-        roles: normalized, // Number[] → 우측 select box에 즉시 반영됨
+        roles: normalized,
         newPassword: "",
         confirmPassword: "",
         isNew: false
       };
+      // 기본 서명 로드 & 서명 캔버스 준비
+      this.loadDefaultSignature(this.selectedUser.id);
+      this.$nextTick(() => {
+        this.setupSignatureCanvas();
+        this.clearCanvas();
+      });
     },
+
+    // ✅ 신규 사용자
     newUser() {
       this.selectedUser = {
         id: null,
@@ -317,15 +378,24 @@ export default {
         confirmPassword: "",
         isNew: true,
       };
+      this.defaultSignaturePath = "";
+      this.defaultSignatureId = null;
+      this.$nextTick(() => {
+        this.setupSignatureCanvas();
+        this.clearCanvas();
+      });
     },
+
     clearSelection() {
       this.selectedUser = null;
+      this.teardownResizeListener();
     },
+
     // ✅ 사용자 등록
     async createUser() {
       try {
         const su = this.selectedUser;
-        su.roles = this.normalizeRoles(su.roles); // safety
+        su.roles = this.normalizeRoles(su.roles);
 
         // 프론트 유효성 검사
         if (!su.userId) return alert("사용자ID를 입력하세요.");
@@ -342,10 +412,23 @@ export default {
           roles: Array.isArray(su.roles) ? su.roles : [],
           password: su.newPassword,
         };
-        // ※ 백엔드가 CSV를 원하면 아래 사용
-        // payload.roles = payload.roles.join(',');
 
-        await axios.post(`/api/users`, payload);
+        const res = await axios.post(`/api/users`, payload);
+
+        // 생성된 사용자 id 확보 (API가 id를 반환하지 않으면 검색으로 보완)
+        let newUserId = res?.data?.id || res?.data?.user?.id;
+        if (!newUserId) {
+          await this.searchUsers();
+          const found = this.users.find(u => u.userId === su.userId);
+          newUserId = found?.id;
+        }
+
+        // 현재 서명(캔버스)이 있으면 저장
+        const blob = await this.canvasToBlob();
+        if (newUserId && blob) {
+          await this.uploadSignatureBlobForUser(newUserId, blob);
+        }
+
         alert("사용자가 등록되었습니다.");
         this.selectedUser = null;
         this.searchUsers();
@@ -354,6 +437,7 @@ export default {
         alert(err?.response?.data?.message || "등록 중 오류가 발생했습니다.");
       }
     },
+
     // ✅ 사용자 수정
     async updateUser() {
       try {
@@ -368,8 +452,6 @@ export default {
           roles: this.normalizeRoles(rest.roles)
         };
         if (newPassword) payload.newPassword = newPassword;
-        // ※ 백엔드가 CSV를 원하면 아래 사용
-        // payload.roles = payload.roles.join(',');
 
         await axios.put(`/api/users/${this.selectedUser.id}`, payload);
         alert("사용자가 성공적으로 업데이트되었습니다.");
@@ -379,6 +461,7 @@ export default {
         alert(err?.response?.data?.message || "업데이트 중 오류가 발생했습니다.");
       }
     },
+
     async deleteUser() {
       if (!this.selectedUser || this.selectedUser.isNew) return this.clearSelection();
       if (!confirm("정말로 이 사용자를 삭제하시겠습니까?")) return;
@@ -391,16 +474,146 @@ export default {
         console.error("삭제 실패:", err);
         alert(err?.response?.data?.message || "삭제 중 오류가 발생했습니다.");
       }
-    }
+    },
+
+    /* -------------------- 서명(캔버스) 관련 -------------------- */
+
+    async loadDefaultSignature(userId) {
+      try {
+        if (!userId) { this.defaultSignaturePath = ""; this.defaultSignatureId = null; return; }
+        const { data } = await axios.get(`/api/users/${userId}/signature/default`);
+        this.defaultSignaturePath = data?.file_path || "";
+        this.defaultSignatureId = data?.id ?? null;
+      } catch (e) {
+        console.error("기본 서명 조회 실패:", e);
+        this.defaultSignaturePath = "";
+        this.defaultSignatureId = null;
+      }
+    },
+
+    setupSignatureCanvas() {
+      const canvas = this.$refs.signCanvas;
+      if (!canvas) return;
+
+      const parent = canvas.parentElement;
+      const widthCss = parent.clientWidth;
+      const heightCss = 192; // h-48 ≈ 192px
+
+      // HiDPI 대응
+      this.dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(widthCss * this.dpr);
+      canvas.height = Math.floor(heightCss * this.dpr);
+      canvas.style.width = widthCss + "px";
+      canvas.style.height = heightCss + "px";
+
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#111827"; // slate-900
+
+      canvas.onpointerdown = (e) => {
+        e.preventDefault();
+        const { x, y } = this._canvasPos(e, canvas);
+        this.isDrawing = true;
+        this.lastX = x;
+        this.lastY = y;
+      };
+      canvas.onpointermove = (e) => {
+        if (!this.isDrawing) return;
+        e.preventDefault();
+        const { x, y } = this._canvasPos(e, canvas);
+        ctx.beginPath();
+        ctx.moveTo(this.lastX, this.lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        this.lastX = x;
+        this.lastY = y;
+        this.hasSignature = true;
+      };
+      const end = () => (this.isDrawing = false);
+      canvas.onpointerup = end;
+      canvas.onpointerleave = end;
+
+      canvas.style.touchAction = "none"; // 모바일 스크롤 방지
+
+      // 리사이즈 핸들러
+      this.teardownResizeListener();
+      this._onResize = () => {
+        const wasDrawn = this.hasSignature;
+        this.setupSignatureCanvas();
+        if (!wasDrawn) this.clearCanvas();
+      };
+      window.addEventListener("resize", this._onResize);
+    },
+
+    teardownResizeListener() {
+      if (this._onResize) {
+        window.removeEventListener("resize", this._onResize);
+        this._onResize = null;
+      }
+    },
+
+    _canvasPos(e, canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX) ?? 0;
+      const clientY = e.clientY ?? (e.touches && e.touches[0]?.clientY) ?? 0;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      return { x, y };
+    },
+
+    clearCanvas() {
+      const canvas = this.$refs.signCanvas;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.hasSignature = false;
+    },
+
+    async canvasToBlob() {
+      const canvas = this.$refs.signCanvas;
+      if (!canvas) return null;
+      if (!this.hasSignature) return null; // 비었으면 저장 안 함
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      });
+    },
+
+    async uploadSignatureBlobForUser(userId, blob) {
+      if (!blob || !userId) return;
+      const fd = new FormData();
+      fd.append("file", blob, "signature.png");
+      fd.append("isDefault", this.setAsDefault ? "1" : "0");
+
+      await axios.post(`/api/users/${userId}/signatures`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      await this.loadDefaultSignature(userId);
+      alert("서명이 저장되었습니다.");
+    },
+
+    async saveSignatureNow() {
+      if (!this.selectedUser || this.selectedUser.isNew) return;
+      const blob = await this.canvasToBlob();
+      if (!blob) return alert("서명을 입력하세요.");
+      await this.uploadSignatureBlobForUser(this.selectedUser.id, blob);
+    },
   },
   async mounted() {
     await Promise.all([this.fetchDepartments(), this.fetchRoles()]);
     this.searchUsers();
   },
+  beforeUnmount() {
+    this.teardownResizeListener();
+  }
 };
 </script>
 
 <style scoped>
 /**** 추가적인 마이크로 UX ****/
 select[multiple] { min-height: 8rem; }
+canvas { cursor: crosshair; }
 </style>
