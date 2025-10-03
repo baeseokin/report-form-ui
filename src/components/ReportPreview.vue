@@ -328,8 +328,12 @@ const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleStri
 const getSignature = (role) => approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
 const getComment = (role) => approvalHistory.value.find(h => h.approver_role === role)?.comment || null;
 const getSignatureUrl = (role) => {
-  const signaturePath = getSignature(role);
-  return signaturePath ? `/api/files/${signaturePath}` : "";
+  const p = getSignature(role);
+  if (!p) return "";
+  // 이미 인코딩된 값이 와도 안전하게 재인코딩
+  let rel = p;
+  try { rel = decodeURIComponent(p); } catch {}
+  return `/api/files/${encodeURIComponent(rel)}`;
 };
 const getApprovedAt = (role) => approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
 const formatDateTime = (dateStr) => {
