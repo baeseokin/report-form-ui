@@ -64,16 +64,35 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "./store/userStore";
+import { useAutoLogout } from "@/composables/useAutoLogout";
 import axios from "axios";
 
 const router = useRouter();
 const userStore = useUserStore();
 
+// 프로젝트 로그아웃 로직: Pinia + 라우팅
+async function projectLogout() {
+  await userStore.logout();
+  router.push("/login");
+}
+
+const { start, stop, reset } = useAutoLogout({
+  timeoutMs: 5 * 60 * 1000,
+  onLogout: projectLogout,
+  excludePaths: ["/login", "/auth/*"],
+  getCurrentPath: () => router.currentRoute.value.path,
+});
+
 onMounted(() => {
+  start();
+  // 라우트 이동 시에도 마지막 활동으로 간주하여 리셋
+  router.afterEach(() => reset());
+
   userStore.loadSession();
+
 });
 
 const user = computed(() => userStore.user);
@@ -124,4 +143,6 @@ const logout = async () => {
   userStore.clearUser();
   router.push("/login");
 };
+
+onBeforeUnmount(() => stop());
 </script>

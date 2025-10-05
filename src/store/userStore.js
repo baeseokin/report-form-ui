@@ -41,5 +41,17 @@ export const useUserStore = defineStore("user", {
       this.access = [];
       sessionStorage.removeItem("user");
     },
+    async logout() {
+      try {
+        await axios.post("/api/logout", {}, { withCredentials: true });
+      } catch {
+        // 서버 오류 상관없이 클라이언트 정리
+      } finally {
+        try { localStorage.removeItem("token"); } catch {}
+        try { sessionStorage.clear(); } catch {}
+        this.clearUser(); // user, access 초기화
+      }
+    }
+
   },
 });
