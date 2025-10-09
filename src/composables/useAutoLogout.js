@@ -2,7 +2,7 @@
 let installed = false;
 
 export function useAutoLogout({
-  timeoutMs = 5 * 60 * 1000,
+  timeoutMs = 1 * 60 * 1000,
   onLogout,
   excludePaths = ["/login"],
   getCurrentPath = () => location.pathname,

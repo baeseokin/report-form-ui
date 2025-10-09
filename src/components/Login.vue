@@ -9,7 +9,7 @@
         v-model="selectedDeptId"
         class="w-full mb-3 p-2 border rounded"
         :disabled="loading.departments"
-        @change="onDeptOrRoleChanged"
+        @change="onDeptChanged"
       >
         <option value="" disabled>부서를 선택하세요</option>
         <option v-for="d in departments" :key="d.id" :value="d.id">
@@ -22,8 +22,8 @@
       <select
         v-model="selectedRoleId"
         class="w-full mb-3 p-2 border rounded"
-        :disabled="loading.roles || roles.length === 0"
-        @change="onDeptOrRoleChanged"
+        :disabled="!selectedDeptId || loading.roles || roles.length === 0"
+        @change="onRoleChanged"
       >
         <option value="" disabled>
           {{ rolesDisabledReason || "역할을 선택하세요" }}
@@ -135,13 +135,27 @@ const canSubmit = computed(() => {
 
 // 초기 데이터 로딩
 onMounted(async () => {
-  await Promise.all([fetchDepartments(), fetchRoles()]);
+  await fetchDepartments();
 });
 
-// 부서/역할 변경 시 사용자 목록 갱신
-async function onDeptOrRoleChanged() {
+
+// ✅ 부서 변경 시 역할 목록 갱신
+async function onDeptChanged() {
+  selectedRoleId.value = "";
+  selectedUserId.value = "";
+  roles.value = [];
+  users.value = [];
+
+  if (selectedDeptId.value) {
+    await fetchRoles(selectedDeptId.value);
+  }
+}
+
+// ✅ 역할 변경 시 사용자 목록 갱신
+async function onRoleChanged() {
   selectedUserId.value = "";
   users.value = [];
+
   if (selectedDeptId.value && selectedRoleId.value) {
     await fetchUsers(selectedDeptId.value, selectedRoleId.value);
   }
@@ -160,12 +174,18 @@ async function fetchDepartments() {
   }
 }
 
-async function fetchRoles() {
+async function fetchRoles(deptId) {
+  console.log("fetchRoles - deptId :", deptId);
   try {
     loading.value.roles = true;
-    // ⚠️ /api/roles 는 세션 필요 → 401일 경우 무시하고 빈 배열 유지
-    const res = await axios.get("/api/public/roles", { withCredentials: true });
-    roles.value = res.data || [];
+
+    // ✅ 부서별 역할 목록 조회
+    const res = await axios.get("/api/public/roles", {
+      params: { deptId },
+      withCredentials: true,
+    });
+    roles.value = Array.isArray(res.data) ? res.data : [];
+
   } catch (e) {
     if (e?.response?.status === 401) {
       console.warn("역할 조회는 로그인 후에만 가능합니다. (로그인 화면에서는 빈 목록)");
