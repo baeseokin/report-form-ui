@@ -283,10 +283,10 @@ async function fetchUsers(deptId, roleId) {
 const login = async () => {
   error.value = "";
   if (!canSubmit.value) return;
-
+  const res = null;
   try {
     // 기존 /api/login 스펙 유지: userId + password
-    const res = await axios.post(
+    res = await axios.post(
       "/api/login",
       {
         userId: selectedUserId.value,
@@ -297,7 +297,7 @@ const login = async () => {
       },
       { withCredentials: true }
     );
-
+    
     if (res.data?.success) {
       await userStore.loadSession(); // 세션 로드
       const rolesFromSession = userStore.roles.map((r) => r.role_name || r);
@@ -311,8 +311,7 @@ const login = async () => {
       error.value = res.data?.message || "로그인 실패";
     }
   } catch (err) {
-    console.error("로그인 실패:", err);
-    error.value = "로그인 실패";
+    error.value = err.response.data.message||"로그인 실패";
   }
 };
 </script>
