@@ -146,7 +146,7 @@ const selectedDeptLabel = computed(() => {
 const rolesDisabledReason = computed(() => {
   if (loading.value.roles) return "역할을 불러오는 중…";
   if (roles.value.length === 0)
-    return "역할을 불러올 수 없습니다(로그인 필요일 수 있음)";
+    return "먼저 부서를 선택하세요.";
   return "";
 });
 
