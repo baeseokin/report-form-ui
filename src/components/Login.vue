@@ -3,19 +3,35 @@
     <div class="bg-white p-8 shadow rounded-lg w-96">
       <h2 class="text-2xl font-bold mb-6 text-center">🔐 로그인</h2>
 
-      <!-- 부서 선택 -->
-      <label class="block text-sm font-semibold mb-1">부서</label>
-      <select
-        v-model="selectedDeptId"
-        class="w-full mb-3 p-2 border rounded"
-        :disabled="loading.departments"
-        @change="onDeptChanged"
-      >
-        <option value="" disabled>부서를 선택하세요</option>
-        <option v-for="d in departments" :key="d.id" :value="d.id">
-          {{ d.dept_name }} ({{ d.dept_cd }})
-        </option>
-      </select>
+      <div class="mb-3">
+        <button
+          type="button"
+          class="w-full p-2 border rounded flex justify-between items-center"
+          :disabled="loading.departments"
+          @click="deptModalOpen = true"
+        >
+          <span>{{ selectedDeptLabel || "부서를 선택하세요" }}</span>
+          <span class="text-gray-400">⌵</span>
+        </button>
+
+        <!-- 디바이스 유형별 모달을 동적 로딩 -->
+        <Suspense v-if="deptModalOpen">
+          <component
+            :is="isMobile ? DeptPickerMobileAsync : DeptPickerDesktopAsync"
+            :departments="departments"
+            :favorites="favorites"
+            :recent="recent"
+            @close="deptModalOpen = false"
+            @select="onSelectDeptMobile"
+            @update:favorites="updateFavorites"
+          />
+          <template #fallback>
+            <div class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
+              <div class="bg-white rounded-xl shadow p-6 text-sm">부서 선택 UI 불러오는 중…</div>
+            </div>
+          </template>
+        </Suspense>
+      </div>
 
       <!-- 역할 선택 -->
       <label class="block text-sm font-semibold mb-1">역할</label>
@@ -78,10 +94,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick, defineAsyncComponent } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../store/userStore";
+import DeptPickerMobile from "./mobile/DeptPickerMobile.vue";
+import DeptPickerDesktop from "./DeptPickerDesktop.vue";
+// ✅ 동적 로딩용 Async 컴포넌트 (코드 스플리팅)
+const DeptPickerMobileAsync = defineAsyncComponent(() =>
+  import("./mobile/DeptPickerMobile.vue")
+);
+const DeptPickerDesktopAsync = defineAsyncComponent(() =>
+  import("./DeptPickerDesktop.vue")
+);
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -102,6 +127,20 @@ const loading = ref({
   roles: false,
   users: false,
 });
+
+// ===== 모바일/즐겨찾기/최근 상태 =====
+const isMobile = computed(() => typeof window !== "undefined" && window.innerWidth <= 640);
+const deptModalOpen = ref(false);
+const FAVORITE_KEY = "dept_favorites";
+const RECENT_KEY = "dept_recent";
+const favorites = ref([]); // [deptId]
+const recent = ref([]);    // [deptId]
+
+const selectedDeptLabel = computed(() => {
+  const d = departments.value.find(x => String(x.id) === String(selectedDeptId.value));
+  return d ? `${d.dept_name} (${d.dept_cd})` : "";
+});
+
 
 // ----- 유틸: 비로그인 상태에서 roles 401 허용 -----
 const rolesDisabledReason = computed(() => {
@@ -136,6 +175,12 @@ const canSubmit = computed(() => {
 // 초기 데이터 로딩
 onMounted(async () => {
   await fetchDepartments();
+
+  // 즐겨찾기/최근 로드
+  try {
+    favorites.value = JSON.parse(localStorage.getItem(FAVORITE_KEY) || "[]");
+    recent.value = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  } catch {}
 });
 
 
@@ -149,6 +194,23 @@ async function onDeptChanged() {
   if (selectedDeptId.value) {
     await fetchRoles(selectedDeptId.value);
   }
+}
+
+// 모바일 모달에서 부서 선택 시 처리
+async function onSelectDeptMobile(dept) {
+  selectedDeptId.value = dept.id;
+  // 최근(최대 5개) 갱신
+  recent.value = [dept.id, ...recent.value.filter(x => x !== dept.id)].slice(0, 5);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recent.value));
+  deptModalOpen.value = false;
+  await nextTick();
+  await onDeptChanged();
+}
+
+// 즐겨찾기 업데이트(자식 → 부모)
+function updateFavorites(next) {
+  favorites.value = next;
+  localStorage.setItem(FAVORITE_KEY, JSON.stringify(favorites.value.slice(0, 50)));
 }
 
 // ✅ 역할 변경 시 사용자 목록 갱신
