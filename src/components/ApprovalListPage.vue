@@ -47,10 +47,10 @@
         </thead>
         <tbody>
           <tr v-for="row in rows" :key="row.id" class="hover:bg-purple-50 transition">
-            <td class="border p-3">{{ row.dept_name }}</td>
-            <td class="border p-3">{{ row.document_type }}</td>
-            <td class="border p-3">{{ row.author }}</td>
-            <td class="border p-3">{{ formatDate(row.request_date) }}</td>
+            <td class="border p-3 text-center">{{ row.dept_name }}</td>
+            <td class="border p-3 text-center">{{ row.document_type }}</td>
+            <td class="border p-3 text-center">{{ row.author }}</td>
+            <td class="border p-3 text-center">{{ formatDate(row.request_date) }}</td>
             <td class="border p-3 text-right">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
             <td class="border p-3 text-center">
               <button

@@ -78,14 +78,14 @@
         </thead>
         <tbody>
           <tr v-for="a in approvals" :key="a.id" class="hover:bg-purple-50 transition">
-            <td class="border p-3">{{ a.document_type }}</td>
-            <td class="border p-3">{{ a.dept_name }}</td>
-            <td class="border p-3">{{ a.author }}</td>
-            <td class="border p-3">{{ a.aliasName }}</td>
-            <td class="border p-3">{{ formatDate(a.request_date) }}</td>
+            <td class="border p-3 text-center">{{ a.document_type }}</td>
+            <td class="border p-3 text-center">{{ a.dept_name }}</td>
+            <td class="border p-3 text-center">{{ a.author }}</td>
+            <td class="border p-3 text-center">{{ a.aliasName }}</td>
+            <td class="border p-3 text-center">{{ formatDate(a.request_date) }}</td>
             <td class="border p-3 text-right">{{ formatAmount(a.total_amount) }}</td>
-            <td class="border p-3">{{ a.status }}</td>
-            <td class="border p-3 flex justify-center items-center space-x-3">
+            <td class="border p-3 text-center">{{ a.status }}</td>
+            <td class="border p-3 text-center items-center space-x-3">
               <button
                 @click="openPreview(a.id)"
                 class="p-2 rounded-lg hover:bg-green-100 transition"
