@@ -283,7 +283,8 @@ async function fetchUsers(deptId, roleId) {
 const login = async () => {
   error.value = "";
   if (!canSubmit.value) return;
-  const res = null;
+  let res = null;
+
   try {
     // 기존 /api/login 스펙 유지: userId + password
     res = await axios.post(
@@ -311,7 +312,12 @@ const login = async () => {
       error.value = res.data?.message || "로그인 실패";
     }
   } catch (err) {
-    error.value = err.response.data.message||"로그인 실패";
+    try{
+      error.value = err.response.data.message||"로그인 실패";
+    }catch (err1){
+      error.value = "로그인 실패";
+    }
+    
   }
 };
 </script>
