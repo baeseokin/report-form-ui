@@ -1,5 +1,17 @@
 <template>
-  <div class="space-y-6 font-nanum">
+  <!-- ✅ 세로모드 & 태블릿(≤1024px)에서는 모바일 전용 컴포넌트로 전환 -->
+  <ExpenseTabMobile
+    v-if="isPortrait && isTabletOrSmaller"
+    :items="items"
+    :deptData="deptData"
+    :selectedDept="selectedDept"
+    @update:items="$emit('update:items', $event)"
+    @prev="$emit('prev')"
+    @next="$emit('next')"
+  />
+
+  <!-- ✅ 그 외(가로모드/데스크톱)에는 기존 테이블 UI 유지 -->
+  <div v-else class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">💸 지출내역 입력</h2>
 
     <!-- 📊 예산/지출/잔액 표시 -->
@@ -132,11 +144,12 @@
 </template>
 
 <script setup>
-import { computed, ref, watch} from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
 import ModalAlert from "./ModalAlert.vue"; // ✅ 모달 추가
+import ExpenseTabMobile from "./mobile/ExpenseTabMobile.vue"; // ✅ 모바일 전용 화면
 
 const props = defineProps(["items", "deptData", "selectedDept"]);
 const emits = defineEmits(["update:items", "prev", "next"]);
@@ -162,6 +175,34 @@ const remainingBudget = computed(() => totalBudget.value - totalExpense.value);
 // ✅ 모달 상태
 const showAlert = ref(false);
 const alertMessage = ref("");
+
+// ✅ 뷰포트/방향 감지: 세로모드 & 태블릿(≤1024px) 판별
+const isPortrait = ref(false);
+const isTabletOrSmaller = ref(false);
+function initMediaQueries() {
+  const mqlPortrait = window.matchMedia("(orientation: portrait)");
+  const mqlTablet = window.matchMedia("(max-width: 1024px)");
+  const update = () => {
+    isPortrait.value = mqlPortrait.matches;
+    isTabletOrSmaller.value = mqlTablet.matches;
+  };
+  update(); // 초기 반영
+  mqlPortrait.addEventListener("change", update);
+  mqlTablet.addEventListener("change", update);
+  window.addEventListener("resize", update);
+  return () => {
+    mqlPortrait.removeEventListener("change", update);
+    mqlTablet.removeEventListener("change", update);
+    window.removeEventListener("resize", update);
+  };
+}
+let cleanupMedia = null;
+onMounted(() => {
+  cleanupMedia = initMediaQueries();
+});
+onBeforeUnmount(() => {
+  if (cleanupMedia) cleanupMedia();
+});
 
 // ✅ "다음" 버튼 제어
 const handleNext = () => {
