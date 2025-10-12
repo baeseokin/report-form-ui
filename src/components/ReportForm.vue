@@ -88,13 +88,21 @@
 
     <!-- 📌 미리보기 -->
     <ReportPreview v-if="report" :report="report" @close="closeReport" />
+    <!-- 📌 방향 전환 경고 모달 -->
+    <ModalAlert
+      :visible="showOrientationAlert"
+      title="주의"
+      :message="orientationAlertMessage"
+      @close="showOrientationAlert = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import ModalAlert from "./ModalAlert.vue";
 
 // 📌 PC 전용 컴포넌트
 import BasicInfoTab from "./BasicInfoTab.vue";
@@ -216,4 +224,73 @@ const generateReport = (previewData) => {
 };
 
 const closeReport = () => (report.value = null);
+
+// ✅ 방향 전환 시 경고 모달 표시
+const showOrientationAlert = ref(false);
+const orientationAlertMessage = ref("보고서 작성 중 가로/세로 모드가 바뀌면 에러가 발생할 수 있습니다.");
+
+function triggerOrientationAlert() {
+  // 이미 떠 있으면 다시 띄우지 않음
+  if (!showOrientationAlert.value) {
+    showOrientationAlert.value = true;
+  }
+}
+
+// 반응형 감지 (가로/세로 전환 포함하여 견고하게)
+let mql = null;
+
+function getViewportWidth() {
+  return (typeof window !== "undefined" && window.visualViewport)
+    ? window.visualViewport.width
+    : (typeof window !== "undefined" ? window.innerWidth : 1024);
+}
+
+function updateIsMobile() {
+  const width = getViewportWidth();
+  const prev = isMobile.value;
+  isMobile.value = width <= 768;
+  // ✅ 폭 변화로 인해 가로/세로 모드가 바뀌었으면 알림 표시
+  if (prev !== isMobile.value) {
+    triggerOrientationAlert();
+  }
+}
+
+function initResponsiveListeners() {
+  if (typeof window === "undefined") return () => {};
+
+  updateIsMobile();
+
+  const onResize = () => updateIsMobile();
+  const onOrientation = () => triggerOrientationAlert();
+
+  window.addEventListener("resize", onResize, { passive: true });
+  window.addEventListener("orientationchange", onOrientation, { passive: true });
+
+  mql = window.matchMedia("(max-width: 768px)");
+  const onMqlChange = (e) => {
+    isMobile.value = e.matches;
+    triggerOrientationAlert();
+  };
+  mql.addEventListener?.("change", onMqlChange);
+
+  const onVvResize = () => updateIsMobile();
+  window.visualViewport?.addEventListener?.("resize", onVvResize, { passive: true });
+
+  return () => {
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("orientationchange", onOrientation);
+    mql?.removeEventListener?.("change", onMqlChange);
+    window.visualViewport?.removeEventListener?.("resize", onVvResize);
+  };
+}
+
+let cleanupResponsive = null;
+onMounted(() => {
+  cleanupResponsive = initResponsiveListeners();
+});
+
+onBeforeUnmount(() => {
+  cleanupResponsive?.();
+});
+
 </script>
