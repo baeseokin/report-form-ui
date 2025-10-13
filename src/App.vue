@@ -25,6 +25,11 @@
         </template>
       </nav>
 
+      <!-- ⏱ 자동 로그아웃 카운트다운 -->
+      <div v-if="showLogoutTimer && timeVisible" class="mb-3 px-3 py-2 rounded bg-yellow-100 text-yellow-800 text-sm">
+        ⏱ 자동 로그아웃까지: <strong>{{ mmss }}</strong>
+      </div>
+
       <!-- 사용자 정보 & 로그아웃 -->
       <div class="mt-auto text-sm text-gray-300">
         <div v-if="user">
@@ -69,31 +74,48 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
 import axios from "axios";
+const showLogoutTimer = false;  //자동로그인이 안될 경우에 true 로 변경해서 확인
 
 const router = useRouter();
 const userStore = useUserStore();
 
 // 프로젝트 로그아웃 로직: Pinia + 라우팅
 async function projectLogout() {
-  await userStore.logout();
+  await userStore.logout();ㄴ
   router.push("/login");
 }
 
-const { start, stop, reset } = useAutoLogout({
+const { start, stop, reset, remainingMs, isExcluded } = useAutoLogout({
   timeoutMs: 1 * 60 * 1000,
   onLogout: projectLogout,
   excludePaths: ["/login", "/auth/*"],
   getCurrentPath: () => router.currentRoute.value.path,
+  resetOnFetch: false,                       // 폴링이 있다면 false 권장
+  debug: false,
 });
 
 onMounted(() => {
   start();
-  // 라우트 이동 시에도 마지막 활동으로 간주하여 리셋
-  router.afterEach(() => reset());
+  router.afterEach(() => {
+    start();   // ✅ 멱등. stop된 상태면 재등록, 이미 시작이면 noop
+    reset();   // ✅ 경로에 따라 무장/해제
+  });
 
   userStore.loadSession();
 
 });
+onBeforeUnmount(() => stop());
+
+// ⏱ mm:ss 포맷
+const mmss = computed(() => {
+  const ms = remainingMs.value;
+  if (ms < 0) return "—"; // 제외 경로(/login)에서는 숨김
+  const totalSec = Math.ceil(ms / 1000);
+  const m = Math.floor(totalSec / 60).toString().padStart(2, "0");
+  const s = (totalSec % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+});
+const timeVisible = computed(() => remainingMs.value >= 0);
 
 const user = computed(() => userStore.user);
 
@@ -145,5 +167,4 @@ const logout = async () => {
   router.push("/login");
 };
 
-onBeforeUnmount(() => stop());
 </script>
