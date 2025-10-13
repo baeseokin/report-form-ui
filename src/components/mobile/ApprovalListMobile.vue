@@ -22,9 +22,10 @@
         <label class="font-bold mb-1 block">진행상태</label>
         <select v-model="filters.status" class="border rounded p-2 w-full">
           <option value="">전체</option>
-          <option value="완료">완료</option>
-          <option value="반려">반려</option>
-          <option value="진행중">진행중</option>
+          <option value="결재진행중">결재진행중</option>
+          <option value="결재완료">결재완료</option>
+          <option value="결재반려">결재반려</option>
+          <option value="재정부이관완료">재정부이관완료</option>
         </select>
       </div>
       <!-- 청구 시작일자 -->

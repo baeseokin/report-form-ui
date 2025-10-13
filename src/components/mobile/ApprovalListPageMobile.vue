@@ -82,11 +82,11 @@ const totalPages = ref(1);
 const previewReport = ref(null);
 
 const userStore = useUserStore();
-
+const userDeptName = userStore.user?.deptName || "";
 const search = reactive({
   months: 1,
-  deptName: userStore.user?.deptName || "",
-  status: "진행중",
+  deptName: userDeptName,
+  status: userDeptName === "재정부" ? "결재완료" : "결재진행중",
   approverUserId: userStore.user?.userId || "",
   startDate: "",
   endDate: "",

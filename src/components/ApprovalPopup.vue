@@ -87,6 +87,7 @@ const wasCleared = ref(false);          // '지우기' 버튼을 눌렀는지
 const hasNotified = ref(false);         // 재서명 시작 안내 1회만
 const didRedrawAfterClear = ref(false); // 지운 후 실제로 다시 그렸는지(저장 조건)
 
+
 /** 기본서명 로드 (서버 URL → 캔버스에 드로우) */
 async function loadDefaultSignature() {
   try {
@@ -229,7 +230,7 @@ onMounted(async () => {
 });
 
 const modeLabel = computed(() =>
-  props.mode === "approve" ? "승인" : "반려"
+  props.mode === "approve" ? "결재승인" : "결재반려"
 );
 
 const submitApproval = async () => {
