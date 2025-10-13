@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">💸 지출내역 입력</h2>
-
+    
     <!-- 📊 예산/지출/잔액 표시 -->
     <div class="grid grid-cols-3 gap-4 text-lg font-bold">
       <div class="p-4 bg-blue-50 border border-blue-200 rounded">
@@ -18,96 +18,181 @@
       </div>
     </div>
 
-    <table class="w-full border text-sm bg-white rounded-lg overflow-hidden mt-3 table-fixed">
-      <thead class="bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800">
-        <tr>
-          <th class="border p-3 w-14">선택</th>
-          <th class="border p-3 w-28">관</th>
-          <th class="border p-3 w-28">항</th>
-          <th class="border p-3 w-36">목</th>
-          <th class="border p-3 w-36">세목</th>
-          <th class="border p-3 w-44">지출내역</th>
-          <th class="border p-3 w-32">금액</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, idx) in items" :key="idx">
-          <!-- 선택 -->
-          <td class="border p-2 text-center">
-            <input type="checkbox" :checked="item.selected" @change="updateField(idx, 'selected', $event.target.checked)" />
-          </td>
-
-          <!-- 관 -->
-          <td class="border p-2">
-            <select :value="item.gwan" @change="onSelect(idx, 'gwan', $event.target.value)" class="w-full p-2 border rounded">
-              <option disabled value="">선택</option>
-              <option v-for="g in getGwans" :key="g">{{ g }}</option>
-            </select>
-          </td>
-
-          <!-- 항 -->
-          <td class="border p-2">
-            <select :value="item.hang" @change="onSelect(idx, 'hang', $event.target.value)" class="w-full p-2 border rounded">
-              <option disabled value="">선택</option>
-              <option v-for="h in getHangs(item)" :key="h">{{ h }}</option>
-            </select>
-          </td>
-
-          <!-- 목 -->
-          <td class="border p-2">
-            <template v-if="item.mok === '__custom__'">
-              <input type="text" :value="item.customMok || ''" @input="updateField(idx, 'customMok', $event.target.value)" placeholder="목 직접 입력" class="w-full p-2 border rounded" />
-            </template>
-            <template v-else>
-              <select :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" class="w-full p-2 border rounded">
+        <!-- ✅ 반응형 테이블: 넓은 화면=기존 테이블 / 좁은 화면=2줄 컴팩트 -->
+    <div class="overflow-x-auto md:overflow-visible -mx-2 md:mx-0">
+      <!-- 넓은 화면: 기존 1줄 테이블 -->
+      <table
+        v-if="!isCompactTable"
+        class="min-w-[920px] sm:min-w-0 w-full border text-sm bg-white rounded-lg overflow-hidden mt-3 table-fixed"
+      >
+        <thead class="bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800">
+          <tr>
+            <th class="border p-3 w-14">선택</th>
+            <th class="border p-3 w-28">관</th>
+            <th class="border p-3 w-28">항</th>
+            <th class="border p-3 w-36">목</th>
+            <th class="border p-3 w-36">세목</th>
+            <th class="border p-3 w-44">지출내역</th>
+            <th class="border p-3 w-32">금액</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, idx) in items" :key="idx">
+            <!-- 선택 -->
+            <td class="border p-2 text-center">
+              <input type="checkbox" :checked="item.selected" @change="updateField(idx, 'selected', $event.target.checked)" />
+            </td>
+            <!-- 관 -->
+            <td class="border p-2">
+              <select :value="item.gwan" @change="onSelect(idx, 'gwan', $event.target.value)" class="w-full p-2 border rounded">
                 <option disabled value="">선택</option>
-                <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
-                <option value="__custom__">직접입력</option>
+                <option v-for="g in getGwans" :key="g">{{ g }}</option>
               </select>
-            </template>
-          </td>
-
-          <!-- 세목 -->
-          <td class="border p-2">
-            <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
-              <input type="text" :value="item.customSemok || ''" @input="updateField(idx, 'customSemok', $event.target.value)" placeholder="세목 직접 입력" class="w-full p-2 border rounded" />
-            </template>
-            <template v-else>
-              <select :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" class="w-full p-2 border rounded">
+            </td>
+            <!-- 항 -->
+            <td class="border p-2">
+              <select :value="item.hang" @change="onSelect(idx, 'hang', $event.target.value)" class="w-full p-2 border rounded">
                 <option disabled value="">선택</option>
-                <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
-                <option value="__custom__">직접입력</option>
+                <option v-for="h in getHangs(item)" :key="h">{{ h }}</option>
               </select>
-            </template>
-          </td>
+            </td>
+            <!-- 목 -->
+            <td class="border p-2">
+              <template v-if="item.mok === '__custom__'">
+                <input type="text" :value="item.customMok || ''" @input="updateField(idx, 'customMok', $event.target.value)" placeholder="목 직접 입력" class="w-full p-2 border rounded" />
+              </template>
+              <template v-else>
+                <select :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" class="w-full p-2 border rounded">
+                  <option disabled value="">선택</option>
+                  <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
+                  <option value="__custom__">직접입력</option>
+                </select>
+              </template>
+            </td>
+            <!-- 세목 -->
+            <td class="border p-2">
+              <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
+                <input type="text" :value="item.customSemok || ''" @input="updateField(idx, 'customSemok', $event.target.value)" placeholder="세목 직접 입력" class="w-full p-2 border rounded" />
+              </template>
+              <template v-else>
+                <select :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" class="w-full p-2 border rounded">
+                  <option disabled value="">선택</option>
+                  <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
+                  <option value="__custom__">직접입력</option>
+                </select>
+              </template>
+            </td>
+            <!-- 지출내역 -->
+            <td class="border p-2">
+              <template v-if="item.mok === '__custom__' || item.semok === '__custom__' || item.detail === '__custom__'">
+                <input type="text" :value="item.customDetail || ''" @input="updateField(idx, 'customDetail', $event.target.value)" placeholder="지출내역 직접 입력" class="w-full p-2 border rounded" />
+              </template>
+              <template v-else>
+                <select :value="item.detail" @change="updateField(idx, 'detail', $event.target.value)" class="w-full p-2 border rounded">
+                  <option disabled value="">선택</option>
+                  <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
+                  <option value="__custom__">직접입력</option>
+                </select>
+              </template>
+            </td>
+            <!-- 금액 -->
+            <td class="border p-2 text-right">
+              <input type="text" :value="formatCurrency(item.amount)" @input="updateAmount($event, idx)" class="w-full p-2 text-right rounded border" />
+            </td>
+          </tr>
+          <!-- 합계 -->
+          <tr class="bg-purple-50 font-bold">
+            <td class="border p-3 text-center" colspan="6">합계</td>
+            <td class="border p-3 text-right">{{ totalAmount.toLocaleString() }} 원</td>
+          </tr>
+        </tbody>
+      </table>
 
-          <!-- 지출내역 -->
-          <td class="border p-2">
-            <template v-if="item.mok === '__custom__' || item.semok === '__custom__' || item.detail === '__custom__'">
-              <input type="text" :value="item.customDetail || ''" @input="updateField(idx, 'customDetail', $event.target.value)" placeholder="지출내역 직접 입력" class="w-full p-2 border rounded" />
-            </template>
-            <template v-else>
-              <select :value="item.detail" @change="updateField(idx, 'detail', $event.target.value)" class="w-full p-2 border rounded">
-                <option disabled value="">선택</option>
-                <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
-                <option value="__custom__">직접입력</option>
-              </select>
-            </template>
-          </td>
-
-          <!-- 금액 -->
-          <td class="border p-2 text-right">
-            <input type="text" :value="formatCurrency(item.amount)" @input="updateAmount($event, idx)" class="w-full p-2 text-right rounded border" />
-          </td>
-        </tr>
-
-        <!-- 합계 -->
-        <tr class="bg-purple-50 font-bold">
-          <td class="border p-3 text-center" colspan="6">합계</td>
-          <td class="border p-3 text-right">{{ totalAmount.toLocaleString() }} 원</td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- 좁은 화면: 2줄 컴팩트 테이블 (선택 체크박스 맨 왼쪽 + rowspan=2) -->
+      <table v-else class="w-full border text-xs bg-white rounded-lg overflow-hidden mt-3">
+        <tbody>
+          <template v-for="(item, idx) in items" :key="idx">
+            <!-- 1행: [선택(rowspan=2)] + 관/항/목/세목 -->
+            <tr>
+              <!-- ✅ 선택: 맨 왼쪽 고정 + 두 행 병합 -->
+              <td class="border p-2 text-center align-middle w-10" :rowspan="2">
+                <input
+                  type="checkbox"
+                  :checked="item.selected"
+                  @change="updateField(idx, 'selected', $event.target.checked)"
+                />
+              </td>              
+              <td class="border p-2 align-top">
+                <div class="cell-label">관</div>
+                <select :value="item.gwan" @change="onSelect(idx, 'gwan', $event.target.value)" class="w-full min-w-0 p-2 border rounded">
+                  <option disabled value="">선택</option>
+                  <option v-for="g in getGwans" :key="g">{{ g }}</option>
+                </select>
+              </td>
+              <td class="border p-2 align-top">
+                <div class="cell-label">항</div>
+                <select :value="item.hang" @change="onSelect(idx, 'hang', $event.target.value)" class="w-full min-w-0 p-2 border rounded">
+                  <option disabled value="">선택</option>
+                  <option v-for="h in getHangs(item)" :key="h">{{ h }}</option>
+                </select>
+              </td>
+              <td class="border p-2 align-top">
+                <div class="cell-label">목</div>
+                <template v-if="item.mok === '__custom__'">
+                  <input type="text" :value="item.customMok || ''" @input="updateField(idx, 'customMok', $event.target.value)" placeholder="목 직접 입력" class="w-full min-w-0 p-2 border rounded" />
+                </template>
+                <template v-else>
+                  <select :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" class="w-full min-w-0 p-2 border rounded">
+                    <option disabled value="">선택</option>
+                    <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
+                    <option value="__custom__">직접입력</option>
+                  </select>
+                </template>
+              </td>
+              <td class="border p-2 align-top">
+                <div class="cell-label">세목</div>
+                <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
+                  <input type="text" :value="item.customSemok || ''" @input="updateField(idx, 'customSemok', $event.target.value)" placeholder="세목 직접 입력" class="w-full min-w-0 p-2 border rounded" />
+                </template>
+                <template v-else>
+                  <select :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" class="w-full min-w-0 p-2 border rounded">
+                    <option disabled value="">선택</option>
+                    <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
+                    <option value="__custom__">직접입력</option>
+                  </select>
+                </template>
+              </td>
+            </tr>
+            <!-- 2행: [선택(rowspan)] + 지출내역(colspan=3) + 금액 -->
+            <tr class="bg-gray-50">
+              <td class="border p-2 align-top" colspan="3">
+                <div class="cell-label">지출내역</div>
+                <template v-if="item.mok === '__custom__' || item.semok === '__custom__' || item.detail === '__custom__'">
+                  <input type="text" :value="item.customDetail || ''" @input="updateField(idx, 'customDetail', $event.target.value)" placeholder="지출내역 직접 입력" class="w-full min-w-0 p-2 border rounded" />
+                </template>
+                <template v-else>
+                  <select :value="item.detail" @change="updateField(idx, 'detail', $event.target.value)" class="w-full min-w-0 p-2 border rounded">
+                    <option disabled value="">선택</option>
+                    <option v-for="d in getDetails(item)" :key="d">{{ d }}</option>
+                    <option value="__custom__">직접입력</option>
+                  </select>
+                </template>
+              </td>
+              <td class="border p-2 align-top">
+                <div class="cell-label">금액</div>
+                <input type="text" :value="formatCurrency(item.amount)" @input="updateAmount($event, idx)" class="w-full min-w-0 p-2 text-right rounded border" />
+              </td>
+            </tr>
+          </template>
+          <!-- 합계 -->
+          <tr class="bg-purple-50 font-bold">
+            <!-- 총 5열 구조: [선택] + 4열 -->
+            <td class="border px-2 py-2 text-center" colspan="4">합계</td>
+            <td class="border px-2 py-2 text-right">{{ totalAmount.toLocaleString() }} 원</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- 버튼 -->
     <div class="flex justify-between mt-6">
@@ -132,7 +217,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch} from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount} from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
@@ -162,6 +247,30 @@ const remainingBudget = computed(() => totalBudget.value - totalExpense.value);
 // ✅ 모달 상태
 const showAlert = ref(false);
 const alertMessage = ref("");
+
+// ✅ 좁은 폭에서 2줄 테이블로 전환 (≤920px)
+const isCompactTable = ref(false);
+function initCompactTableWatcher() {
+  if (typeof window === "undefined") return () => {};
+  const mql = window.matchMedia("(max-width: 920px)");
+  const update = () => { isCompactTable.value = mql.matches; };
+  update();
+  mql.addEventListener?.("change", update);
+  const onResize = () => update();
+  window.addEventListener("resize", onResize, { passive: true });
+  return () => {
+    mql.removeEventListener?.("change", update);
+    window.removeEventListener("resize", onResize);
+  };
+}
+let cleanupCompact = null;
+onMounted(() => {
+  cleanupCompact = initCompactTableWatcher();
+});
+onBeforeUnmount(() => {
+  cleanupCompact?.();
+});
+
 
 // ✅ "다음" 버튼 제어
 const handleNext = () => {
@@ -323,3 +432,14 @@ const deleteItems = () => {
   emits("update:items", newItems);
 };
 </script>
+
+
+ <style scoped>
+/* ✅ 컴팩트 모드에서 각 셀의 작은 라벨 */
+.cell-label {
+  font-size: 11px;
+  line-height: 1;
+  color: #6b7280; /* gray-500 */
+  margin-bottom: .25rem;
+}
+ </style>
