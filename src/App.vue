@@ -74,14 +74,14 @@ import { useRouter } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
 import axios from "axios";
-const showLogoutTimer = false;  //자동로그인이 안될 경우에 true 로 변경해서 확인
+const showLogoutTimer = true  //자동로그인이 안될 경우에 true 로 변경해서 확인
 
 const router = useRouter();
 const userStore = useUserStore();
 
 // 프로젝트 로그아웃 로직: Pinia + 라우팅
 async function projectLogout() {
-  await userStore.logout();ㄴ
+  await userStore.logout();
   router.push("/login");
 }
 
