@@ -47,7 +47,7 @@
                     <img
                       v-if="getSignature(line.approver_role)"
                       :src="getSignatureUrl(line.approver_role)"
-                      class="w-20 h-20 object-contain rounded"
+                      class="signature-img"
                     />
                     <!-- ✅ 상태 뱃지 -->
                     <span
@@ -84,7 +84,7 @@
                       </div>
                     </span>
                     <!-- ✅ 결재 시간 -->
-                    <small v-if="getApprovedAt(line.approver_role)" class="text-gray-500 text-xs mt-1">
+                    <small v-if="getApprovedAt(line.approver_role)" class="text-gray-500 text-[10px] mt-1">
                       {{ formatDateTime(getApprovedAt(line.approver_role)) }}
                     </small>
                   </div>
@@ -742,6 +742,14 @@ table td, table th {
   vertical-align: middle !important;
   text-align: center;
   padding: 0 10px;
+}
+.signature-img {
+  height: 80px;               /* ✅ 고정 높이 */
+  width: auto;                /* 비율에 맞게 자동 조정 */
+  object-fit: contain;        /* 이미지 비율 유지 */
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
 }
 
 
