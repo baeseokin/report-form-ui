@@ -112,51 +112,82 @@
             >선택 해제</button>
           </div>
         </div>
+        <!-- ✅ 우측 상세 폼 -->
+        <div class="space-y-6 bg-white p-6 rounded-lg shadow">
+          <!-- 기본 정보 2열 그리드 -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- 사용자ID: 신규만 수정 가능 -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">사용자ID</span>
+              <input
+                v-model="selectedUser.userId"
+                :disabled="!selectedUser.isNew"
+                class="border px-3 py-2 rounded-lg w-full mt-1 disabled:bg-gray-100 disabled:text-gray-500"
+                placeholder="예: user01"
+              />
+            </label>
 
-        <div class="space-y-4 bg-white p-6 rounded-lg shadow">
-          <!-- 사용자ID: 신규만 수정 가능 -->
-          <label class="block">
-            <span class="font-semibold text-gray-700">사용자ID</span>
-            <input
-              v-model="selectedUser.userId"
-              :disabled="!selectedUser.isNew"
-              class="border px-3 py-2 rounded-lg w-64 ml-2 disabled:bg-gray-100 disabled:text-gray-500"
-              placeholder="예: user01"
-            />
-          </label>
+            <!-- 이름 -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">이름</span>
+              <input
+                v-model="selectedUser.name"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+                placeholder="예: 홍길동"
+              />
+            </label>
 
-          <label class="block">
-            <span class="font-semibold text-gray-700">이름</span>
-            <input v-model="selectedUser.name" class="border px-3 py-2 rounded-lg w-64 ml-2" />
-          </label>
+            <!-- ✅ 이메일 추가 -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">이메일</span>
+              <input
+                v-model="selectedUser.email"
+                type="email"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+                placeholder="예: user@example.com"
+                autocomplete="email"
+              />
+            </label>
 
-          <label class="block">
-            <span class="font-semibold text-gray-700">부서</span>
-            <select v-model="selectedUser.dept" class="border px-3 py-2 rounded-lg w-64 ml-2">
-              <option v-for="dept in departments" :key="dept.id" :value="dept.name">
-                {{ dept.name }}
-              </option>
-            </select>
-          </label>
+            <!-- 부서 -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">부서</span>
+              <select
+                v-model="selectedUser.dept"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+              >
+                <option v-for="dept in departments" :key="dept.id" :value="dept.name">
+                  {{ dept.name }}
+                </option>
+              </select>
+            </label>
 
-          <!-- ✅ 역할 선택 (id:Number 배열 바인딩) -->
-          <label class="block">
-            <span class="font-semibold text-gray-700">역할</span>
-            <select v-model="selectedUser.roles[0]" class="border px-3 py-2 rounded-lg w-64 ml-2">
-              <option v-for="role in roles" :key="role.id" :value="role.id">
-                {{ role.name }}
-              </option>
-            </select>
-          </label>
+            <!-- 역할 -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">역할</span>
+              <select
+                v-model="selectedUser.roles[0]"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+              >
+                <option v-for="role in roles" :key="role.id" :value="role.id">
+                  {{ role.name }}
+                </option>
+              </select>
+            </label>
 
-          <!-- ✅ 비밀번호 (신규 필수 / 수정 선택) -->
-          <div class="grid grid-cols-1 gap-4">
+            <!-- (빈 칸으로 정렬 맞춤) -->
+            <div class="hidden sm:block"></div>
+          </div>
+
+          <!-- 비밀번호: 2열 그리드 -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label class="block">
               <span class="font-semibold text-gray-700">{{ selectedUser.isNew ? '비밀번호' : '새 비밀번호' }}</span>
               <input
                 type="password"
                 v-model="selectedUser.newPassword"
-                class="border px-3 py-2 rounded-lg w-64 ml-2"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+                autocomplete="new-password"
               />
             </label>
 
@@ -165,15 +196,14 @@
               <input
                 type="password"
                 v-model="selectedUser.confirmPassword"
-                class="border px-3 py-2 rounded-lg w-64 ml-2"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+                autocomplete="new-password"
               />
             </label>
           </div>
 
-          <!-- ✅ 서명(직접 그리기) -->
-          <div class="mt-6 border-t pt-4">
-            <!-- <h3 class="font-bold text-gray-800 mb-3">✍️ 서명</h3> -->
-
+          <!-- 서명(직접 그리기) - 기존 그대로 -->
+          <div class="mt-2 border-t pt-4">
             <div class="flex items-start gap-6">
               <!-- 기본 서명 미리보기 -->
               <div class="flex flex-col items-center gap-2">
@@ -217,16 +247,12 @@
                     마우스/손가락으로 서명하세요
                   </div>
                 </div>
-
-                <!-- <p class="text-xs text-gray-500">
-                  신규 사용자는 <strong>등록하기</strong>를 누르면 사용자 생성 후 현재 서명이 자동 저장됩니다.
-                </p> -->
               </div>
             </div>
           </div>
 
           <!-- 버튼 -->
-          <div class="flex space-x-4 mt-6">
+          <div class="flex flex-wrap gap-3 mt-4">
             <button
               v-if="selectedUser.isNew"
               @click="createUser"
