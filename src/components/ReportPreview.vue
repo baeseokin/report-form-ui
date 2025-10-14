@@ -181,9 +181,10 @@
       </template>
     </div>
 
-<!-- ✅ 하단 고정 Float Bar -->
+<!-- ✅ 하단 고정 Float Bar (기본 숨김, 활동 시 표시) -->
 <div
-  class="fixed bottom-0 left-0 w-full bg-gradient-to-r from-purple-100 via-pink-100 to-sky-100 border-t border-gray-200 shadow-inner z-50 no-print"
+  class="fixed bottom-0 left-0 w-full bg-gradient-to-r from-purple-100 via-pink-100 to-sky-100 border-t border-gray-200 shadow-inner z-50 no-print transition-opacity duration-500"
+  :class="{ 'opacity-0 pointer-events-none': !showActionBar, 'opacity-100': showActionBar }"
 >
   <!-- PC 레이아웃 -->
   <div class="hidden sm:flex justify-center items-center gap-x-5 py-3 px-6">
@@ -252,7 +253,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 // dynamic import
 // import html2canvas from "html2canvas";
 // dynamic import
@@ -268,9 +269,7 @@ const isApprovalPage = computed(() => {
   const result = route.path.startsWith("/approvalStatus");
   console.log("isApprovalPage:", result, "route:", route.path);
   return result;
-}
-  
-);
+});
 // ✅ 공통 설정
 const A4_WIDTH = 650;   // 가로
 const A4_HEIGHT = 1500; // 세로
@@ -291,6 +290,7 @@ const pageStyle = computed(() => ({
   minHeight: "297mm"
 }));
 
+
 onMounted(() => {
   const pageWidth = 794; // 210mm ≈ 794px
   const screenWidth = window.innerWidth;
@@ -300,6 +300,24 @@ onMounted(() => {
     scaleValue.value = screenWidth < pageWidth ? screenWidth / pageWidth : 1;
   }
   refreshApprovalData();
+
+  // ✅ 사용자 활동(마우스/터치) 시 하단 바 표시
+  const handler = () => {
+    if (hideTimerId.value) clearTimeout(hideTimerId.value);
+    showActionBar.value = true;
+    hideTimerId.value = setTimeout(() => { showActionBar.value = false; }, 1000);
+  };
+  activityHandler.value = handler;
+  window.addEventListener("mousemove", handler, { passive: true });
+  window.addEventListener("touchstart", handler, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  if (activityHandler.value) {
+    window.removeEventListener("mousemove", activityHandler.value);
+    window.removeEventListener("touchstart", activityHandler.value);
+  }
+  if (hideTimerId.value) clearTimeout(hideTimerId.value);
 });
 
 // (승인/반려 로직)
@@ -515,6 +533,10 @@ const printReport = async () => {
   };
 };
 
+// ✅ 하단 바 표시 제어 상태
+const showActionBar = ref(false);
+const hideTimerId = ref(null);
+const activityHandler = ref(null);
 
 </script>
 
