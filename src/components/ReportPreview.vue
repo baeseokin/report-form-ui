@@ -604,6 +604,14 @@ const generatePDF = async () => {
       padding-left: 0 !important;
       padding-right: 0 !important;
     }      
+    .signature-img {
+      height: 80px;               /* ✅ 고정 높이 */
+      width: auto;                /* 비율에 맞게 자동 조정 */
+      object-fit: contain;        /* 이미지 비율 유지 */
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+    }  
   `;
 
   const pdf = new jsPDF("p", "mm", "a4");
