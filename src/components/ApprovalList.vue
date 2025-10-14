@@ -78,7 +78,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="a in approvals" :key="a.id" class="hover:bg-purple-50 transition">
+          <tr v-for="a in approvals" :key="a.id" class="hover:bg-purple-50 transition text-sm h-10">
             <td class="border p-3 text-center">{{ a.document_type }}</td>
             <td class="border p-3 text-center">{{ a.dept_name }}</td>
             <td class="border p-3 text-center">{{ a.author }}</td>
@@ -247,3 +247,13 @@ const goToReport = (id) => {
   router.push({ name: "ReportForm", params: { id } });
 };
 </script>
+
+<style scoped>
+/* ✅ ApprovalListPage.vue와 동일한 행 높이로 조정 */
+table td, table th {
+  height: 2.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  vertical-align: middle;
+}
+</style>

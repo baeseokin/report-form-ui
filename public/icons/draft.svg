@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="92" height="36" viewBox="0 0 92 36" role="img" aria-label="기안">
+  <defs>
+    <style>
+      .badge{fill:#f8fafc;stroke:#cbd5e1;stroke-width:2}
+      .txt{fill:#374151;font:700 16px system-ui,-apple-system,Segoe UI,Roboto,Noto Sans,Apple SD Gothic Neo,Pretendard,sans-serif}
+    </style>
+  </defs>
+  <rect x="1" y="1" width="90" height="34" rx="17" class="badge"></rect>
+  <text x="46" y="18" class="txt" text-anchor="middle" dominant-baseline="middle">기안</text>
+</svg>

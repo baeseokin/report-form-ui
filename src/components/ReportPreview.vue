@@ -23,7 +23,7 @@
         <!-- ✅ 결재 서명란 (조회 전용) -->
         <div class="flex justify-between mb-6">
           <!-- 좌측 결재란: approval_line 기준 -->
-          <table class="w-2/5 border text-center table-fixed">
+          <table class="w-2/5 border text-center table-fixed approval-table">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th
@@ -36,7 +36,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="h-24">
+              <tr class="sign-row">
                 <td
                   v-for="line in approvalLines"
                   :key="`c-${line.id || line.approver_role}`"
@@ -51,23 +51,34 @@
                     />
                     <!-- ✅ 상태 뱃지 -->
                     <span
+                      class="status-badge inline-flex items-center justify-center mt-2"
                       v-if="getStatus(line.approver_role)"
                       @mouseenter="visibleCommentRole = line.approver_role"
                       @mouseleave="visibleCommentRole = null"
-                      :class="[
-                        'mt-2 px-2 py-1 rounded-full text-xs font-bold',
-                        getStatus(line.approver_role) === '기안'
-                          ? 'bg-gray-100 text-gray-700 border border-gray-300'
-                          : getStatus(line.approver_role) === '승인'
-                            ? 'bg-green-100 text-green-700 border border-green-300'
-                            : 'bg-red-100 text-red-700 border border-red-300'
-                      ]"
                     >
-                      {{ getStatus(line.approver_role) }}
+                      <img
+                        v-if="getStatus(line.approver_role) === '기안'"
+                        src="/icons/draft.svg"
+                        alt="Draft"
+                        class="h-6 w-auto"
+                      />
+                      <img
+                        v-else-if="getStatus(line.approver_role) === '승인'"
+                        src="/icons/approved.svg"
+                        alt="Approved"
+                        class="h-6 w-auto"
+                      />
+                      <img
+                        v-else-if="getStatus(line.approver_role) === '반려'"
+                        src="/icons/rejected.svg"
+                        alt="Rejected"
+                        class="h-6 w-auto"
+                      />
+                    
                       <!-- ✅ 말풍선 -->
                       <div
                         v-if="visibleCommentRole === line.approver_role && getComment(line.approver_role)"
-                        class="absolute left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-50 no-print"
+                        class="absolute left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-50"
                       >
                         💬 {{ getComment(line.approver_role) }}
                       </div>
@@ -83,7 +94,7 @@
           </table>
 
           <!-- 오른쪽 결재란 (기존 유지) -->
-          <table class="w-2/5 border text-center table-fixed">
+          <table class="w-1/2 border text-center table-fixed approval-table">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th class="border w-1/4">담당</th>
@@ -93,7 +104,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="h-24">
+              <tr class="sign-row">
                 <td class="border"></td>
                 <td class="border"></td>
                 <td class="border"></td>
@@ -485,20 +496,174 @@ const getImageStyle = (file, rowLength, siblings = []) => {
 const getImageWrapperStyle = (rowLength) =>
   rowLength === 1 ? { width: "100%", textAlign: "center" } : { width: "45%" };
 
+// ReportPreview.vue
 const generatePDF = async () => {
-  const { default: jsPDF } = await import('jspdf');
+  const { default: jsPDF } = await import("jspdf");
+  const { default: html2canvas } = await import("html2canvas");
+
+  try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
+
+  const ROW_PX = 45; // 원하는 행 높이(px): 52~60 사이로 조정해 보세요.
+  const SIGN_ROW_PX = 160; // ✅ 서명행(두번째 행) 전용 높이 (PDF 전용)
+
+  // ✅ 복제 DOM(캡처본)에만 적용될 PDF 전용 CSS
+  const pdfOnlyCSS = `
+    .report-content table { table-layout: fixed; border-collapse: collapse; }
+    .report-content table th, .report-content table td {
+      /* 테이블 자체 레이아웃 유지 */
+      padding: 0;                  /* 셀 패딩은 제거하고 */
+      height: ${ROW_PX}px;         /* 행 높이 통일 */
+      min-height: ${ROW_PX}px;
+      box-sizing: border-box;
+      text-align: center;
+      vertical-align: middle;      /* 백업용 */
+    }
+    /* ✅ 서명란 테이블의 두번째 행만 키우기 */
+    .report-content table.approval-table tbody tr.sign-row th,
+    .report-content table.approval-table tbody tr.sign-row td {
+      height: ${SIGN_ROW_PX}px !important;
+      min-height: ${SIGN_ROW_PX}px !important;
+    }   
+
+    /* 1단 래퍼: 셀과 동일 높이로 고정 */
+    .report-content .vc {
+      display: block;
+      height: ${ROW_PX}px;
+      min-height: ${ROW_PX}px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 10px;             /* 좌우 여백은 여기서 */
+      overflow: hidden;
+    }
+    /* 2단 래퍼: flex 100% 높이로 정확 중앙 */
+    .report-content .vc-i {
+      display: flex;
+      align-items: center;         /* 세로 중앙 */
+      justify-content: center;     /* 가로 중앙(필요 시 flex-start로 변경) */
+      height: 100%;
+      width: 100%;
+      line-height: 1.3;            /* 폰트 메트릭 차이 완충 */
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      transform: translateY(-7px); /* ✅ 시각적 세로 중앙 보정 */
+    }
+    /* 여러 줄이 필요한 셀: 템플릿에서 td에 class="cell-multiline" */
+    .report-content .vc.multiline .vc-i {
+      white-space: normal;         /* 줄바꿈 허용 */
+      justify-content: flex-start; /* 왼쪽 정렬 권장 */
+      text-align: left;
+      line-height: 1.4;
+      padding-top: 6px;
+      padding-bottom: 6px;
+    }
+    /* 숫자/금액 우측 정렬: 템플릿에서 td에 class="cell-right" */
+    .report-content .vc.right .vc-i {
+      justify-content: flex-end;
+      text-align: right;
+      white-space: nowrap;
+    }
+    /* ✅ 상태 뱃지 텍스트 보정 (PDF 전용) */
+    .report-content .status-badge{
+      display: inline-flex !important;      /* 라인박스 영향 제거 */
+      align-items: center !important;       /* 수직 중앙 */
+      justify-content: center !important;   /* 수평 중앙 */
+      line-height: 1 !important;            /* 폰트 메트릭 차이 제거 */
+      transform: translateY(1px) !important; /* 요청한 보정값 */
+    }
+    /* 서명행에서 vc-i의 transform을 끘 경우에도 균일 보정 */
+    .report-content tr.sign-row .status-badge{
+      transform: translateY(1px) !important;
+    }      
+    /* =======================
+       ✅ 서명행 전용 보정
+       - 래퍼 높이/오버플로우/트랜스폼 재설정
+       - 이미지 고정폭/고정높이 무력화
+       ======================= */
+    .report-content tr.sign-row .vc,
+    .report-content tr.sign-row .vc-i {
+      height: ${SIGN_ROW_PX}px !important;
+      min-height: ${SIGN_ROW_PX}px !important;
+      overflow: visible !important;
+      transform: none !important;
+      white-space: normal; /* 말풍선 등 내용 있어도 안전 */
+    }
+    .report-content tr.sign-row img {
+      max-height: ${SIGN_ROW_PX - 30}px !important; /* 살짝 더 여유 */
+      max-width: 80% !important;                   /* ✅ 폭 제한 (전체 셀의 80%) */
+      height: auto !important;
+      width: auto !important;                      /* tailwind w-20 무력화 */
+      object-fit: contain !important;
+      display: block !important;
+      margin: 0 auto !important;
+      padding: 0 !important;                       /* ✅ 내부 여백 제거 */
+      transform: translateY(-4px);                 /* ✅ 세로 균형 약간 올림 */
+    }      
+    /* ✅ vc 래퍼 좌우 여백 제거 (PDF용 전용) */
+    .report-content tr.sign-row .vc {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }      
+  `;
+
   const pdf = new jsPDF("p", "mm", "a4");
   const pages = document.querySelectorAll(".page");
+
   for (let i = 0; i < pages.length; i++) {
-    const canvas = await (await import('html2canvas')).default(pages[i], { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    const canvas = await html2canvas(pages[i], {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#fff",
+      onclone: (doc) => {
+        // 1) 스타일 주입
+        const style = doc.createElement("style");
+        style.textContent = pdfOnlyCSS;
+        doc.head.appendChild(style);
+
+        // 2) 모든 셀 내용을 2단 래퍼(.vc > .vc-i)로 감싸기
+        const cells = doc.querySelectorAll(".report-content table th, .report-content table td");
+        cells.forEach((cell) => {
+          // 이미 감싼 경우 스킵
+          const first = cell.firstElementChild;
+          if (first && first.classList?.contains("vc")) {
+            // 높이만 최신화
+            first.style.height = `${ROW_PX}px`;
+            first.style.minHeight = `${ROW_PX}px`;
+            const inner = first.firstElementChild;
+            if (inner && inner.classList?.contains("vc-i")) inner.style.height = "100%";
+            return;
+          }
+
+          const vc = doc.createElement("div");
+          vc.className = "vc";
+          // 힌트 클래스 승계: 여러 줄, 우측정렬
+          if (cell.classList?.contains("cell-multiline")) vc.classList.add("multiline");
+          if (cell.classList?.contains("cell-right")) vc.classList.add("right");
+
+          const vci = doc.createElement("div");
+          vci.className = "vc-i";
+
+          // 기존 노드들을 vci로 이동
+          while (cell.firstChild) vci.appendChild(cell.firstChild);
+          vc.appendChild(vci);
+          cell.appendChild(vc);
+        });
+      },
+    });
+
+    const img = canvas.toDataURL("image/png");
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const imgH = (canvas.height * pdfW) / canvas.width;
+
     if (i > 0) pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
+    pdf.addImage(img, "PNG", 0, 0, pdfW, imgH);
   }
+
   return pdf;
 };
+
+
+
 
 const downloadPDF = async () => {
   const pdf = await generatePDF();
@@ -578,4 +743,6 @@ table td, table th {
   text-align: center;
   padding: 0 10px;
 }
+
+
 </style>
