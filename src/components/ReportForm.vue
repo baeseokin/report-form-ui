@@ -227,7 +227,7 @@ const closeReport = () => (report.value = null);
 
 // ✅ 방향 전환 시 경고 모달 표시
 const showOrientationAlert = ref(false);
-const orientationAlertMessage = ref("보고서 작성 중 가로/세로 모드가 바뀌면 에러가 발생할 수 있습니다.");
+const orientationAlertMessage = ref("보고서 작성 화면은 가로 또는 세로, 하나의 모드에서 사용하세요. 작성 중 전환시 오류가 발생할 수 있습니다.");
 
 function triggerOrientationAlert() {
   // 이미 떠 있으면 다시 띄우지 않음
