@@ -33,10 +33,10 @@ fi
 
 # 3. Kubernetes Deployment 업데이트
 echo "📡 Kubernetes 배포 업데이트..."
-kubectl set image deployment/report-form-ui report-form-ui=$IMAGE_NAME:$VERSION -n tomcat-test
+kubectl set image deployment/report-form-ui report-form-ui=$IMAGE_NAME:$VERSION -n report
 
 # 4. 롤아웃 확인
-kubectl rollout status deployment/report-form-ui -n tomcat-test
+kubectl rollout status deployment/report-form-ui -n report
 
 echo "✅ UI 배포 완료!"
 echo "👉 http://localhost:30001 에서 확인하세요."
