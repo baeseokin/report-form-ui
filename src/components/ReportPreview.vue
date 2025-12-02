@@ -160,7 +160,7 @@
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
           {{ formatDate(report.date) }}<br />
-          영수인 성명 : {{ report.author }} (인)
+          영수인 성명 : {{ report.author }}
         </div>
       </div>
 
@@ -725,8 +725,8 @@ body {
   margin: 0 auto;
   padding: 10mm;
   background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+  /*border: 1px solid #ccc; */
+  box-shadow: 0 0 10px rgba(0,0,0,0.15); 
   box-sizing: border-box;
   transform-origin: top center;
 }
