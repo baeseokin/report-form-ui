@@ -8,7 +8,18 @@
       <div>현재 총 용량: <span class="font-semibold">{{ bytesToStr(totalBytes) }}</span></div>
     </div>
 
-    <input type="file" multiple @change="onFileChange" class="mb-2" />
+    <div class="flex items-center gap-3">
+      <label
+          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+        > 파일선택
+        
+      <input ref="fileInput" type="file" multiple @change="onFileChange" class="hidden"/>
+      </label>
+      <span class="text-sm text-gray-600">
+        {{ modelValue.length ? `선택된 파일 ${modelValue.length}개` : "선택된 파일 없음" }}
+      </span>
+    </div>
+
 
     <!-- 경고/오류 메시지 -->
     <div v-if="warnMsg" class="bg-yellow-50 border border-yellow-300 text-yellow-800 p-3 rounded">
@@ -18,14 +29,12 @@
     <ul v-if="modelValue.length > 0" class="space-y-2">
       <li v-for="(f, idx) in modelValue" :key="idx" class="flex items-center gap-4">
         <span class="text-gray-700 truncate max-w-[16rem]" :title="f.name">{{ f.name }}</span>
-
-        <input
-          type="text"
-          v-model="f.aliasName"
-          :placeholder="f.name"
-          class="flex-1 border rounded p-2 shadow-sm focus:ring-2 focus:ring-purple-400"
-        />
-
+          <input
+            type="text"
+            v-model="f.aliasName"
+            placeholder="별칭입력"
+            class="w-80 border rounded p-2 text-sm shadow-sm focus:ring-2 focus:ring-purple-400"
+          />
         <span class="text-sm text-gray-500">({{ bytesToStr(f.size) }})</span>
 
         <button @click="removeFile(idx)" class="text-red-500 hover:text-red-700">✖</button>
@@ -64,6 +73,7 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue", "prev", "next", "invalid"]);
 
 const warnMsg = ref("");
+const fileInput = ref(null);
 
 const maxFileSizeBytes = computed(() => props.maxFileSizeMB * 1024 * 1024);
 const maxTotalBytes = computed(() => props.maxTotalSizeMB * 1024 * 1024);
