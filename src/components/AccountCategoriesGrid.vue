@@ -70,7 +70,7 @@
             <td class="border p-2 text-center space-x-2">
               <button @click="openModal('add', c)" class="text-green-600 hover:underline">➕</button>
               <button @click="openModal('edit', c)" class="text-blue-600 hover:underline">✏️</button>
-              <button @click="expireCategory(c)" class="text-red-600 hover:underline">🗑</button>
+              <button @click="deleteCategory(c)" class="text-red-600 hover:underline">🗑</button>
             </td>
           </tr>
         </template>
@@ -356,4 +356,16 @@ const expireCategory = async (category) => {
   });
   fetchCategories();
 };
+
+// ✅ deleteCategory (실제 삭제)
+const deleteCategory = async (row) => {
+  try {
+    await axios.delete(`/api/accountCategories/${row.id}`);
+    await fetchCategories(); // ✅ 삭제 후 재조회
+  } catch (e) {
+    console.error(e);
+    alert("삭제에 실패했습니다.");
+  }
+};
+
 </script>
