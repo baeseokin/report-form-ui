@@ -4,8 +4,9 @@
 
     <!-- 제한 안내 & 현재 총 용량 -->
     <div class="text-sm text-gray-600">
-      <div>파일당 최대: {{ maxFileSizeMB }}MB · 총합 최대: {{ maxTotalSizeMB }}MB</div>
-      <div>현재 총 용량: <span class="font-semibold">{{ bytesToStr(totalBytes) }}</span></div>
+      <div>현재 총 용량: <span class="font-semibold">{{ bytesToStr(totalBytes) }}</span> <br/>
+           (파일당 최대: {{ maxFileSizeMB }}MB · 총합 최대: {{ maxTotalSizeMB }}MB)
+      </div>
     </div>
 
     <div class="flex items-center gap-3">
@@ -66,8 +67,8 @@ import { computed, ref } from "vue";
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   // ✅ 필요 시 화면마다 손쉽게 조정 가능
-  maxFileSizeMB: { type: Number, default: 10 },   // 파일당 최대 (MB)
-  maxTotalSizeMB: { type: Number, default: 30 },  // 총합 최대 (MB)
+  maxFileSizeMB: { type: Number, default: 3 },   // 파일당 최대 (MB)
+  maxTotalSizeMB: { type: Number, default: 20 },  // 총합 최대 (MB)
 });
 
 const emit = defineEmits(["update:modelValue", "prev", "next", "invalid"]);

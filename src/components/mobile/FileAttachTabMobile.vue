@@ -4,8 +4,11 @@
 
     <!-- ✅ 안내 문구 -->
     <div class="text-xs text-gray-600">
-      <div>파일당 최대: {{ maxFileSizeMB }}MB · 총합 최대: {{ maxTotalSizeMB }}MB</div>
-      <div>현재 총 용량: <span class="font-semibold">{{ totalBytesLabel }}</span></div>
+      <div>
+        현재 총 용량: <span class="font-semibold">{{ totalBytesLabel }}</span><br/>
+        (파일당 최대: {{ maxFileSizeMB }}MB · 총합 최대: {{ maxTotalSizeMB }}MB)
+      </div>
+
     </div>
 
     <!-- ✅ 파일 선택 UI (모바일 호환: input 숨김 + label 버튼 + 선택상태 표시) -->
@@ -93,8 +96,8 @@ import { computed, ref } from "vue";
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   // ✅ 데스크톱과 동일한 한도 props
-  maxFileSizeMB: { type: Number, default: 10 }, // 파일당 최대 (MB)
-  maxTotalSizeMB: { type: Number, default: 30 }, // 총합 최대 (MB)
+  maxFileSizeMB: { type: Number, default: 3 }, // 파일당 최대 (MB)
+  maxTotalSizeMB: { type: Number, default: 20 }, // 총합 최대 (MB)
 });
 
 const emit = defineEmits(["update:modelValue", "prev", "next", "invalid"]);
