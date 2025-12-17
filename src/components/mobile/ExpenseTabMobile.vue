@@ -331,14 +331,25 @@ watch(selectedHang, async () => {
 // ✅ 부서 변경 시: 관/항 초기화 + 자동 관 선택 + summary는 항 선택 이후 실행
 watch(
   userDept,
-  (newDept) => {
-    selectedGwan.value = "";
-    selectedHang.value = "";
+  (newDept, prevDept) => {
     if (!newDept) return;
 
-    // ✅ 관이 1개뿐이면 자동 선택
+    const deptChanged = prevDept && newDept !== prevDept;
+    if (deptChanged) {
+      selectedGwan.value = "";
+      selectedHang.value = "";
+      totalBudget.value = 0;
+      serverExpense.value = 0;
+      totalExpense.value = Number(totalAmount.value) || 0;
+    }
+
+    // ✅ 관이 1개뿐이면 자동 선택 (이미 선택된 값이 없을 때만)
     const gwans = getGwans.value;
-    if (gwans.length === 1) selectedGwan.value = gwans[0];
+    if (!selectedGwan.value && gwans.length === 1) selectedGwan.value = gwans[0];
+
+    if (selectedGwan.value && selectedHang.value) {
+      fetchSummaryForSelectedHang();
+    }
   },
   { immediate: true }
 );

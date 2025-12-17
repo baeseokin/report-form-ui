@@ -407,19 +407,26 @@ watch(
 );
 
 // ✅ 부서 변경 시: 선택값/합계 초기화
-watch(userDept, async (newDept) => {
+watch(userDept, async (newDept, prevDept) => {
   if (!newDept) return;
-  selectedGwan.value = "";
-  selectedHang.value = "";
-  totalBudget.value = 0;
-  serverExpense.value = 0;
-  totalExpense.value = 0;
+  const deptChanged = prevDept && newDept !== prevDept;
+  if (deptChanged) {
+    selectedGwan.value = "";
+    selectedHang.value = "";
+    totalBudget.value = 0;
+    serverExpense.value = 0;
+    totalExpense.value = 0;
+  }
 
-  // ✅ 관이 1개뿐이면 자동 선택
+  // ✅ 관이 1개뿐이면 자동 선택 (기존 선택값이 없을 때만)
   const gwans = getGwans.value;
-  if (gwans.length === 1) {
+  if (!selectedGwan.value && gwans.length === 1) {
     selectedGwan.value = gwans[0];
-  }  
+  }
+
+  if (isSelectionReady.value) {
+    fetchSummaryBySelection();
+  }
 
 }, { immediate: true });
 
