@@ -63,6 +63,8 @@
         :author="author"
         :date="date"
         :total-amount="totalAmount"
+        :selected-gwan="selectedGwan"
+        :selected-hang="selectedHang"
         :items="items"
         :alias-name="aliasName"
         v-model:comment="comment"

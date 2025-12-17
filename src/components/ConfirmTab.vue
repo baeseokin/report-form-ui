@@ -113,6 +113,8 @@ const props = defineProps([
   "items",
   "aliasName",
   "attachedFiles",
+  "selectedGwan",
+  "selectedHang"
 ]);
 
 const emits = defineEmits(["update:comment", "prev", "generate"]);
@@ -325,6 +327,8 @@ const sendApprovalRequest = async () => {
       comment: props.comment,
       aliasName: props.aliasName,
       items: normalizeItems(props.items),
+      selectedGwan : props.selectedGwan,
+      selectedHang : props.selectedHang,
     };
 
     // 1) 결재요청 저장
