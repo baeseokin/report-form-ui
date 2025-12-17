@@ -263,8 +263,30 @@ import { storeToRefs } from "pinia";
 import axios from "axios";
 import ModalAlert from "./ModalAlert.vue"; // ✅ 모달 추가
 
-const props = defineProps(["items", "deptData", "selectedDept"]);
-const emits = defineEmits(["update:items", "prev", "next"]);
+const props = defineProps({
+  items: {
+    type: Array,
+    default: () => [],
+  },
+  deptData: {
+    type: Object,
+    default: () => ({}),
+  },
+  selectedDept: {
+    type: String,
+    default: "",
+  },
+  selectedGwan: {
+    type: String,
+    default: "",
+  },
+  selectedHang: {
+    type: String,
+    default: "",
+  },
+});
+
+const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang"]);
 
 const { user } = storeToRefs(useUserStore());
 // ✅ 로그인된 사용자의 부서 ID
@@ -278,8 +300,15 @@ const totalAmount = computed(() =>
 );
 
 // ✅ 상단 선택: 관/항 (선택 전에는 금액 0 표시)
-const selectedGwan = ref("");
-const selectedHang = ref("");
+const selectedGwan = computed({
+  get: () => props.selectedGwan || "",
+  set: (value) => emits("update:selectedGwan", value),
+});
+
+const selectedHang = computed({
+  get: () => props.selectedHang || "",
+  set: (value) => emits("update:selectedHang", value),
+});
 const isSelectionReady = computed(() => !!selectedGwan.value && !!selectedHang.value);
 
 // ✅ 예산/지출/잔액

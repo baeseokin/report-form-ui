@@ -206,8 +206,26 @@ import { storeToRefs } from "pinia";
 import axios from "axios";
 import ModalAlert from "../ModalAlert.vue";
 
-const props = defineProps(["items", "deptData"]);
-const emits = defineEmits(["update:items", "prev", "next"]);
+const props = defineProps({
+  items: {
+    type: Array,
+    default: () => [],
+  },
+  deptData: {
+    type: Object,
+    default: () => ({}),
+  },
+  selectedGwan: {
+    type: String,
+    default: "",
+  },
+  selectedHang: {
+    type: String,
+    default: "",
+  },
+});
+
+const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang"]);
 
 const { user } = storeToRefs(useUserStore());
 const userDeptId = computed(() => user.value?.deptId || null);
@@ -216,8 +234,15 @@ const userDept = computed(() => user.value?.deptName || "");
 const currentYear = new Date().getFullYear();
 
 // ✅ 상단 선택 상태 (모바일도 상단에서 관/항 먼저 선택)
-const selectedGwan = ref("");
-const selectedHang = ref("");
+const selectedGwan = computed({
+  get: () => props.selectedGwan || "",
+  set: (value) => emits("update:selectedGwan", value),
+});
+
+const selectedHang = computed({
+  get: () => props.selectedHang || "",
+  set: (value) => emits("update:selectedHang", value),
+});
 
 // ✅ account_categories 기반 계층 탐색 (TDZ 방지 위해 상단)
 const deptCategories = computed(() => props.deptData?.[userDept.value] || []);

@@ -39,6 +39,8 @@
         :is="isMobile ? ExpenseTabMobile : ExpenseTab"
         v-if="activeTab === '지출내역'"
         v-model:items="items"
+        v-model:selected-gwan="selectedGwan"
+        v-model:selected-hang="selectedHang"        
         :dept-data="deptData"
         :selected-dept="selectedDept"
         @prev="goPrevTab"
@@ -132,6 +134,8 @@ const activeTab = ref("기본정보");
 
 const documentType = ref("청구지출결의서");
 const selectedDept = ref("");
+const selectedGwan = ref("");
+const selectedHang = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
