@@ -80,7 +80,7 @@
             {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
           </td>
           <td class="border p-2 text-right font-mono">
-            <template v-if="['항', '목', '세목'].includes(c.level)">
+            <template v-if="isLeafCategory(c.id)">
               <input
                 type="text"
                 class="border rounded p-1 w-40 text-right shadow-sm"
@@ -201,7 +201,7 @@ const saveAllBudgets = async () => {
       dept_id: selectedDeptId.value,
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
-      budget_amount: ["항", "목", "세목"].includes(c.level)
+      budget_amount: isLeafCategory(c.id)
         ? (budgets.value[c.category_id] ?? 0)
         : sumChildren(c.id),
     }));
@@ -219,6 +219,8 @@ const onBudgetInput = (e, category) => {
   const raw = e.target.value.replace(/[^0-9]/g, "");
   budgets.value[category.category_id] = raw ? Number(raw) : 0;
 };
+const isLeafCategory = (categoryId) =>
+  !categories.value.some((category) => category.parent_id === categoryId);
 
 // 하위 항목 합산
 const sumChildren = (parentId) => {
@@ -227,7 +229,7 @@ const sumChildren = (parentId) => {
   return children.reduce((sum, child) => {
     console.log("sumChildren-child.category_id:",child.category_id);  
     console.log("sumChildren-budgets.value:",budgets.value);  
-    if (["항", "목", "세목"].includes(child.level)) {
+    if (isLeafCategory(child.id)) {
       sum += Number(budgets.value[child.category_id] ?? 0);
     } else {
       sum += sumChildren(child.id);

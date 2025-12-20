@@ -23,16 +23,6 @@
           </option>
         </select>
       </div>
-
-      <!-- 조회 버튼 -->
-      <div class="flex items-end">
-        <button
-          @click="fetchBudgetStatus"
-          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
-        >
-          조회
-        </button>
-      </div>
     </div>
 
     <!-- ✅ 결과 목록 -->
@@ -51,7 +41,7 @@
         <tbody>
           <tr v-for="row in budgetRows" :key="row.dept_id||row.gwan_name||row.hang_name"
               :class="row.remaining_amount < 0 ? 'bg-red-100 text-red-700 font-semibold' : 'bg-white'">
-            <td class="border p-2">{{ row.dept_name }},{{ row.dept_id }}</td>
+            <td class="border p-2">{{ row.dept_name }}</td>
             <td class="border p-2">{{ row.gwan_name }}</td>
             <td class="border p-2">{{ row.hang_name }}</td>            
             <td class="border p-2 text-right">{{ formatAmount(row.total_budget) }}</td>
@@ -138,8 +128,6 @@ const fetchBudgetStatus = async () => {
       : rows;
     budgetRows.value = "";    
     budgetRows.value = filteredRows;
-    
-    console.log("budgetRows:",budgetRows);
 
     // ✅ 합계 계산
     const totalBudget = filteredRows.reduce((sum, r) => sum + Number(r.total_budget), 0);
