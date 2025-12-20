@@ -28,6 +28,8 @@
     <div v-if="activeStep === 2">
       <ExpenseTabMobile
         v-model:items="items"
+        v-model:selected-gwan="selectedGwan"
+        v-model:selected-hang="selectedHang"        
         :dept-data="deptData"
         :selected-dept="selectedDept"
         @prev="activeStep--"
@@ -50,6 +52,8 @@
         :author="author"
         :date="date"
         :total-amount="totalAmount"
+        :selected-gwan="selectedGwan"
+        :selected-hang="selectedHang"
         :items="items"
         :alias-name="aliasName"
         v-model:comment="comment"
@@ -82,11 +86,15 @@ const activeStep = ref(1);
 
 const documentType = ref("청구지출결의서");
 const selectedDept = ref("");
+const selectedGwan = ref("");
+const selectedHang = ref("");
 const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
 const deptData = ref({});
-const items = ref([]);
+const items = ref([
+  { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
+]);
 const comment = ref("");
 const attachedFiles = ref([]);
 const report = ref(null);
@@ -116,6 +124,8 @@ onMounted(async () => {
       author.value = data.author;
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
+      selectedGwan.value = data.selectedGwan;
+      selectedHang.value = data.selectedHang;
       items.value = (data.items || []).map((i) => ({
         gwan: i.gwan,
         hang: i.hang,
@@ -124,6 +134,7 @@ onMounted(async () => {
         detail: i.detail,
         amount: i.amount,
       }));
+      //date.value = new Date().toISOString().slice(0, 10);
       attachedFiles.value = [];
     }
   } catch (err) {

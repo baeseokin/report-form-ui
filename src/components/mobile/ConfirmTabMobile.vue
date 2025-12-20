@@ -8,6 +8,7 @@
       <p><strong>부서명:</strong> {{ userDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
+      <p><strong>계정명:</strong> {{ selectedGwan }} / {{ selectedHang }}</p>
       <p><strong>청구총액:</strong> ₩{{ Number(totalAmount || 0).toLocaleString() }}</p>
       <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
     </div>
@@ -73,19 +74,18 @@
       </div>
     </div>
 
-    <!-- 버튼 -->
-    <div class="space-y-3 mt-6">
+    <div class="flex justify-between gap-2 pt-2">
       <button
         @click="$emit('prev')"
-        class="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 rounded-lg shadow-md transition"
+        class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200"
       >
-        ← 이전
+        이전
       </button>
       <button
         @click="sendApprovalRequest"
-        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 rounded-lg shadow-md transition"
+        class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700"
       >
-        📤 결재요청
+        결재요청
       </button>
     </div>
 
@@ -116,6 +116,8 @@ const props = defineProps([
   "items",
   "aliasName",
   "attachedFiles",
+  "selectedGwan",
+  "selectedHang",
 ]);
 
 const emits = defineEmits(["update:comment", "prev", "generate"]);
@@ -322,6 +324,8 @@ const sendApprovalRequest = async () => {
       comment: props.comment,
       aliasName: props.aliasName,
       items: normalizeItems(props.items),
+      selectedGwan: props.selectedGwan,
+      selectedHang: props.selectedHang,
     };
 
     const res = await axios.post("/api/approval", data, { withCredentials: true });

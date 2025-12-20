@@ -70,21 +70,21 @@
     <p v-else class="text-gray-500 text-sm">첨부된 파일이 없습니다.</p>
 
     <!-- 네비게이션 버튼 -->
-    <div class="flex justify-between mt-4">
+    <div class="flex justify-between gap-2 pt-2">
       <button
         @click="$emit('prev')"
-        class="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-lg shadow-md transition text-sm"
+        class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200"
       >
-        ← 이전
+        이전
       </button>
       <button
         @click="$emit('next')"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow-md transition text-sm"
+        class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700"
         :disabled="totalBytes > maxTotalBytes"
         :class="{ 'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes }"
         title="총 용량이 제한을 초과하면 다음 단계로 진행할 수 없습니다."
       >
-        다음 →
+        다음
       </button>
     </div>
   </div>

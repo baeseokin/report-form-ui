@@ -1,11 +1,6 @@
 <template>
   <div class="space-y-4 font-nanum px-2">
     <h2 class="text-lg font-bold text-gray-800">💸 지출내역 입력</h2>
-    <!-- ✅ 안내 문구 추가 -->
-    <p class="text-xs text-gray-600 leading-snug">
-      ☞ 관/항을 선택하면 해당 범위 기준으로 예산/지출/잔액이 계산되고,
-      아래에서 목부터 입력할 수 있습니다.
-    </p>
     <!-- ✅ 관/항 선택 (타이틀 바로 아래) -->
     <div class="bg-white border rounded-xl shadow-sm p-3 space-y-3">
       <div class="grid grid-cols-2 gap-3">
@@ -32,6 +27,7 @@
           <label class="block text-xs font-semibold mb-1">항</label>
           <select
             v-model="selectedHang"
+            :disabled="!selectedGwan"
             class="w-full rounded border px-2 py-1 text-sm"
           >
             <option value="">선택</option>
@@ -84,13 +80,14 @@
           <button
             class="px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200"
             @click="addRow"
+            :disabled="!isSelectionReady"
           >
             + 행추가
           </button>
           <button
             class="px-3 py-2 text-sm rounded bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
             @click="removeSelected"
-            :disabled="!hasSelected"
+            :disabled="!isSelectionReady || !hasSelected"
           >
             행삭제
           </button>
@@ -102,89 +99,91 @@
       </div>
 
       <!-- 모바일: 카드 형태로 행 렌더 -->
-      <div
-        v-for="(item, idx) in formattedItems"
-        :key="idx"
-        class="border rounded-lg p-4 bg-white shadow-sm space-y-3 relative"
-      >
-        <!-- 선택 체크박스 (✅ 첫 로딩/행추가 시 기본 미체크) -->
-        <div class="absolute top-2 right-2">
-          <input
-            type="checkbox"
-            :checked="!!item.selected"
-            @change="updateField(idx, 'selected', $event.target.checked)"
-          />
-        </div>
+      <div :class="!isSelectionReady ? 'opacity-50 pointer-events-none' : ''">
+        <div
+          v-for="(item, idx) in formattedItems"
+          :key="idx"
+          class="border rounded-lg p-4 bg-white shadow-sm space-y-3 relative"
+        >
+          <!-- 선택 체크박스 (✅ 첫 로딩/행추가 시 기본 미체크) -->
+          <div class="absolute top-2 right-2">
+            <input
+              type="checkbox"
+              :checked="!!item.selected"
+              @change="updateField(idx, 'selected', $event.target.checked)"
+            />
+          </div>
 
-        <!-- 목 -->
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-gray-600">목</label>
-          <select
-            :value="item.mok"
-            @change="onSelect(idx, 'mok', $event.target.value)"
-            class="w-full p-2 border rounded text-sm"
-            :disabled="!selectedGwan || !selectedHang"
-          >
-            <option disabled value="">선택</option>
-            <option v-for="m in moksForSelectedHang" :key="m" :value="m">{{ m }}</option>
-          </select>
-        </div>
+         <!-- 목 -->
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-600">목</label>
+            <select
+              :value="item.mok"
+              @change="onSelect(idx, 'mok', $event.target.value)"
+              class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+              :disabled="!isSelectionReady"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="m in moksForSelectedHang" :key="m" :value="m">{{ m }}</option>
+            </select>
+          </div>
 
-        <!-- 세목 -->
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-gray-600">세목</label>
-          <select
-            :value="item.semok"
-            @change="onSelect(idx, 'semok', $event.target.value)"
-            class="w-full p-2 border rounded text-sm"
-            :disabled="!item.mok"
-          >
-            <option disabled value="">선택</option>
-            <option v-for="s in getSemoks(item)" :key="s" :value="s">{{ s }}</option>
-          </select>
-        </div>
+           <!-- 세목 -->
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-600">세목</label>
+            <select
+              :value="item.semok"
+              @change="onSelect(idx, 'semok', $event.target.value)"
+              class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+              :disabled="!item.mok"
+            >
+              <option disabled value="">선택</option>
+              <option v-for="s in getSemoks(item)" :key="s" :value="s">{{ s }}</option>
+            </select>
+          </div>
 
-        <!-- 지출내역 (✅ input) -->
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-gray-600">지출내역</label>
-          <input
-            type="text"
-            :value="item.detail"
-            @input="updateField(idx, 'detail', $event.target.value)"
-            class="w-full p-2 border rounded text-sm"
-            placeholder="지출내역을 입력하세요"
-          />
-        </div>
+          <!-- 지출내역 (✅ input) -->
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-600">지출내역</label>
+            <input
+              type="text"
+              :value="item.detail"
+              @input="updateField(idx, 'detail', $event.target.value)"
+              class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+              :disabled="!isSelectionReady"
+              placeholder="지출내역을 입력하세요"
+            />
+          </div>
 
-        <!-- 금액 -->
-        <div class="space-y-1">
-          <label class="block text-xs font-semibold text-gray-600">금액</label>
-          <input
-            type="text"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            autocomplete="off"
-            class="w-full p-2 border rounded text-sm text-right"
-            :value="item.amountFocused
-                      ? item.amountInput
-                      : formatKRW(item.amount)"
-            @focus="onAmountFocus(item.uuid)"
-            @input="onAmountInput(item.uuid, $event.target.value)"
-            @blur="onAmountBlur(item.uuid)"
-            placeholder="₩0"
-          />
-
-
-
+          <!-- 금액 -->
+          <div class="space-y-1">
+            <label class="block text-xs font-semibold text-gray-600">금액</label>
+            <input
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              autocomplete="off"
+              class="w-full p-2 border rounded text-sm text-right disabled:bg-gray-100 disabled:text-gray-400"
+              :disabled="!isSelectionReady"
+              :value="item.amountFocused
+                        ? item.amountInput
+                        : formatKRW(item.amount)"
+              @focus="onAmountFocus(item.uuid)"
+              @input="onAmountInput(item.uuid, $event.target.value)"
+              @blur="onAmountBlur(item.uuid)"
+              placeholder="₩0"
+            />
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ✅ 예산 초과 알림 -->
-    <ModalAlert
-      v-if="showAlert"
-      :message="alertMessage"
-      @close="showAlert = false"
+    <ConfirmBox
+      :visible="showConfirm"
+      title="알림"
+      :message="confirmMessage"
+      @confirm="confirmProceed"
+      @cancel="showConfirm = false"
     />
 
     <!-- ✅ 이전/다음 -->
@@ -192,7 +191,7 @@
       <button class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200" @click="emits('prev')">
         이전
       </button>
-      <button class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700" @click="handleNext">
+      <button class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300" :disabled="!isSelectionReady" @click="handleNext">
         다음
       </button>
     </div>
@@ -200,11 +199,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { useUserStore } from "../../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
-import ModalAlert from "../ModalAlert.vue";
+import ConfirmBox from "../ConfirmBox.vue";
 
 const props = defineProps({
   items: {
@@ -243,6 +242,8 @@ const selectedHang = computed({
   get: () => props.selectedHang || "",
   set: (value) => emits("update:selectedHang", value),
 });
+
+const isSelectionReady = computed(() => !!selectedGwan.value && !!selectedHang.value);
 
 // ✅ account_categories 기반 계층 탐색 (TDZ 방지 위해 상단)
 const deptCategories = computed(() => props.deptData?.[userDept.value] || []);
@@ -298,12 +299,62 @@ const getSemoks = (item) => {
 
 // ✅ items에 선택된 관/항을 동기화 (테이블에는 숨기지만 데이터에는 유지)
 const syncSelectionToItems = () => {
-  const newItems = (props.items || []).map((it) => ({
-    ...it,
-    gwan: selectedGwan.value || "",
-    hang: selectedHang.value || "",
-  }));
+  const newItems = (props.items || []).map((it) => {
+    const next = { ...it };
+    const selectionChanged = (next.gwan !== (selectedGwan.value || "")) || (next.hang !== (selectedHang.value || ""));
+
+    next.gwan = selectedGwan.value || "";
+    next.hang = selectedHang.value || "";
+
+    if (!isSelectionReady.value || selectionChanged) {
+      next.selected = false;
+      next.mok = "";
+      next.semok = "";
+      next.detail = "";
+      next.amount = 0;
+      next.customMok = "";
+      next.customSemok = "";
+      next.customDetail = "";
+      next.amountInput = "";
+      next.amountFocused = false;
+    }
+
+    return next;
+  });
   emits("update:items", newItems);
+};
+
+const fetchSummaryForSelectedHang = async () => {
+  // 관/항 선택 전에는 0으로
+  if (!isSelectionReady.value || !userDeptId.value) {
+    totalBudget.value = 0;
+    serverExpense.value = 0;
+    totalExpense.value = 0;
+    return;
+  }
+
+  try {
+    const gwan = findCategory("관", selectedGwan.value);
+    const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
+
+    // ✅ '항'에 해당하는 예산/지출 합계
+    const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
+      params: {
+        deptId: userDeptId.value,
+        year: currentYear,
+        hangCategoryId: hang?.category_id,
+      },
+    });
+
+    totalBudget.value = Number(data.totalBudget) || 0;
+    serverExpense.value = Number(data.totalExpense) || 0;
+    totalExpense.value = (Number(serverExpense.value) || 0) + (Number(totalAmount.value) || 0);
+  } catch (err) {
+    console.error("❌ 예산/지출(항 기준) 조회 실패:", err);
+    totalBudget.value = 0;
+    serverExpense.value = 0;
+    totalExpense.value = 0;
+  }
 };
 
 // ✅ 관 변경: 항 초기화 + items 동기화 + 자동 항 선택은 hangs watch가 처리
@@ -328,6 +379,23 @@ watch(selectedHang, async () => {
   await fetchSummaryForSelectedHang();
 });
 
+watch(
+  hangsForSelectedGwan,
+  (hangs) => {
+    if (selectedGwan.value && !selectedHang.value && Array.isArray(hangs) && hangs.length === 1) {
+      selectedHang.value = hangs[0];
+    }
+  },
+  { immediate: true }
+);
+
+watch([deptCategories, isSelectionReady, userDeptId], ([categories, ready, deptId]) => {
+  if (!deptId || !ready || !Array.isArray(categories) || categories.length === 0) return;
+  fetchSummaryForSelectedHang();
+}, { immediate: true });
+
+
+
 // ✅ 부서 변경 시: 관/항 초기화 + 자동 관 선택 + summary는 항 선택 이후 실행
 watch(
   userDept,
@@ -340,14 +408,14 @@ watch(
       selectedHang.value = "";
       totalBudget.value = 0;
       serverExpense.value = 0;
-      totalExpense.value = Number(totalAmount.value) || 0;
+      totalExpense.value = 0;
     }
 
     // ✅ 관이 1개뿐이면 자동 선택 (이미 선택된 값이 없을 때만)
     const gwans = getGwans.value;
     if (!selectedGwan.value && gwans.length === 1) selectedGwan.value = gwans[0];
 
-    if (selectedGwan.value && selectedHang.value) {
+    if (isSelectionReady.value) {
       fetchSummaryForSelectedHang();
     }
   },
@@ -365,48 +433,15 @@ const totalAmount = computed(() =>
 
 // 서버 지출 + 입력값 반영
 const totalExpense = ref(0);
-watch(
-  totalAmount,
-  (newAmount) => {
-    totalExpense.value = (Number(serverExpense.value) || 0) + (Number(newAmount) || 0);
-  },
-  { immediate: true }
-);
-
-const remainingBudget = computed(() => (Number(totalBudget.value) || 0) - (Number(totalExpense.value) || 0));
-
-const fetchSummaryForSelectedHang = async () => {
-  // 관/항 선택 전에는 0으로
-  if (!selectedGwan.value || !selectedHang.value || !userDeptId.value) {
-    totalBudget.value = 0;
-    serverExpense.value = 0;
-    totalExpense.value = Number(totalAmount.value) || 0;
+watch([totalAmount, isSelectionReady], ([newAmount, ready]) => {
+  if (!ready) {
+    totalExpense.value = 0;
     return;
   }
+  totalExpense.value = (Number(serverExpense.value) || 0) + (Number(newAmount) || 0);
+});
 
-  try {
-    const gwan = findCategory("관", selectedGwan.value);
-    const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
-
-    // ✅ '항'에 해당하는 예산/지출 합계
-    const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
-      params: {
-        deptId: userDeptId.value,
-        year: currentYear,
-        hangCategoryId: hang?.category_id,
-      },
-    });
-
-    totalBudget.value = Number(data.totalBudget) || 0;
-    serverExpense.value = Number(data.totalExpense) || 0;
-    totalExpense.value = (Number(serverExpense.value) || 0) + (Number(totalAmount.value) || 0);
-  } catch (err) {
-    console.error("❌ 예산/지출(항 기준) 조회 실패:", err);
-    totalBudget.value = 0;
-    serverExpense.value = 0;
-    totalExpense.value = Number(totalAmount.value) || 0;
-  }
-};
+const remainingBudget = computed(() => (Number(totalBudget.value) || 0) - (Number(totalExpense.value) || 0));
 
 // ✅ 표시용 items (selected 기본값 false 보정)
 const formattedItems = computed(() =>
@@ -441,12 +476,14 @@ const onSelect = (idx, field, value) => {
     newItems[idx] = {
       ...current,
       mok: value,
-      semok: ""
+      semok: "",
+      detail: ""
     };
   } else if (field === "semok") {
     newItems[idx] = {
       ...current,
-      semok: value
+      semok: value,
+      detail: ""
     };
   }
 
@@ -465,6 +502,9 @@ const addRow = () => {
     semok: "",
     detail: "",
     amount: 0,
+    customMok: "",
+    customSemok: "",
+    customDetail: "",
     uuid: genUUID(),
     amountInput: "",    // 입력용 string
     amountFocused: false,
@@ -490,19 +530,23 @@ const formatCurrency = (value) => {
 };
 
 // ✅ "다음" 버튼 → 예산 초과 차단
-const showAlert = ref(false);
-const alertMessage = ref("");
+const showConfirm = ref(false);
+const confirmMessage = ref("");
 
 const handleNext = () => {
   if (remainingBudget.value < 0) {
-    alertMessage.value = "예산을 초과하였습니다. 재정부에 획인 바랍니다.";
-    showAlert.value = true;
+    confirmMessage.value = "예산을 초과하였습니다. 반드시 소속 위원장님과 획인 바랍니다.";
+    showConfirm.value = true;
+    return;
   } 
   emits("next");
   
 };
 
-
+const confirmProceed = () => {
+  showConfirm.value = false;
+  emits("next");
+};
 
 const digitsOnly = (v) => (v ?? "").toString().replace(/[^\d]/g, "");
 

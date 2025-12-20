@@ -206,6 +206,8 @@ const openPreview = async (id) => {
       totalAmount: res.data.total_amount,
       comment: res.data.comment,
       aliasName: res.data.aliasName,
+      selectedGwan: res.data.selectedGwan,
+      selectedHang: res.data.selectedHang,
       items: res.data.items || [],
       attachedFiles: res.data.attachedFiles || [],
       approvalHistory: res.data.approvalHistory || []
