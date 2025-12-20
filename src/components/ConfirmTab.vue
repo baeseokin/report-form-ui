@@ -1,11 +1,12 @@
 <template>
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">📄 최종 확인</h2>
-    <div class="p-4 bg-gray-50 rounded-lg shadow-inner grid grid-cols-3 gap-y-2 text-gm">
+    <div class="p-4 bg-gray-50 rounded-lg shadow-inner grid grid-cols-4 gap-y-2 text-gm">
       <p><strong>문서 종류:</strong> {{ documentType }}</p>
       <p><strong>부서명:</strong> {{ userDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
+      <p><strong>계정명:</strong> {{ selectedGwan }} / {{ selectedHang }}</p>
       <p><strong>청구총액:</strong> ₩{{ Number(totalAmount || 0).toLocaleString() }}</p>
       <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
     </div>

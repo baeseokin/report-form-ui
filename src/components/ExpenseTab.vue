@@ -351,7 +351,7 @@ const handleNext = () => {
   if (remainingBudget.value < 0) {
     alertMessage.value = "예산을 초과하였습니다. 재정부에 획인 바랍니다.";
     showAlert.value = true;
-    //return;
+    
   }
   emits("next");
 };
