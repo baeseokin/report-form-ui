@@ -80,7 +80,7 @@
             {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
           </td>
           <td class="border p-2 text-right font-mono">
-            <template v-if="c.level === '세목'">
+            <template v-if="['항', '목', '세목'].includes(c.level)">
               <input
                 type="text"
                 class="border rounded p-1 w-40 text-right shadow-sm"
@@ -201,8 +201,9 @@ const saveAllBudgets = async () => {
       dept_id: selectedDeptId.value,
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
-      budget_amount:
-        c.level === "세목" ? (budgets.value[c.category_id] ?? 0) : sumChildren(c.id),
+      budget_amount: ["항", "목", "세목"].includes(c.level)
+        ? (budgets.value[c.category_id] ?? 0)
+        : sumChildren(c.id),
     }));
 
     await axios.post("/api/budgets/bulk", { budgets: payload });
@@ -226,7 +227,7 @@ const sumChildren = (parentId) => {
   return children.reduce((sum, child) => {
     console.log("sumChildren-child.category_id:",child.category_id);  
     console.log("sumChildren-budgets.value:",budgets.value);  
-    if (child.level === "세목") {
+    if (["항", "목", "세목"].includes(child.level)) {
       sum += Number(budgets.value[child.category_id] ?? 0);
     } else {
       sum += sumChildren(child.id);

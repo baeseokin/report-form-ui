@@ -13,6 +13,16 @@
           class="border rounded p-2 w-full"
         />
       </div>
+      <!-- 부서 선택 -->
+      <div class="flex flex-col w-48">
+        <label class="font-bold mb-1 text-gray-700">부서</label>
+        <select v-model="filters.deptId" class="border rounded p-2 w-full">
+          <option value="">전체</option>
+          <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+            {{ dept.dept_name }}
+          </option>
+        </select>
+      </div>
 
       <!-- 조회 버튼 -->
       <div class="flex items-end">
@@ -31,6 +41,8 @@
         <thead>
           <tr class="bg-purple-100 text-gray-800">
             <th class="border p-2">부서명</th>
+            <th class="border p-2">관</th>
+            <th class="border p-2">항</th>            
             <th class="border p-2 text-center">총예산액</th>
             <th class="border p-2 text-center">총지출액</th>
             <th class="border p-2 text-center">잔액</th>
@@ -40,18 +52,22 @@
           <tr v-for="row in budgetRows" :key="row.dept_id"
               :class="row.remaining_amount < 0 ? 'bg-red-100 text-red-700 font-semibold' : 'bg-white'">
             <td class="border p-2">{{ row.dept_name }}</td>
+            <td class="border p-2">{{ row.gwan }}</td>
+            <td class="border p-2">{{ row.hang }}</td>            
             <td class="border p-2 text-right">{{ formatAmount(row.total_budget) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.total_expense) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.remaining_amount) }}</td>
           </tr>
 
           <tr v-if="budgetRows.length === 0">
-            <td colspan="4" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
+            <td colspan="6" class="text-center p-4 text-gray-500">데이터가 없습니다.</td>
           </tr>
 
           <!-- 합계 -->
           <tr v-else class="font-bold bg-gray-200">
             <td class="border p-2 text-center">합계</td>
+            <td class="border p-2"></td>
+            <td class="border p-2"></td>            
             <td class="border p-2 text-right">{{ formatAmount(totals.budget) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(totals.expense) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(totals.remaining) }}</td>
@@ -71,22 +87,42 @@ const currentYear = today.getFullYear();
 
 const filters = ref({
   year: currentYear,
+  deptId: "",
 });
 
 const budgetRows = ref([]);
 const totals = ref({ budget: 0, expense: 0, remaining: 0 });
+const departments = ref([]);
+
+const fetchDepartments = async () => {
+  try {
+    const res = await axios.get("/api/departments");
+    departments.value = res.data;
+  } catch (err) {
+    console.error("부서 목록 조회 실패:", err);
+    departments.value = [];
+  }
+};
 
 const fetchBudgetStatus = async () => {
   try {
+    const params = { year: filters.value.year };
+    if (filters.value.deptId) {
+      params.deptId = filters.value.deptId;
+    }
     const res = await axios.get("/api/budget-status", {
-      params: { year: filters.value.year },
+      params,
     });
-    budgetRows.value = res.data;
+    const rows = Array.isArray(res.data) ? res.data : [];
+    const filteredRows = filters.value.deptId
+      ? rows.filter((row) => String(row.dept_id) === String(filters.value.deptId))
+      : rows;
+    budgetRows.value = filteredRows;
 
     // ✅ 합계 계산
-    const totalBudget = res.data.reduce((sum, r) => sum + Number(r.total_budget), 0);
-    const totalExpense = res.data.reduce((sum, r) => sum + Number(r.total_expense), 0);
-    const totalRemaining = res.data.reduce((sum, r) => sum + Number(r.remaining_amount), 0);
+    const totalBudget = filteredRows.reduce((sum, r) => sum + Number(r.total_budget), 0);
+    const totalExpense = filteredRows.reduce((sum, r) => sum + Number(r.total_expense), 0);
+    const totalRemaining = filteredRows.reduce((sum, r) => sum + Number(r.remaining_amount), 0);
 
     totals.value = {
       budget: totalBudget,
@@ -100,6 +136,7 @@ const fetchBudgetStatus = async () => {
 };
 
 onMounted(() => {
+  fetchDepartments();
   fetchBudgetStatus();
 });
 
