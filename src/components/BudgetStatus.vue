@@ -49,9 +49,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in budgetRows" :key="row.dept_id"
+          <tr v-for="row in budgetRows" :key="row.dept_id||row.gwan_name||row.hang_name"
               :class="row.remaining_amount < 0 ? 'bg-red-100 text-red-700 font-semibold' : 'bg-white'">
-            <td class="border p-2">{{ row.dept_name }}</td>
+            <td class="border p-2">{{ row.dept_name }},{{ row.dept_id }}</td>
             <td class="border p-2">{{ row.gwan_name }}</td>
             <td class="border p-2">{{ row.hang_name }}</td>            
             <td class="border p-2 text-right">{{ formatAmount(row.total_budget) }}</td>
@@ -115,14 +115,27 @@ const fetchBudgetStatus = async () => {
     });
     const rows = Array.isArray(res.data) ? res.data : [];
 
+    const selectedDept = departments.value.find(
+      (dept) => String(dept.id) === String(filters.value.deptId),
+    );
+    const selectedDeptName = selectedDept?.dept_name;
     const filteredRows = filters.value.deptId
-      ? rows.filter((row) => String(row.dept_id) === String(filters.value.deptId))
+      ? rows.filter((row) => {
+          const rowDeptId = row.dept_id ?? row.deptId ?? row.deptID;
+          if (rowDeptId !== undefined && rowDeptId !== null) {
+            return String(rowDeptId) === String(filters.value.deptId);
+          }
+          if (selectedDeptName) {
+            return String(row.dept_name) === String(selectedDeptName);
+          }
+          return false;
+        })
       : rows;
-    
-    console.log("filteredRows:",filteredRows);
+    budgetRows.value = "";    
     budgetRows.value = filteredRows;
-    console.log("budgetRows:",budgetRows);
     
+    console.log("budgetRows:",budgetRows);
+
     // ✅ 합계 계산
     const totalBudget = filteredRows.reduce((sum, r) => sum + Number(r.total_budget), 0);
     const totalExpense = filteredRows.reduce((sum, r) => sum + Number(r.total_expense), 0);
