@@ -184,6 +184,8 @@ onMounted(async () => {
       author.value = data.author;
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
+      selectedGwan.value = data.selectedGwan;
+      selectedHang.value = data.selectedHang;
 
       items.value = (data.items || []).map((i) => ({
         gwan: i.gwan,
