@@ -247,11 +247,12 @@
     </div>
 
     <!-- 안내 모달 -->
-    <ModalAlert
-      :visible="showAlert"
+    <ConfirmBox
+      :visible="showConfirm"
       title="알림"
-      :message="alertMessage"
-      @close="showAlert = false"
+      :message="confirmMessage"
+      @confirm="confirmProceed"
+      @cancel="showConfirm = false"
     />
   </div>
 </template>
@@ -261,7 +262,7 @@ import { computed, ref, watch, onMounted, onBeforeUnmount} from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
-import ModalAlert from "./ModalAlert.vue"; // ✅ 모달 추가
+import ConfirmBox from "./ConfirmBox.vue";
 
 const props = defineProps({
   items: {
@@ -319,8 +320,8 @@ const currentYear = new Date().getFullYear();
 const remainingBudget = computed(() => totalBudget.value - totalExpense.value);
 
 // ✅ 모달 상태
-const showAlert = ref(false);
-const alertMessage = ref("");
+const showConfirm = ref(false);
+const confirmMessage = ref("");
 
 // ✅ 좁은 폭에서 2줄 테이블로 전환 (≤920px)
 const isCompactTable = ref(false);
@@ -349,12 +350,18 @@ onBeforeUnmount(() => {
 // ✅ "다음" 버튼 제어
 const handleNext = () => {
   if (remainingBudget.value < 0) {
-    alertMessage.value = "예산을 초과하였습니다. 재정부에 획인 바랍니다.";
-    showAlert.value = true;
-    
+    confirmMessage.value = "예산을 초과하였습니다. 반드시 소속 위원장님과 획인 바랍니다.";
+    showConfirm.value = true;
+    return;
   }
   emits("next");
 };
+
+const confirmProceed = () => {
+  showConfirm.value = false;
+  emits("next");
+};
+
 
 // ✅ totalAmount 변경 → 서버 지출 합계 + 입력값 반영
 watch([totalAmount, isSelectionReady], ([newAmount, ready]) => {
