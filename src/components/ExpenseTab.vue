@@ -558,7 +558,16 @@ const getDetails = (item) => {
 // ✅ 값 업데이트
 const updateField = (idx, field, value) => {
   const newItems = [...props.items];
-  newItems[idx] = { ...newItems[idx], [field]: value };
+  if (field === "customSemok") {
+    const next = {
+      ...newItems[idx],
+      semok: newItems[idx].semok === "__custom__" ? newItems[idx].semok : "__custom__",
+      customSemok: value,
+    };
+    newItems[idx] = next;
+  } else {
+    newItems[idx] = { ...newItems[idx], [field]: value };
+  }
   emits("update:items", newItems);
 };
 
