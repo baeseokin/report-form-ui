@@ -117,29 +117,54 @@
          <!-- 목 -->
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-600">목</label>
-            <select
-              :value="item.mok"
-              @change="onSelect(idx, 'mok', $event.target.value)"
-              class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
-              :disabled="!isSelectionReady"
-            >
-              <option disabled value="">선택</option>
-              <option v-for="m in moksForSelectedHang" :key="m" :value="m">{{ m }}</option>
-            </select>
+            <template v-if="item.mok === '__custom__'">
+              <input
+                type="text"
+                :value="item.customMok || ''"
+                @input="updateField(idx, 'customMok', $event.target.value)"
+                placeholder="목 직접 입력"
+                class="w-full p-2 border rounded text-sm"
+                :disabled="!isSelectionReady"
+              />
+            </template>
+            <template v-else>
+              <select
+                :value="item.mok"
+                @change="onSelect(idx, 'mok', $event.target.value)"
+                class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                :disabled="!isSelectionReady"
+              >
+                <option disabled value="">선택</option>
+                <option v-for="m in moksForSelectedHang" :key="m" :value="m">{{ m }}</option>
+                <option value="__custom__">직접입력</option>
+              </select>
+            </template>
           </div>
-
            <!-- 세목 -->
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-600">세목</label>
-            <select
-              :value="item.semok"
-              @change="onSelect(idx, 'semok', $event.target.value)"
-              class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
-              :disabled="!item.mok"
-            >
-              <option disabled value="">선택</option>
-              <option v-for="s in getSemoks(item)" :key="s" :value="s">{{ s }}</option>
-            </select>
+            <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
+              <input
+                type="text"
+                :value="item.customSemok || ''"
+                @input="updateField(idx, 'customSemok', $event.target.value)"
+                placeholder="세목 직접 입력"
+                class="w-full p-2 border rounded text-sm"
+                :disabled="!isSelectionReady"
+              />
+            </template>
+            <template v-else>
+              <select
+                :value="item.semok"
+                @change="onSelect(idx, 'semok', $event.target.value)"
+                class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                :disabled="!item.mok"
+              >
+                <option disabled value="">선택</option>
+                <option v-for="s in getSemoks(item)" :key="s" :value="s">{{ s }}</option>
+                <option value="__custom__">직접입력</option>
+              </select>
+            </template>
           </div>
 
           <!-- 지출내역 (✅ input) -->
@@ -477,13 +502,16 @@ const onSelect = (idx, field, value) => {
       ...current,
       mok: value,
       semok: "",
-      detail: ""
+      detail: "",
+      customSemok: "",
+      customMok: value === "__custom__" ? current.customMok || "" : "",
     };
   } else if (field === "semok") {
     newItems[idx] = {
       ...current,
       semok: value,
-      detail: ""
+      detail: "",
+      customSemok: value === "__custom__" ? current.customSemok || "" : "",
     };
   }
 
