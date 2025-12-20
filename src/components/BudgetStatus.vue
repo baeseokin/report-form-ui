@@ -52,8 +52,8 @@
           <tr v-for="row in budgetRows" :key="row.dept_id"
               :class="row.remaining_amount < 0 ? 'bg-red-100 text-red-700 font-semibold' : 'bg-white'">
             <td class="border p-2">{{ row.dept_name }}</td>
-            <td class="border p-2">{{ row.gwan }}</td>
-            <td class="border p-2">{{ row.hang }}</td>            
+            <td class="border p-2">{{ row.gwan_name }}</td>
+            <td class="border p-2">{{ row.hang_name }}</td>            
             <td class="border p-2 text-right">{{ formatAmount(row.total_budget) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.total_expense) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.remaining_amount) }}</td>
@@ -114,11 +114,15 @@ const fetchBudgetStatus = async () => {
       params,
     });
     const rows = Array.isArray(res.data) ? res.data : [];
+
     const filteredRows = filters.value.deptId
       ? rows.filter((row) => String(row.dept_id) === String(filters.value.deptId))
       : rows;
+    
+    console.log("filteredRows:",filteredRows);
     budgetRows.value = filteredRows;
-
+    console.log("budgetRows:",budgetRows);
+    
     // ✅ 합계 계산
     const totalBudget = filteredRows.reduce((sum, r) => sum + Number(r.total_budget), 0);
     const totalExpense = filteredRows.reduce((sum, r) => sum + Number(r.total_expense), 0);
