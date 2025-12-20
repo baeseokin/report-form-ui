@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch  } from "vue";
 import axios from "axios";
 
 const today = new Date();
@@ -93,6 +93,7 @@ const filters = ref({
 const budgetRows = ref([]);
 const totals = ref({ budget: 0, expense: 0, remaining: 0 });
 const departments = ref([]);
+const fetchRequestId = ref(0);
 
 const fetchDepartments = async () => {
   try {
@@ -106,6 +107,9 @@ const fetchDepartments = async () => {
 
 const fetchBudgetStatus = async () => {
   try {
+    const requestId = ++fetchRequestId.value;
+    budgetRows.value = [];
+    totals.value = { budget: 0, expense: 0, remaining: 0 };
     const params = { year: filters.value.year };
     if (filters.value.deptId) {
       params.deptId = filters.value.deptId;
@@ -113,6 +117,7 @@ const fetchBudgetStatus = async () => {
     const res = await axios.get("/api/budget-status", {
       params,
     });
+    if (requestId !== fetchRequestId.value) return;
     const rows = Array.isArray(res.data) ? res.data : [];
 
     const selectedDept = departments.value.find(
@@ -149,6 +154,7 @@ const fetchBudgetStatus = async () => {
   } catch (err) {
     console.error("예산 현황 조회 실패:", err);
     budgetRows.value = [];
+    totals.value = { budget: 0, expense: 0, remaining: 0 };
   }
 };
 
@@ -156,6 +162,13 @@ onMounted(() => {
   fetchDepartments();
   fetchBudgetStatus();
 });
+
+watch(
+  () => filters.value.deptId,
+  () => {
+    fetchBudgetStatus();
+  },
+);
 
 const formatAmount = (val) => {
   if (val === null || val === undefined) return "";
