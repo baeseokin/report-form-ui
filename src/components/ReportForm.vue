@@ -232,6 +232,9 @@ onMounted(async () => {
             resolved.customSemok = resolved.semok === "__custom__" ? resolved.customSemok : resolved.semok;
             resolved.semok = "__custom__";
           }
+          if (!resolved.semok && resolved.customSemok) {
+            resolved.semok = "__custom__";
+          }
           return resolved;
         }
 

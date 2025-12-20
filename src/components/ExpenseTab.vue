@@ -400,7 +400,44 @@ const hangsForSelectedGwan = computed(() => {
     .map(c => c.category_name);
 });
 
+const fetchSummaryBySelection = async () => {
+  if (!userDeptId.value || !isSelectionReady.value) {
+    totalBudget.value = 0;
+    serverExpense.value = 0;
+    totalExpense.value = 0;
+    return;
+  }
 
+  try {
+    const gwan = findCategory("관", selectedGwan.value);
+    const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
+    const startCategoryId = hang?.category_id || gwan?.category_id;
+
+    if (!startCategoryId) {
+      totalBudget.value = 0;
+      serverExpense.value = 0;
+      totalExpense.value = 0;
+      return;
+    }
+
+    const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
+      params: {
+        deptId: userDeptId.value,
+        year: currentYear,
+        hangCategoryId: hang.category_id, // ✅ '항'의 category_id만 전달
+      },
+    });
+
+    totalBudget.value = Number(data.totalBudget) || 0;
+    serverExpense.value = Number(data.totalExpense) || 0;
+    totalExpense.value = (Number(serverExpense.value) || 0) + (Number(totalAmount.value) || 0);
+  } catch (err) {
+    console.error("❌ /api/expenses/summaryByCategory 조회 실패:", err);
+    totalBudget.value = 0;
+    serverExpense.value = 0;
+    totalExpense.value = 0;
+  }
+};
 
 // ✅ 항 후보가 1개뿐이면 자동 선택 (타이밍 이슈 방지용)
 watch(
@@ -470,44 +507,7 @@ const syncSelectionToItems = () => {
   emits("update:items", newItems);
 };
 
-const fetchSummaryBySelection = async () => {
-  if (!userDeptId.value || !isSelectionReady.value) {
-    totalBudget.value = 0;
-    serverExpense.value = 0;
-    totalExpense.value = 0;
-    return;
-  }
 
-  try {
-    const gwan = findCategory("관", selectedGwan.value);
-    const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
-    const startCategoryId = hang?.category_id || gwan?.category_id;
-
-    if (!startCategoryId) {
-      totalBudget.value = 0;
-      serverExpense.value = 0;
-      totalExpense.value = 0;
-      return;
-    }
-
-    const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
-      params: {
-        deptId: userDeptId.value,
-        year: currentYear,
-        hangCategoryId: hang.category_id, // ✅ '항'의 category_id만 전달
-      },
-    });
-
-    totalBudget.value = Number(data.totalBudget) || 0;
-    serverExpense.value = Number(data.totalExpense) || 0;
-    totalExpense.value = (Number(serverExpense.value) || 0) + (Number(totalAmount.value) || 0);
-  } catch (err) {
-    console.error("❌ /api/expenses/summaryByCategory 조회 실패:", err);
-    totalBudget.value = 0;
-    serverExpense.value = 0;
-    totalExpense.value = 0;
-  }
-};
 
 watch(selectedGwan, () => {
   // 관 변경 시 항 초기화
