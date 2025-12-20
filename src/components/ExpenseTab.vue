@@ -523,6 +523,11 @@ watch(selectedHang, () => {
   fetchSummaryBySelection();
 });
 
+watch([deptCategories, isSelectionReady, userDeptId], ([categories, ready, deptId]) => {
+  if (!deptId || !ready || !Array.isArray(categories) || categories.length === 0) return;
+  fetchSummaryBySelection();
+}, { immediate: true });
+
 // "목"
 const getMoks = (item) => {
   if (!item.hang) return [];
