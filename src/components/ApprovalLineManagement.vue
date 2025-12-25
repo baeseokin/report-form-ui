@@ -95,7 +95,8 @@
             부서명
             <select
               v-model="editable.dept_name"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+              :disabled="isEdit"
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="">부서를 선택하세요</option>
               <option
@@ -127,11 +128,19 @@
 
           <label class="block text-sm font-semibold text-gray-700">
             사용자 ID
-            <input
+            <select
               v-model="editable.approver_user_id"
-              placeholder="예: mus001"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+            >
+              <option value="">사용자를 선택하세요</option>
+              <option
+                v-for="user in userOptions"
+                :key="user.userId || user.id || user.approver_user_id"
+                :value="user.userId || user.approver_user_id"
+              >
+                {{ user.name ? `${user.name} (${user.userId})` : user.userId || user.approver_user_id }}
+              </option>
+            </select>
           </label>
 
           <label class="block text-sm font-semibold text-gray-700">
@@ -238,6 +247,9 @@ const deptKeyword = ref("");
 const editable = ref(createBlank());
 const departmentOptions = ref([]);
 const roleOptions = ref([]);
+const userOptions = ref([]);
+
+const isEdit = computed(() => Boolean(editable.value.id));
 
 function createBlank() {
   return {
@@ -277,6 +289,7 @@ onMounted(() => {
   fetchLines();
   fetchDepartments();
   fetchRoles();
+  fetchUsers();
 });
 
 
@@ -314,6 +327,16 @@ async function fetchRoles() {
   } catch (err) {
     console.error(err);
     error.value = "역할 정보를 불러오지 못했습니다.";
+  }
+}
+
+async function fetchUsers() {
+  try {
+    const res = await axios.get("/api/users/search");
+    userOptions.value = res.data || [];
+  } catch (err) {
+    console.error(err);
+    error.value = "사용자 정보를 불러오지 못했습니다.";
   }
 }
 
