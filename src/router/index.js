@@ -37,6 +37,8 @@ const BudgetStatus = () => import("../components/BudgetStatus.vue");
 const EmailTest = () => import("../views/EmailTest.vue");
 const DepartmentManagement = () =>
   import("../components/DepartmentManagement.vue");
+const ApprovalLineManagement = () =>
+  import("../components/ApprovalLineManagement.vue");
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -52,9 +54,10 @@ const routes = [
   // ✅ 내결재목록 조회 → 모바일/PC 분기 (동적 import)
   { path: "/approvalStatus", component: ApprovalListPage, meta: { menuName: "내결재목록 조회" } },
 
-  // 사용자 / 권한 관리
+  // 사용자 / 권한 관리 / 결재라인 관리
   { path: "/userManagement", component: UserManagement, meta: { menuName: "사용자 관리" } },
   { path: "/roleAccess", component: RoleAccess, meta: { menuName: "권한 관리" } },
+  { path: "/approval-lines", component: ApprovalLineManagement, meta: { menuName: "결재선 관리" } },
 
   // ✅ 계정과목 / 예산 / 예산집행 현황
   { path: "/accountCategories", component: AccountCategoriesGrid, meta: { menuName: "계정과목 관리" } },

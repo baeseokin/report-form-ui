@@ -129,6 +129,7 @@ const allMenus = [
   { label: "예산집행 현황", path: "/budgetStatus", icon: "🏛" },
   { label: "부서 관리", path: "/departments", icon: "🏢" },
   { label: "사용자 관리", path: "/userManagement", icon: "👤" },
+  { label: "결재선 관리", path: "/approval-lines", icon: "📄" },
   { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
   { label: "이메일 테스트", path: "/email-test", icon: "🔑" },
   
