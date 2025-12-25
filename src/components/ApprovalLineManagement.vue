@@ -390,15 +390,31 @@ async function saveLine() {
       order_no: Number(editable.value.order_no),
     }).filter(([, value]) => value !== undefined && value !== null && value !== "")
   );
+  const camelCasePayload = {
+    ...payload,
+    deptId: payload.dept_id,
+    deptName: payload.dept_name,
+    roleId: payload.role_id,
+    approverRole: payload.approver_role,
+    approverUserId: payload.approver_user_id,
+    approverUserName: payload.approver_user_name,
+    orderNo: payload.order_no,
+  };
+
+  const createBody = {
+    deptId: camelCasePayload.deptId,
+    deptName: camelCasePayload.deptName,
+    lines: [camelCasePayload],
+  };
 
   try {
     if (editable.value.id) {
       await axios.put(`/api/approval-lines/${editable.value.id}`, {
-        ...payload,
+        ...camelCasePayload,
         id: editable.value.id,
       });
     } else {
-      await axios.post("/api/approval-lines", payload);
+      await axios.post("/api/approval-lines", createBody);
     }
     await fetchLines();
     selectDept(editable.value.dept_name);
