@@ -327,34 +327,54 @@ async function saveDepartment() {
     return;
   }
 
+  if (editable.value.isNew && trimmedCode && !/^[A-Z]{3}$/.test(trimmedCode)) {
+    alert("부서코드는 반드시 대문자 3자리여야 합니다.");
+    return;
+  }  
+  if (
+    editable.value.isNew &&
+    departments.value.some((dept) => {
+        const existingName = (dept.dept_name || "").trim();
+        const existingCode = (dept.dept_cd || "").trim();
+
+        return existingName === trimmedName || (trimmedCode && existingCode === trimmedCode);
+    })
+  ) {
+    alert("동일한 부서코드 또는 이름을 등록할 수 없습니다.");
+    return;
+  }
+
   const payload = {
     dept_name: trimmedName,
     dept_cd: trimmedCode || null,
     parent_dept_id: editable.value.parent_dept_id || null,
   };
 
-try {
-    if (editable.value.isNew) {
-      const { data } = await axios.post("/api/departments", payload);
-      await fetchDepartments();
+    try {
+        if (editable.value.isNew) {
+            const { data } = await axios.post("/api/departments", payload);
+            await fetchDepartments();
 
-      if (data?.id) {
-        selectById(data.id);
+        if (data?.id) {
+            selectById(data.id);
+        } else {
+            const created = departments.value.find(
+            (d) => d.dept_name === trimmedName && (d.dept_cd || "") === trimmedCode
+            );
+            if (created) selectById(created.id);
+        }
       } else {
-        const created = departments.value.find(
-          (d) => d.dept_name === trimmedName && (d.dept_cd || "") === trimmedCode
-        );
-        if (created) selectById(created.id);
+            const currentId = editable.value.id;
+            await axios.put(`/api/departments/${currentId}`, payload);
+            await fetchDepartments();
+            if (currentId) {
+                selectById(currentId);
+            }
       }
-    } else {
-      await axios.put(`/api/departments/${editable.value.id}`, payload);
-      await fetchDepartments();
-        selectById(data.id);
-      }
-  } catch (err) {
-    console.error("부서 저장에 실패했습니다.", err);
-    alert("부서를 저장하지 못했습니다. 다시 시도해주세요.");
-  }
+    } catch (err) {
+        console.error("부서 저장에 실패했습니다.", err);
+        alert("부서를 저장하지 못했습니다. 다시 시도해주세요.");
+    }
 }
 
 async function deleteDepartment() {
