@@ -93,20 +93,36 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50 border border-indigo-100 rounded-lg p-4">
           <label class="block text-sm font-semibold text-gray-700">
             부서명
-            <input
+            <select
               v-model="editable.dept_name"
-              placeholder="예: 청년부"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+            >
+              <option value="">부서를 선택하세요</option>
+              <option
+                v-for="dept in departmentOptions"
+                :key="dept.id || dept.dept_name"
+                :value="dept.dept_name"
+              >
+                {{ dept.dept_name }}
+              </option>
+            </select>
           </label>
 
           <label class="block text-sm font-semibold text-gray-700">
             결재 역할
-            <input
+            <select
               v-model="editable.approver_role"
-              placeholder="예: 회계, 부장, 위원장"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+            >
+              <option value="">역할을 선택하세요</option>
+              <option
+                v-for="role in roleOptions"
+                :key="role.role_id || role.role_name"
+                :value="role.role_name"
+              >
+                {{ role.role_name }}
+              </option>
+            </select>
           </label>
 
           <label class="block text-sm font-semibold text-gray-700">
@@ -220,6 +236,8 @@ const error = ref("");
 const selectedDept = ref("");
 const deptKeyword = ref("");
 const editable = ref(createBlank());
+const departmentOptions = ref([]);
+const roleOptions = ref([]);
 
 function createBlank() {
   return {
@@ -255,7 +273,12 @@ const isValid = computed(() => {
   return dept_name && approver_role && approver_user_id && order_no > 0;
 });
 
-onMounted(fetchLines);
+onMounted(() => {
+  fetchLines();
+  fetchDepartments();
+  fetchRoles();
+});
+
 
 async function fetchLines() {
   loading.value = true;
@@ -271,6 +294,26 @@ async function fetchLines() {
     error.value = "결재선 정보를 불러오지 못했습니다.";
   } finally {
     loading.value = false;
+  }
+}
+
+async function fetchDepartments() {
+  try {
+    const res = await axios.get("/api/departments");
+    departmentOptions.value = res.data || [];
+  } catch (err) {
+    console.error(err);
+    error.value = "부서 정보를 불러오지 못했습니다.";
+  }
+}
+
+async function fetchRoles() {
+  try {
+    const res = await axios.get("/api/roles");
+    roleOptions.value = res.data || [];
+  } catch (err) {
+    console.error(err);
+    error.value = "역할 정보를 불러오지 못했습니다.";
   }
 }
 
