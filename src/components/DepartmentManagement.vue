@@ -189,23 +189,10 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, h, reactive, ref } from "vue";
+import axios from "axios";
+import { computed, defineComponent, h, onMounted, ref } from "vue";
 
-const seedDepartments = [
-  { id: 1, dept_name: "교회", parent_dept_id: null, created_at: "2025-09-06 07:35:33", updated_at: "2025-10-23 09:56:53", dept_cd: "CHR" },
-  { id: 2, dept_name: "음악부", parent_dept_id: 1, created_at: "2025-09-06 07:35:34", updated_at: "2025-10-23 09:57:28", dept_cd: "MUS" },
-  { id: 3, dept_name: "교육부", parent_dept_id: 1, created_at: "2025-09-06 07:35:34", updated_at: "2025-10-23 09:57:52", dept_cd: "TEA" },
-  { id: 4, dept_name: "재정부", parent_dept_id: 1, created_at: "2025-09-06 07:35:34", updated_at: "2025-10-23 09:57:52", dept_cd: "FIN" },
-  { id: 5, dept_name: "원천엔젤스", parent_dept_id: 2, created_at: "2025-09-06 07:35:38", updated_at: "2025-09-24 08:22:16", dept_cd: "ANG" },
-  { id: 6, dept_name: "할렐루야찬양대", parent_dept_id: 2, created_at: "2025-09-06 07:35:38", updated_at: "2025-09-24 08:22:16", dept_cd: "HAL" },
-  { id: 7, dept_name: "임마누엘찬양대", parent_dept_id: 2, created_at: "2025-09-06 07:35:38", updated_at: "2025-09-24 08:22:16", dept_cd: "EMM" },
-  { id: 8, dept_name: "샬롬찬양대", parent_dept_id: 2, created_at: "2025-09-06 07:35:38", updated_at: "2025-09-24 08:22:16", dept_cd: "SAL" },
-  { id: 9, dept_name: "청년부", parent_dept_id: 3, created_at: "2025-09-06 07:35:41", updated_at: "2025-09-24 08:22:16", dept_cd: "YOU" },
-  { id: 10, dept_name: "청소년부", parent_dept_id: 3, created_at: "2025-10-02 11:56:37", updated_at: "2025-10-02 11:56:37", dept_cd: "TEE" },
-  { id: 11, dept_name: "실내악단", parent_dept_id: 2, created_at: "2025-10-04 02:43:00", updated_at: "2025-10-04 02:43:30", dept_cd: "ORC" },
-];
-
-const departments = reactive([...seedDepartments]);
+const departments = ref([]);
 const selected = ref(null);
 const editable = ref(createBlank());
 const searchKeyword = ref("");
@@ -222,9 +209,24 @@ function createBlank(parentId = null) {
   };
 }
 
-function formatNow() {
-  const now = new Date();
-  return now.toISOString().slice(0, 19).replace("T", " ");
+async function fetchDepartments() {
+  try {
+    const { data } = await axios.get("/api/departments");
+    departments.value = Array.isArray(data) ? data : [];
+
+    if (selected.value) {
+      const updated = departments.value.find((d) => d.id === selected.value.id);
+      if (updated) {
+        selected.value = updated;
+        editable.value = { ...updated, isNew: false };
+      } else {
+        resetForm();
+      }
+    }
+  } catch (err) {
+    console.error("부서 목록을 불러오지 못했습니다.", err);
+    alert("부서 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+  }
 }
 
 function buildTree(list) {
@@ -248,7 +250,7 @@ function buildTree(list) {
   return roots;
 }
 
-const departmentTree = computed(() => buildTree(departments));
+const departmentTree = computed(() => buildTree(departments.value));
 
 const filteredTree = computed(() => {
   if (!searchKeyword.value.trim()) return departmentTree.value;
@@ -278,9 +280,9 @@ const parentOptions = computed(() => {
 });
 
 const filteredList = computed(() => {
-  if (!searchKeyword.value.trim()) return departments;
+  if (!searchKeyword.value.trim()) return departments.value;
   const keyword = searchKeyword.value.toLowerCase();
-  return departments.filter(
+  return departments.value.filter(
     (dept) =>
       dept.dept_name.toLowerCase().includes(keyword) ||
       (dept.dept_cd && dept.dept_cd.toLowerCase().includes(keyword)) ||
@@ -290,12 +292,12 @@ const filteredList = computed(() => {
 
 function parentName(parentId) {
   if (!parentId) return "";
-  const found = departments.find((d) => d.id === parentId);
+  const found = departments.value.find((d) => d.id === parentId);
   return found ? found.dept_name : "";
 }
 
 function selectById(id) {
-  const found = departments.find((d) => d.id === id);
+  const found = departments.value.find((d) => d.id === id);
   if (!found) return;
   selected.value = found;
   editable.value = { ...found, isNew: false };
@@ -311,7 +313,7 @@ function startCreateChild() {
   editable.value = createBlank(selected.value.id);
 }
 
-function saveDepartment() {
+async function saveDepartment() {
   if (!editable.value.dept_name) {
     alert("부서명을 입력해주세요.");
     return;
@@ -325,71 +327,52 @@ function saveDepartment() {
     return;
   }
 
-  if (editable.value.isNew) {
-    const duplicateName = departments.some(
-      (d) => d.dept_name.trim().toLowerCase() === trimmedName.toLowerCase()
-    );
-    const duplicateCode = trimmedCode
-      ? departments.some(
-          (d) => d.dept_cd && d.dept_cd.trim().toLowerCase() === trimmedCode.toLowerCase()
-        )
-      : false;
+  const payload = {
+    dept_name: trimmedName,
+    dept_cd: trimmedCode || null,
+    parent_dept_id: editable.value.parent_dept_id || null,
+  };
 
-    if (duplicateName || duplicateCode) {
-      alert("동일한 부서명 또는 부서 코드가 이미 등록되어 있습니다.");
-      return;
-    }
+try {
+    if (editable.value.isNew) {
+      const { data } = await axios.post("/api/departments", payload);
+      await fetchDepartments();
 
-    const newId = (departments.length ? Math.max(...departments.map((d) => d.id)) : 0) + 1;
-    const now = formatNow();
-    const newDept = {
-      ...editable.value,
-      id: newId,
-      dept_name: trimmedName,
-      dept_cd: trimmedCode,
-      created_at: now,
-      updated_at: now,
-      isNew: false,
-    };
-    departments.push(newDept);
-    selectById(newId);
-  } else {
-    const idx = departments.findIndex((d) => d.id === editable.value.id);
-    if (idx >= 0) {
-      departments[idx] = {
-        ...departments[idx],
-        ...editable.value,
-        dept_name: trimmedName,
-        dept_cd: trimmedCode,
-        updated_at: formatNow(),
-        isNew: false,
-      };
-      selectById(editable.value.id);
-    }
+      if (data?.id) {
+        selectById(data.id);
+      } else {
+        const created = departments.value.find(
+          (d) => d.dept_name === trimmedName && (d.dept_cd || "") === trimmedCode
+        );
+        if (created) selectById(created.id);
+      }
+    } else {
+      await axios.put(`/api/departments/${editable.value.id}`, payload);
+      await fetchDepartments();
+        selectById(data.id);
+      }
+  } catch (err) {
+    console.error("부서 저장에 실패했습니다.", err);
+    alert("부서를 저장하지 못했습니다. 다시 시도해주세요.");
   }
 }
 
-function deleteDepartment() {
+async function deleteDepartment() {
   if (editable.value.isNew || !editable.value.id) return;
 
   const confirmed = confirm("선택한 부서를 삭제하시겠습니까? 하위 부서는 최상위로 이동합니다.");
   if (!confirmed) return;
 
-  const targetId = editable.value.id;
-
-  departments.forEach((dept) => {
-    if (dept.parent_dept_id === targetId) {
-      dept.parent_dept_id = null;
-    }
-  });
-
-  const index = departments.findIndex((d) => d.id === targetId);
-  if (index >= 0) {
-    departments.splice(index, 1);
+  try {
+    await axios.delete(`/api/departments/${editable.value.id}`);
+    await fetchDepartments();
+    selected.value = null;
+    editable.value = createBlank();
+  } catch (err) {
+    console.error("부서 삭제에 실패했습니다.", err);
+    alert("부서를 삭제하지 못했습니다. 다시 시도해주세요.");
   }
 
-  selected.value = null;
-  editable.value = createBlank();
 }
 
 function resetForm() {
@@ -399,6 +382,8 @@ function resetForm() {
     editable.value = createBlank();
   }
 }
+
+onMounted(fetchDepartments);
 
 const DepartmentNode = defineComponent({
   name: "DepartmentNode",
