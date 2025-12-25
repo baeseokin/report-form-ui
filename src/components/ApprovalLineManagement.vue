@@ -369,17 +369,42 @@ async function saveLine() {
   if (!isValid.value) return;
   saving.value = true;
   error.value = "";
+
+  const dept = departmentOptions.value.find(
+    (d) => d.dept_name === editable.value.dept_name || d.name === editable.value.dept_name
+  );
+  const role = roleOptions.value.find(
+    (r) => r.role_name === editable.value.approver_role || r.name === editable.value.approver_role
+  );
+  const user = userOptions.value.find(
+    (u) => (u.userId || u.id || u.approver_user_id) === editable.value.approver_user_id
+  );
+  const payload = Object.fromEntries(
+    Object.entries({
+      dept_id: dept?.id || dept?.dept_id,
+      dept_name: editable.value.dept_name,
+      role_id: role?.role_id || role?.id,
+      approver_role: editable.value.approver_role,
+      approver_user_id: editable.value.approver_user_id,
+      approver_user_name: user?.name,
+      order_no: Number(editable.value.order_no),
+    }).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+
   try {
     if (editable.value.id) {
-      await axios.put(`/api/approval-lines/${editable.value.id}`, editable.value);
+      await axios.put(`/api/approval-lines/${editable.value.id}`, {
+        ...payload,
+        id: editable.value.id,
+      });
     } else {
-      await axios.post("/api/approval-lines", editable.value);
+      await axios.post("/api/approval-lines", payload);
     }
     await fetchLines();
     selectDept(editable.value.dept_name);
   } catch (err) {
     console.error(err);
-    error.value = "저장 중 오류가 발생했습니다.";
+    error.value = err.response?.data?.message || "저장 중 오류가 발생했습니다.";
   } finally {
     saving.value = false;
   }
