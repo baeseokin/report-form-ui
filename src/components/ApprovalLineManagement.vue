@@ -412,11 +412,13 @@ async function saveLine() {
 
   try {
     if (editable.value.id) {
+      console.log("editable >>>>>");
       await axios.put(`/api/approval-lines/${editable.value.id}`, {
         ...camelCasePayload,
         id: editable.value.id,
       });
     } else {
+      console.log("created >>>>>createBody:",createBody);
       await axios.post("/api/approval-lines", createBody);
     }
     await fetchLines();
