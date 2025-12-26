@@ -44,7 +44,7 @@
             v-model="deptKeyword"
             type="search"
             placeholder="부서명 검색"
-            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
           <button
             class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
@@ -77,16 +77,7 @@
             </h2>
             <p class="text-sm text-gray-500">순서를 드래그 대신 버튼으로 조정할 수 있습니다.</p>
           </div>
-          <div class="flex items-center gap-2">
-            <label class="text-sm text-gray-600">부서 선택</label>
-            <select
-              v-model="selectedDept"
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              <option value="">(선택)</option>
-              <option v-for="dept in departments" :key="dept" :value="dept">{{ dept }}</option>
-            </select>
-          </div>
+          
         </div>
 
         <!-- Form -->
@@ -404,7 +395,19 @@ async function saveLine() {
   const createBody = {
     deptId: camelCasePayload.deptId,
     deptName: camelCasePayload.deptName,
-    lines: [camelCasePayload],
+    lines: [
+      ...filteredLines.value.map((line) => ({
+        id: line.id,
+        deptId: line.dept_id ?? line.deptId,
+        deptName: line.dept_name ?? line.deptName,
+        roleId: line.role_id ?? line.roleId,
+        approverRole: line.approver_role ?? line.approverRole,
+        approverUserId: line.approver_user_id ?? line.approverUserId,
+        approverUserName: line.approver_user_name ?? line.approverUserName,
+        orderNo: Number(line.order_no ?? line.orderNo),
+      })),
+      camelCasePayload,
+    ],
   };
 
   try {
