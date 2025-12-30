@@ -206,7 +206,12 @@
       @confirm="confirmProceed"
       @cancel="showConfirm = false"
     />
-
+    <ModalAlert
+      :visible="showBlockAlert"
+      title="알림"
+      :message="blockAlertMessage"
+      @close="showBlockAlert = false"
+    />
     <!-- ✅ 이전/다음 -->
     <div class="flex justify-between gap-2 pt-2">
       <button class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200" @click="emits('prev')">
@@ -225,6 +230,7 @@ import { useUserStore } from "../../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
 import ConfirmBox from "../ConfirmBox.vue";
+import ModalAlert from "../ModalAlert.vue";
 
 const props = defineProps({
   items: {
@@ -556,8 +562,15 @@ const formatCurrency = (value) => {
 // ✅ "다음" 버튼 → 예산 초과 차단
 const showConfirm = ref(false);
 const confirmMessage = ref("");
+const showBlockAlert = ref(false);
+const blockAlertMessage = ref("");
 
 const handleNext = () => {
+  if (totalAmount.value <= 0) {
+    blockAlertMessage.value = "지출항목을 입력해야 다음으로 이동할 수 있습니다.";
+    showBlockAlert.value = true;
+    return;
+  }  
   if (remainingBudget.value < 0) {
     confirmMessage.value = "예산을 초과하였습니다. 반드시 소속 위원장님과 획인 바랍니다.";
     showConfirm.value = true;

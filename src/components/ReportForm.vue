@@ -10,7 +10,7 @@
         <button
           v-for="tab in tabs"
           :key="tab"
-          @click="activeTab = tab"
+          @click="handleTabClick(tab)"
           class="flex-1 py-3 text-center font-semibold transition"
           :class="
             activeTab === tab
@@ -82,7 +82,7 @@
       <button
         v-for="tab in tabs"
         :key="tab"
-        @click="activeTab = tab"
+          @click="handleTabClick(tab)"
         class="flex-1 py-2 text-center font-semibold transition"
         :class="activeTab === tab ? 'text-purple-700' : 'text-gray-500'"
       >
@@ -99,6 +99,12 @@
       :message="orientationAlertMessage"
       @close="showOrientationAlert = false"
     />
+    <ModalAlert
+      :visible="showNavigationAlert"
+      title="알림"
+      :message="navigationAlertMessage"
+      @close="showNavigationAlert = false"
+    />    
   </div>
 </template>
 
@@ -282,8 +288,39 @@ const totalAmount = computed(() =>
   items.value.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
 
+const showNavigationAlert = ref(false);
+const navigationAlertMessage = ref("");
+
+const isExpenseTabBlocked = (nextIdx) => {
+  const currentIdx = tabs.indexOf(activeTab.value);
+  const expenseIdx = tabs.indexOf("지출내역");
+  return (
+    currentIdx === expenseIdx &&
+    nextIdx > currentIdx &&
+    totalAmount.value <= 0
+  );
+};
+
+const notifyExpenseRequired = () => {
+  navigationAlertMessage.value = "지출항목을 입력해야 다음으로 이동할 수 있습니다.";
+  showNavigationAlert.value = true;
+};
+
+const handleTabClick = (tab) => {
+  const targetIdx = tabs.indexOf(tab);
+  if (isExpenseTabBlocked(targetIdx)) {
+    notifyExpenseRequired();
+    return;
+  }
+  activeTab.value = tab;
+};
+
 const goNextTab = () => {
   const idx = tabs.indexOf(activeTab.value);
+  if (isExpenseTabBlocked(idx + 1)) {
+    notifyExpenseRequired();
+    return;
+  }  
   if (idx < tabs.length - 1) activeTab.value = tabs[idx + 1];
 };
 const goPrevTab = () => {
