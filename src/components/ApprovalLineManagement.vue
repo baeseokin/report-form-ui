@@ -6,12 +6,19 @@
         <p class="text-sm text-gray-500">부서별 결재 순서를 손쉽게 관리하세요</p>
         <h1 class="text-2xl font-bold text-indigo-700">📄 결재선 관리</h1>
       </div>
-      <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
         <button
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700"
-          @click="prepareNewLine"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-50"
+          :disabled="!selectedDept"
+          @click="prepareNewLine('existing')"
         >
-          ＋ 결재선 추가
+          ＋ 선택 부서에 결재선 추가
+        </button>
+        <button
+          class="px-4 py-2 bg-white border text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50"
+          @click="prepareNewLine('new')"
+        >
+          ＋ 새 부서 결재선 등록
         </button>
         <button
           class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
@@ -77,7 +84,13 @@
             </h2>
             <p class="text-sm text-gray-500">순서를 드래그 대신 버튼으로 조정할 수 있습니다.</p>
           </div>
-          
+        </div>
+        <div
+          v-if="newDeptMode"
+          class="flex items-center gap-2 text-sm text-indigo-800 bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3"
+        >
+          <span class="font-semibold">새 부서 등록 모드</span>
+          <span>부서 선택 후 바로 결재선을 등록할 수 있습니다.</span>         
         </div>
 
         <!-- Form -->
@@ -86,7 +99,7 @@
             부서명
             <select
               v-model="editable.dept_name"
-              :disabled="isEdit"
+              :disabled="isDeptLocked"
               class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="">부서를 선택하세요</option>
@@ -236,11 +249,15 @@ const error = ref("");
 const selectedDept = ref("");
 const deptKeyword = ref("");
 const editable = ref(createBlank());
+const newDeptMode = ref(false);
 const departmentOptions = ref([]);
 const roleOptions = ref([]);
 const userOptions = ref([]);
 
 const isEdit = computed(() => Boolean(editable.value.id));
+const isDeptLocked = computed(
+  () => isEdit.value || (!newDeptMode.value && Boolean(selectedDept.value))
+);
 
 function createBlank() {
   return {
@@ -333,6 +350,7 @@ async function fetchUsers() {
 
 function selectDept(dept) {
   selectedDept.value = dept;
+  newDeptMode.value = false;
   editable.value = {
     ...createBlank(),
     dept_name: dept,
@@ -340,11 +358,12 @@ function selectDept(dept) {
   };
 }
 
-function prepareNewLine() {
+function prepareNewLine(mode = "existing") {
+  newDeptMode.value = mode === "new";
   editable.value = {
     ...createBlank(),
-    dept_name: selectedDept.value,
-    order_no: selectedDept.value ? filteredLines.value.length + 1 : 1,
+    dept_name: mode === "existing" ? selectedDept.value : "",
+    order_no: selectedDept.value && mode === "existing" ? filteredLines.value.length + 1 : 1,
   };
 }
 
