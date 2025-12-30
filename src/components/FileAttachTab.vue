@@ -67,7 +67,7 @@ import { computed, ref } from "vue";
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   // ✅ 필요 시 화면마다 손쉽게 조정 가능
-  maxFileSizeMB: { type: Number, default: 3 },   // 파일당 최대 (MB)
+  maxFileSizeMB: { type: Number, default: 5 },   // 파일당 최대 (MB)
   maxTotalSizeMB: { type: Number, default: 20 },  // 총합 최대 (MB)
 });
 

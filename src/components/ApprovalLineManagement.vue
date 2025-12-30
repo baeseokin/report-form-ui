@@ -360,6 +360,9 @@ function selectDept(dept) {
 
 function prepareNewLine(mode = "existing") {
   newDeptMode.value = mode === "new";
+  if (mode === "new") {
+    selectedDept.value = "";
+  }
   editable.value = {
     ...createBlank(),
     dept_name: mode === "existing" ? selectedDept.value : "",

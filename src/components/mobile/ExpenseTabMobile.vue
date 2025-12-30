@@ -62,10 +62,6 @@
         >
           ✅ 잔액: {{ formatCurrency(remainingBudget) }} 원
         </div>
-
-        <div v-if="!selectedGwan || !selectedHang" class="text-xs text-gray-500">
-          관/항을 선택해야 예산/지출/잔액이 계산됩니다.
-        </div>
       </div>
     </div>
 
