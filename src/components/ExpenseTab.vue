@@ -248,6 +248,15 @@ const blockAlertMessage = ref("");
 
 // ✅ "다음" 버튼 제어
 const handleNext = () => {
+  // [수정됨] 1. 지출내역(detail) 텍스트가 비어있는 항목이 있는지 검사
+  // some() 함수는 하나라도 조건에 맞으면 true를 반환합니다.
+  const hasEmptyDetail = props.items.some(item => !item.detail || item.detail.trim() === "");
+
+  if (hasEmptyDetail) {
+    blockAlertMessage.value = "지출내역은 반드시 입력되어야 합니다.";
+    showBlockAlert.value = true;
+    return; // 진행 중단
+  }  
   if (totalAmount.value <= 0) {
     blockAlertMessage.value = "지출항목을 입력해야 다음으로 이동할 수 있습니다.";
     showBlockAlert.value = true;
