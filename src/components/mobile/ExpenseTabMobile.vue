@@ -1,6 +1,23 @@
 <template>
   <div class="space-y-4 font-nanum px-2">
     <h2 class="text-lg font-bold text-gray-800">💸 지출내역 입력</h2>
+    <!-- ✅ [재정부 전용] 부서 선택 -->
+    <div v-if="isFinanceDept" class="bg-white border rounded-xl shadow-sm p-3 space-y-3">
+      <div class="min-w-0">
+        <label class="block text-xs font-semibold mb-1">청구 부서 (재정부)</label>
+        <select
+          :value="selectedDept"
+          @change="$emit('update:selectedDept', $event.target.value)"
+          class="w-full rounded border px-2 py-1 text-sm"
+        >
+          <option disabled value="">부서 선택</option>
+          <option v-for="d in departments" :key="d.id" :value="d.dept_name">
+            {{ d.dept_name }}
+          </option>
+        </select>
+      </div>
+    </div>
+
     <!-- ✅ 관/항 선택 (타이틀 바로 아래) -->
     <div class="bg-white border rounded-xl shadow-sm p-3 space-y-3">
       <div class="grid grid-cols-2 gap-3">
@@ -243,7 +260,7 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang"]);
+const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang", "update:selectedDept"]);
 
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
@@ -272,6 +289,20 @@ const isSelectionReady = computed(() => !!selectedGwan.value && !!selectedHang.v
 const categories = ref([]);
 const deptCategories = computed(() => categories.value);
 const departments = ref([]);
+
+// ✅ 재정부 여부 확인
+const isFinanceDept = computed(() => user.value?.deptName === "재정부");
+
+onMounted(async () => {
+  if (isFinanceDept.value && departments.value.length === 0) {
+    try {
+      const res = await axios.get('/api/departments');
+      departments.value = res.data || [];
+    } catch (e) {
+      console.error("부서 목록 로드 실패", e);
+    }
+  }
+});
 
 const userDeptId = computed(() => {
   if (departments.value.length > 0) {

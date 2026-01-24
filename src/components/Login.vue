@@ -56,6 +56,8 @@
           v-model="selectedUserId"
           class="w-full mb-3 p-2 border rounded"
           :disabled="usersDisabled"
+          name="username"
+          autocomplete="username"
         >
           <option value="" disabled>
             {{ usersDisabledReason || "사용자를 선택하세요" }}
@@ -71,7 +73,8 @@
           type="password"
           placeholder="비밀번호"
           class="w-full mb-3 p-2 border rounded"
-          autocomplete="new-password"
+          name="password"
+          autocomplete="current-password"
         />
 
         <button

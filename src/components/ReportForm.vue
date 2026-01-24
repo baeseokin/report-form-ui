@@ -43,7 +43,6 @@
         v-model:selected-hang="selectedHang"        
         v-model:selected-dept="selectedDept"
         :dept-data="deptData"
-        :selected-dept="selectedDept"
         @prev="goPrevTab"
         @next="goNextTab"
       />
