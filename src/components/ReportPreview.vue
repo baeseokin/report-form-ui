@@ -370,8 +370,8 @@ const handleApproved = async () => { await refreshApprovalData(); showPopup.valu
 const handleModalClose = () => { showModal.value = false; emit("close"); };
 
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
-const getSignature = (role) => approvalHistory.value.find(h => h.approver_role === role)?.signature_path || null;
-const getComment = (role) => approvalHistory.value.find(h => h.approver_role === role)?.comment || null;
+const getSignature = (role) => [...approvalHistory.value].reverse().find(h => h.approver_role === role)?.signature_path || null;
+const getComment = (role) => [...approvalHistory.value].reverse().find(h => h.approver_role === role)?.comment || null;
 const getSignatureUrl = (role) => {
   const p = getSignature(role);
   if (!p) return "";
@@ -380,7 +380,7 @@ const getSignatureUrl = (role) => {
   try { rel = decodeURIComponent(p); } catch {}
   return `/api/files/${encodeURIComponent(rel)}`;
 };
-const getApprovedAt = (role) => approvalHistory.value.find(h => h.approver_role === role)?.approved_at || null;
+const getApprovedAt = (role) => [...approvalHistory.value].reverse().find(h => h.approver_role === role)?.approved_at || null;
 const formatDateTime = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -395,7 +395,7 @@ const formatDateTime = (dateStr) => {
 };
 
 const getStatus = (role) => {
-  const record = approvalHistory.value.find(h => h.approver_role === role);
+  const record = [...approvalHistory.value].reverse().find(h => h.approver_role === role);
   if (!record) return null;
 
   // ✅ 결재 이력에 있는 "회계" → "기안"
