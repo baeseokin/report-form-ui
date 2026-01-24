@@ -429,6 +429,7 @@ const fetchSummaryBySelection = async () => {
 
     const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
       params: {
+        deptId: userDeptId.value,
         year: currentYear,
         hangCategoryId: hangCat.category_id, // ✅ 코드로 변경 (ACC...)
       },

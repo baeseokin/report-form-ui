@@ -173,7 +173,6 @@ onMounted(async () => {
       console.error("전체 계정과목 로드 실패", e);
     }
 
-    // 모든 부서의 account_categories 가져오기
     deptMap = {};
     for (const dept of depts) {
       const catRes = await axios.get(`/api/accountCategories/${dept.id}`, {

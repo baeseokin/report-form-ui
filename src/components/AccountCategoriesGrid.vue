@@ -1,6 +1,14 @@
 <template>
   <div class="p-6 font-nanum h-[calc(100vh-4rem)] flex flex-col">
-    <h2 class="text-2xl font-bold text-purple-700 mb-4">📊 계정 과목 관리</h2>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-purple-700">📊 계정 과목 관리</h2>
+      <button
+        @click="openModal('add', null)"
+        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md transition"
+      >
+        + 최상위(관) 추가
+      </button>
+    </div>
 
     <div class="flex gap-4 flex-1 overflow-hidden">
       <!-- 🟢 좌측: 계정과목 마스터 관리 -->
@@ -86,6 +94,7 @@
       </div>
 
       <!-- � 우측: 부서별 매핑 관리 -->
+      <!--  우측: 부서별 매핑 관리 -->
       <div class="flex-1 flex flex-col bg-white border rounded-lg shadow-sm min-w-0">
         <div class="p-4 bg-blue-50 border-b flex justify-between items-center gap-4">
           <div class="flex items-center gap-2 flex-1">
@@ -274,6 +283,7 @@ onMounted(async () => {
   } catch (err) {
     console.error("❌ 초기 데이터 로드 실패:", err);
   }
+  fetchAllCategories();
 });
 
 // 마스터 데이터 재조회

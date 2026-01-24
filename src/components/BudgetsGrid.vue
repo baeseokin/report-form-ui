@@ -9,6 +9,18 @@
 
     <!-- 부서 & 기준일자 선택 -->
     <div class="mb-6 flex flex-wrap items-end gap-6">
+      <div>
+        <label class="font-semibold text-gray-700">부서 선택</label>
+        <select
+          v-model="selectedDeptId"
+          @change="fetchCategories"
+          class="ml-2 border rounded p-2 shadow-sm"
+        >
+          <option v-for="d in departments" :key="d.id" :value="d.id">
+            {{ d.dept_name }}
+          </option>
+        </select>
+      </div>
 
       <div>
         <label class="font-semibold text-gray-700">기준일자</label>
@@ -105,6 +117,8 @@
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 
+const departments = ref([]);
+const selectedDeptId = ref(null);
 const categories = ref([]);
 const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
@@ -132,31 +146,35 @@ const totalBudget = computed(() => {
 });
 
 onMounted(async () => {
-  fetchCategories();
+  const res = await axios.get("/api/departments");
+  departments.value = res.data;
+  if (departments.value.length > 0) {
+    selectedDeptId.value = departments.value[0].id;
+    fetchCategories();
+  }
 });
 
 // 계정과목 + 예산 로드
 const fetchCategories = async () => {
+  if (!selectedDeptId.value) return;
 
   try {
-    // ✅ 전체 계정과목 조회 (부서 무관)
-    const res = await axios.get(`/api/accountCategories`, {
+    // ✅ 부서별 계정과목 조회
+    const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
       params: { date: baseDate.value },
     });
     categories.value = res.data.categories || [];
 
-    // ✅ 전체 예산 불러오기 (부서 구분 없음)
-    const budgetRes = await axios.get(`/api/budgets`, {
+    // ✅ 부서별 예산 불러오기
+    const budgetRes = await axios.get(`/api/budgets/${selectedDeptId.value}`, {
       params: { year: year.value },
     });
 
-    console.log("budgetRes :", budgetRes);
     budgets.value = {};
-    budgetRes.data.budgets.forEach((b) => {
-      console.log()
+    const budgetList = budgetRes.data.budgets || budgetRes.data || [];
+    budgetList.forEach((b) => {
       budgets.value[b.category_id] = Number(b.budget_amount) || 0;
     });
-    console.log("budgets :", budgets);
   } catch (err) {
     console.error("❌ 데이터 조회 실패:", err);
   }
@@ -178,6 +196,7 @@ const formatDate = (dateStr) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value.map((c) => ({
+      dept_id: selectedDeptId.value,
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
       budget_amount: isLeafCategory(c.id)

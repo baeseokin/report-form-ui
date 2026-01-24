@@ -321,10 +321,8 @@ const fetchCategories = async () => {
     }
 
     // (2) 전체 계정 구조 조회 (부모 찾기용)
-    // (1) 전체 계정 구조 조회 (부서 매핑 무시)
     const allRes = await axios.get('/api/accountCategories');
     const allCategories = allRes.data.categories || [];
-    const mappedCategories = allCategories; // 모든 계정 사용
 
     // (3) 매핑된 ID 추출 및 부모 노드 추적
     const mappedIds = new Set(mappedCategories.map(c => c.id));
@@ -457,6 +455,7 @@ const fetchSummaryForSelectedHang = async () => {
     // ✅ '항'에 해당하는 예산/지출 합계
     const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
       params: {
+        deptId: userDeptId.value,
         year: currentYear,
         hangCategoryId: hangCat.category_id, // ✅ 코드로 변경 (ACC...)
       },
