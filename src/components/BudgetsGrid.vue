@@ -53,6 +53,7 @@
           <th class="border p-2 text-center">단계</th>
           <th class="border p-2 text-center">상위 계정</th>
           <th class="border p-2 text-center">유효기간</th>
+          <th class="border p-2 text-center">Owner부서</th>
           <th class="border p-2 text-center">예산금액</th>
         </tr>
       </thead>
@@ -79,14 +80,21 @@
             {{ formatDate(c.valid_from) }} ~
             {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
           </td>
+          <td class="border p-2 text-center text-xs text-gray-600">
+            {{ getDeptName(c.owner_dept_id) }}
+          </td>
           <td class="border p-2 text-right font-mono">
             <template v-if="isLeafCategory(c.id)">
               <input
+                v-if="c.owner_dept_id === selectedDeptId"
                 type="text"
                 class="border rounded p-1 w-40 text-right shadow-sm"
                 :value="formatAmount(budgets[c.category_id] ?? 0)"
                 @input="onBudgetInput($event, c)"
               />
+              <span v-else class="text-gray-400 cursor-not-allowed" title="Owner 부서만 수정 가능">
+                {{ formatAmount(budgets[c.category_id] ?? 0) }}
+              </span>
             </template>
             <template v-else>
               {{ formatAmount(sumChildren(c.id)) }}
@@ -186,6 +194,11 @@ const parentName = (parentId) => {
   return parent ? parent.category_name : "-";
 };
 
+const getDeptName = (deptId) => {
+  const d = departments.value.find((dept) => dept.id === deptId);
+  return d ? d.dept_name : "-";
+};
+
 // 날짜 포맷
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
@@ -195,7 +208,9 @@ const formatDate = (dateStr) => {
 // 일괄 저장
 const saveAllBudgets = async () => {
   try {
-    const payload = categories.value.map((c) => ({
+    const payload = categories.value
+      .filter((c) => c.level !== "관" && c.owner_dept_id === selectedDeptId.value)
+      .map((c) => ({
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
       budget_amount: isLeafCategory(c.id)
@@ -223,6 +238,10 @@ const isLeafCategory = (categoryId) =>
 const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
   return children.reduce((sum, child) => {
+    // Owner 부서가 현재 선택된 부서와 같을 때만 합계에 포함
+    if (child.owner_dept_id !== selectedDeptId.value) {
+      return sum;
+    }
     if (isLeafCategory(child.id)) {
       sum += Number(budgets.value[child.category_id] ?? 0);
     } else {

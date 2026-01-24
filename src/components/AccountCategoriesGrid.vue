@@ -2,12 +2,6 @@
   <div class="p-6 font-nanum h-[calc(100vh-4rem)] flex flex-col">
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold text-purple-700">📊 계정 과목 관리</h2>
-      <button
-        @click="openModal('add', null)"
-        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md transition"
-      >
-        + 최상위(관) 추가
-      </button>
     </div>
 
     <div class="flex gap-4 flex-1 overflow-hidden">
@@ -132,6 +126,7 @@
                 </th>
                 <th class="border p-2 text-left">계정명</th>
                 <th class="border p-2 text-center w-24">ID</th>
+                <th class="border p-2 text-center w-28">Owner</th>
               </tr>
             </thead>
             <tbody>
@@ -146,6 +141,24 @@
                   </div>
                 </td>
                 <td class="border p-2 text-center text-gray-500 text-xs">{{ c.category_id }}</td>
+                <td class="border p-2 text-center">
+                  <div v-if="c.level === '관'">
+                    <span class="text-xs text-gray-300">-</span>
+                  </div>
+                  <div v-else-if="c.owner_dept_id === selectedDeptId">
+                    <button @click="toggleOwner(c)" class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200 font-bold">
+                      Owner (On)
+                    </button>
+                  </div>
+                  <div v-else-if="c.owner_dept_id">
+                    <span class="text-xs text-gray-500">{{ getDeptName(c.owner_dept_id) }}</span>
+                  </div>
+                  <div v-else>
+                    <button @click="toggleOwner(c)" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded hover:bg-gray-200">
+                      Set Owner
+                    </button>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -283,7 +296,6 @@ onMounted(async () => {
   } catch (err) {
     console.error("❌ 초기 데이터 로드 실패:", err);
   }
-  fetchAllCategories();
 });
 
 // 마스터 데이터 재조회
@@ -414,6 +426,35 @@ const saveCategory = async () => {
   }
   fetchAllCategories();
   closeModal();
+};
+
+
+const getDeptName = (deptId) => {
+  const d = departments.value.find(dept => dept.id === deptId);
+  return d ? d.dept_name : "";
+};
+
+const toggleOwner = async (c) => {
+  if (!selectedDeptId.value) return;
+  const original = categories.value.find(cat => cat.id === c.id);
+  if (!original) return;
+
+  // 이미 다른 부서가 Owner인 경우 경고
+  if (original.owner_dept_id && original.owner_dept_id !== selectedDeptId.value) {
+    alert(`이미 '${getDeptName(original.owner_dept_id)}' 부서가 Owner로 지정되어 있습니다.`);
+    return;
+  }
+
+  // 현재 부서가 Owner면 해제(null), 아니면 설정
+  const newOwner = original.owner_dept_id === selectedDeptId.value ? null : selectedDeptId.value;
+  try {
+    await axios.put(`/api/accountCategories/${original.id}`, { ...original, owner_dept_id: newOwner });
+    // DB 저장 확인을 위해 재조회 (백엔드 미구현 시 UI 자동 원복됨)
+    await fetchAllCategories();
+  } catch (err) {
+    console.error("Owner 설정 실패", err);
+    alert("Owner 설정 중 오류가 발생했습니다.");
+  }
 };
 
 // ✅ deleteCategory (실제 삭제)
