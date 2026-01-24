@@ -4,6 +4,21 @@
 
     <!-- ✅ 검색조건 -->
     <div class="p-4 bg-gray-50 rounded-lg shadow-inner mb-6 flex flex-wrap gap-6 items-end">
+      <!-- ✅ [재정부 전용] 조회범위 선택 -->
+      <div v-if="userDeptName === '재정부'" class="flex flex-col">
+        <label class="font-semibold text-gray-800 mb-1">조회범위</label>
+        <div class="flex space-x-4">
+          <label class="flex items-center space-x-1">
+            <input type="radio" v-model="financeScope" value="finance" @change="updateFinanceScope" />
+            <span class="text-gray-700">재정부 청구</span>
+          </label>
+          <label class="flex items-center space-x-1">
+            <input type="radio" v-model="financeScope" value="others" @change="updateFinanceScope" />
+            <span class="text-gray-700">타부서 청구</span>
+          </label>
+        </div>
+      </div>
+
       <!-- 요청기간 -->
       <div class="flex flex-col">
         <label class="font-semibold text-gray-800 mb-1">청구기간</label>
@@ -115,6 +130,21 @@ const search = reactive({
   startDate: "",
   endDate: "",
 });
+
+// ✅ 재정부 조회범위 상태
+const financeScope = ref("finance"); // 'finance' | 'others'
+
+const updateFinanceScope = () => {
+  if (financeScope.value === "finance") {
+    search.status = "결재완료";
+    search.deptName = userDeptName;
+  } else {
+    search.status = "결재진행중";
+    search.deptName = "";
+  }
+  page.value = 1;
+  searchList();
+};
 
 const updateDateRange = () => {
   const now = new Date();

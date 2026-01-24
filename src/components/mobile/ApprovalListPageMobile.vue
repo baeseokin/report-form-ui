@@ -2,6 +2,18 @@
   <div class="p-4 font-nanum bg-gray-50 min-h-screen">
     <h2 class="text-lg font-bold text-gray-800 mb-4">✅ 내결재목록 조회</h2>  
 
+    <!-- ✅ [재정부 전용] 조회범위 선택 -->
+    <div v-if="userDeptName === '재정부'" class="flex justify-center mb-3 space-x-4 bg-white p-2 rounded border shadow-sm">
+      <label class="flex items-center space-x-1">
+        <input type="radio" v-model="financeScope" value="finance" @change="updateFinanceScope" class="text-purple-600 focus:ring-purple-500" />
+        <span class="text-sm font-medium text-gray-700">재정부 청구</span>
+      </label>
+      <label class="flex items-center space-x-1">
+        <input type="radio" v-model="financeScope" value="others" @change="updateFinanceScope" class="text-purple-600 focus:ring-purple-500" />
+        <span class="text-sm font-medium text-gray-700">타부서 청구</span>
+      </label>
+    </div>
+
     <!-- ✅ 요청기간 선택 (모바일 friendly: select box) -->
     <div class="flex justify-center mb-4 space-x-2">
     <select
@@ -91,6 +103,21 @@ const search = reactive({
   startDate: "",
   endDate: "",
 });
+
+// ✅ 재정부 조회범위 상태
+const financeScope = ref("finance"); // 'finance' | 'others'
+
+const updateFinanceScope = () => {
+  if (financeScope.value === "finance") {
+    search.status = "결재완료";
+    search.deptName = userDeptName;
+  } else {
+    search.status = "결재진행중";
+    search.deptName = "";
+  }
+  page.value = 1;
+  searchList();
+};
 
 const updateDateRange = () => {
   const now = new Date();
