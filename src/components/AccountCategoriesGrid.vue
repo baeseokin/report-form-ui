@@ -131,7 +131,8 @@
                   <input type="checkbox" :value="c.id" v-model="rightCheckedIds" />
                 </td>
                 <td class="border p-2">
-                  <div :style="{ paddingLeft: `${(c.depth - 1) * 20}px` }">
+                  <div :style="{ paddingLeft: `${(c.depth - 1) * 20}px` }" class="flex items-center">
+                    <span class="mr-1 text-gray-400" v-if="c.depth > 1">└</span>
                     {{ c.category_name }}
                   </div>
                 </td>
