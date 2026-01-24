@@ -63,9 +63,9 @@
         :author="author"
         :date="date"
         :total-amount="totalAmount"
-        :selected-gwan="selectedGwanName"
-        :selected-hang="selectedHangName"
-        :items="itemsForConfirm"
+        :selected-gwan="selectedGwan"
+        :selected-hang="selectedHang"
+        :items="items"
         :alias-name="aliasName"
         v-model:comment="comment"
         :attached-files="attachedFiles"
@@ -356,7 +356,7 @@ const generateReport = (previewData) => {
     date: date.value,
     totalAmount: totalAmount.value,
     aliasName: aliasName.value,
-    items: JSON.parse(JSON.stringify(items.value)),
+    items: JSON.parse(JSON.stringify(itemsForConfirm.value)),
     comment: comment.value,
     attachedFiles: attachedFiles.value || [],
   };

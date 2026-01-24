@@ -222,6 +222,23 @@ const totalAmount = computed(() =>
 );
 
 const generateReport = () => {
+  // ✅ 미리보기용: 코드 -> 이름 변환
+  const categories = deptData.value[selectedDept.value] || [];
+  const getName = (code) => {
+    if (!code) return "";
+    if (code === "__custom__") return "직접입력";
+    const found = categories.find(c => c.category_id === code);
+    return found ? found.category_name : code;
+  };
+
+  const itemsWithNames = items.value.map(i => ({
+    ...i,
+    gwan: getName(i.gwan),
+    hang: getName(i.hang),
+    mok: i.mok === "__custom__" ? i.customMok : getName(i.mok),
+    semok: i.semok === "__custom__" ? i.customSemok : getName(i.semok),
+  }));
+
   report.value = {
     documentType: documentType.value,
     deptName: selectedDept.value,
@@ -229,7 +246,7 @@ const generateReport = () => {
     date: date.value,
     totalAmount: totalAmount.value,
     aliasName: aliasName.value,
-    items: JSON.parse(JSON.stringify(items.value)),
+    items: JSON.parse(JSON.stringify(itemsWithNames)),
     comment: comment.value,
     attachedFiles: attachedFiles.value || [],
   };

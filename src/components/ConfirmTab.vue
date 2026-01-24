@@ -6,7 +6,7 @@
       <p><strong>부서명:</strong> {{ userDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
-      <p><strong>계정명:</strong> {{ selectedGwan }} / {{ selectedHang }}</p>
+      <p><strong>계정명:</strong> {{ gwanName }} / {{ hangName }}</p>
       <p><strong>청구총액:</strong> ₩{{ Number(totalAmount || 0).toLocaleString() }}</p>
       <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
     </div>
@@ -122,6 +122,22 @@ const emits = defineEmits(["update:comment", "prev", "generate"]);
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || "");
 const router = useRouter();
+
+// ✅ 계정명 표시를 위한 데이터 조회
+const categories = ref([]);
+const gwanName = computed(() => {
+  const c = categories.value.find(cat => cat.category_id === props.selectedGwan);
+  return c ? c.category_name : props.selectedGwan;
+});
+const hangName = computed(() => {
+  const c = categories.value.find(cat => cat.category_id === props.selectedHang);
+  return c ? c.category_name : props.selectedHang;
+});
+
+onMounted(async () => {
+  const res = await axios.get("/api/accountCategories");
+  categories.value = res.data.categories || [];
+});
 
 const generatePreview = () => {
   const normalizeItems = (items) => {
