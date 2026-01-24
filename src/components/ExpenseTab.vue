@@ -178,7 +178,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import axios from "axios";
@@ -211,9 +211,6 @@ const props = defineProps({
 const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang"]);
 
 const { user } = storeToRefs(useUserStore());
-// ✅ 로그인된 사용자의 부서 ID
-const userDeptId = computed(() => user.value?.deptId || null);
-console.log("userDeptId: ",userDeptId.value);
 const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
 
 // ✅ 합계
@@ -287,8 +284,85 @@ watch([totalAmount, isSelectionReady], ([newAmount, ready]) => {
   totalExpense.value = baseExpense + addExpense;
 });
 
+const categories = ref([]);
+
 // ✅ account_categories 기반 계층 탐색
-const deptCategories = computed(() => props.deptData[userDept.value] || []);
+const deptCategories = computed(() => categories.value);
+const departments = ref([]); // 부서 목록 저장용
+
+const userDeptId = computed(() => {
+  if (departments.value.length > 0) {
+    const found = departments.value.find(d => d.dept_name === userDept.value);
+    if (found) return found.id;
+  }
+  if (user.value && user.value.deptName === userDept.value) {
+    return user.value.deptId || user.value.dept_id;
+  }
+  return null;
+});
+
+const fetchCategories = async () => {
+  let targetId = null;
+
+  // 1. user store 정보 우선 확인 (API 호출 최소화)
+  if (user.value && user.value.deptName === userDept.value) {
+    targetId = user.value.deptId || user.value.dept_id;
+  }
+
+  // 2. ID가 없으면 부서 목록 로드 후 이름으로 검색
+  if (!targetId) {
+    if (departments.value.length === 0) {
+      try {
+        const res = await axios.get('/api/departments');
+        departments.value = res.data || [];
+      } catch (e) {
+        console.error("부서 목록 로드 실패", e);
+      }
+    }
+    const found = departments.value.find(d => d.dept_name === userDept.value);
+    if (found) targetId = found.id;
+  }
+
+  if (!targetId) return;
+
+  // 3. 계정과목 조회
+  try {
+    // (1) 부서에 매핑된 항목 조회 (부모가 없을 수 있음)
+    const mappedRes = await axios.get(`/api/accountCategories/${targetId}`);
+    let mappedCategories = [];
+    if (mappedRes.data && Array.isArray(mappedRes.data.categories)) {
+      mappedCategories = mappedRes.data.categories;
+    } else if (Array.isArray(mappedRes.data)) {
+      mappedCategories = mappedRes.data;
+    }
+
+    // (2) 전체 계정 구조 조회 (부모 찾기용)
+    const allRes = await axios.get('/api/accountCategories');
+    const allCategories = allRes.data.categories || [];
+
+    // (3) 매핑된 ID 추출 및 부모 노드 추적
+    const mappedIds = new Set(mappedCategories.map(c => c.id));
+    const finalIds = new Set(mappedIds);
+
+    const addParents = (nodeId) => {
+      const node = allCategories.find(c => c.id === nodeId);
+      if (node && node.parent_id && !finalIds.has(node.parent_id)) {
+        finalIds.add(node.parent_id);
+        addParents(node.parent_id);
+      }
+    };
+    mappedIds.forEach(id => addParents(id));
+
+    categories.value = allCategories.filter(c => finalIds.has(c.id));
+  } catch (err) {
+    console.error("계정과목 조회 실패:", err);
+    categories.value = [];
+  }
+};
+
+watch([userDept, user], () => {
+  fetchCategories();
+}, { immediate: true });
 
 const findCategory = (level, name, parentId = null) =>
   deptCategories.value.find(c =>
@@ -539,6 +613,7 @@ const addItem = () => {
       amount: 0,
       customMok: "",
       customSemok: "",
+      uuid: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2),
     },
   ];
   emits("update:items", newItems);
