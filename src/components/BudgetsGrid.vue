@@ -165,8 +165,8 @@ const fetchCategories = async () => {
     });
     categories.value = res.data.categories || [];
 
-    // ✅ 부서별 예산 불러오기
-    const budgetRes = await axios.get(`/api/budgets/${selectedDeptId.value}`, {
+    // ✅ 계정별(전사) 예산 불러오기 (부서 무관)
+    const budgetRes = await axios.get(`/api/budgets`, {
       params: { year: year.value },
     });
 
@@ -196,7 +196,6 @@ const formatDate = (dateStr) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value.map((c) => ({
-      dept_id: selectedDeptId.value,
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
       budget_amount: isLeafCategory(c.id)
@@ -223,10 +222,7 @@ const isLeafCategory = (categoryId) =>
 // 하위 항목 합산
 const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
-  console.log("children :", children);
   return children.reduce((sum, child) => {
-    console.log("sumChildren-child.category_id:",child.category_id);  
-    console.log("sumChildren-budgets.value:",budgets.value);  
     if (isLeafCategory(child.id)) {
       sum += Number(budgets.value[child.category_id] ?? 0);
     } else {
