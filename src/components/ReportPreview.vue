@@ -292,6 +292,21 @@ const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
 const userName = computed(() => user.value?.userName || props.report?.author || "");
 
+// ✅ 계정과목 매핑용
+const categories = ref([]);
+const fetchCategories = async () => {
+  try {
+    const res = await axios.get("/api/accountCategories");
+    categories.value = res.data.categories || [];
+  } catch (e) {
+    console.error("계정과목 로드 실패", e);
+  }
+};
+const getCategoryName = (code) => {
+  const found = categories.value.find(c => c.category_id === code);
+  return found ? found.category_name : code;
+};
+
 // ✅ 모바일 scale 비율 동적 계산
 const scaleValue = ref(1);
 const pageStyle = computed(() => ({
@@ -302,7 +317,8 @@ const pageStyle = computed(() => ({
 }));
 
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchCategories();
   const pageWidth = 794; // 210mm ≈ 794px
   const screenWidth = window.innerWidth;
   if (screenWidth < 768) {
@@ -390,10 +406,10 @@ const getStatus = (role) => {
 
 const paddedItems = computed(() => {
   const items = (props.report?.items || []).map((i) => ({
-    gwan: i.gwan,
-    hang: i.hang,
-    mok: i.mok === "__custom__" ? i.customMok : i.mok,
-    semok: i.semok === "__custom__" ? i.customSemok : i.semok,
+    gwan: getCategoryName(i.gwan),
+    hang: getCategoryName(i.hang),
+    mok: i.mok === "__custom__" ? i.customMok : getCategoryName(i.mok),
+    semok: i.semok === "__custom__" ? i.customSemok : getCategoryName(i.semok),
     detail: i.detail === "__custom__" ? i.customDetail : i.detail,
     amount: i.amount,
   }));

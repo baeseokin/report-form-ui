@@ -21,7 +21,7 @@
               class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
             >
               <option disabled value="">관 선택</option>
-              <option v-for="g in getGwans" :key="g" :value="g">{{ g }}</option>
+              <option v-for="g in getGwans" :key="g.category_id" :value="g.category_id">{{ g.category_name }}</option>
             </select>
             <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">▾</span>
           </div>
@@ -37,7 +37,7 @@
               class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:bg-gray-100 disabled:text-gray-400"
             >
               <option disabled value="">항 선택</option>
-              <option v-for="h in hangsForSelectedGwan" :key="h" :value="h">{{ h }}</option>
+              <option v-for="h in hangsForSelectedGwan" :key="h.category_id" :value="h.category_id">{{ h.category_name }}</option>
             </select>
             <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">▾</span>
           </div>
@@ -86,26 +86,26 @@
             </td>
             <!-- 목 -->
             <td class="border p-2">
-              <template v-if="item.mok === '__custom__'">
-                <input type="text" :value="item.customMok || ''" @input="updateField(idx, 'customMok', $event.target.value)" placeholder="목 직접 입력" class="w-full p-2 border rounded" />
+              <template v-if="isMokCustom(item)">
+                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(idx, $event.target.value, item)" placeholder="목 직접 입력" class="w-full p-2 border rounded" />
               </template>
               <template v-else>
                 <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
                   <option disabled value="">선택</option>
-                  <option v-for="m in getMoks(item)" :key="m">{{ m }}</option>
+                  <option v-for="m in getMoks(item)" :key="m.category_id" :value="m.category_id">{{ m.category_name }}</option>
                   <option value="__custom__">직접입력</option>
                 </select>
               </template>
             </td>
             <!-- 세목 -->
             <td class="border p-2">
-              <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
-                <input type="text" :value="item.customSemok || ''" @input="updateField(idx, 'customSemok', $event.target.value)" placeholder="세목 직접 입력" class="w-full p-2 border rounded" />
+              <template v-if="isSemokCustom(item)">
+                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(idx, $event.target.value, item)" placeholder="세목 직접 입력" class="w-full p-2 border rounded" />
               </template>
               <template v-else>
                 <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
                   <option disabled value="">선택</option>
-                  <option v-for="s in getSemoks(item)" :key="s">{{ s }}</option>
+                  <option v-for="s in getSemoks(item)" :key="s.category_id" :value="s.category_id">{{ s.category_name }}</option>
                   <option value="__custom__">직접입력</option>
                 </select>
               </template>
@@ -301,6 +301,7 @@ const userDeptId = computed(() => {
   return null;
 });
 
+const lastFetchedCodes = ref("");
 const fetchCategories = async () => {
   let targetId = null;
 
@@ -342,6 +343,19 @@ const fetchCategories = async () => {
 
     // (3) 매핑된 ID 추출 및 부모 노드 추적
     const mappedIds = new Set(mappedCategories.map(c => c.id));
+
+    // ✅ [Fix] items에 사용된 계정과목도 강제로 포함 (기존 데이터 표시 보장)
+    if (props.items) {
+      props.items.forEach(item => {
+        [item.gwan, item.hang, item.mok, item.semok].forEach(code => {
+           if (code) {
+             const found = allCategories.find(c => c.category_id === code);
+             if (found) mappedIds.add(found.id);
+           }
+        });
+      });
+    }
+
     const finalIds = new Set(mappedIds);
 
     const addParents = (nodeId) => {
@@ -354,6 +368,7 @@ const fetchCategories = async () => {
     mappedIds.forEach(id => addParents(id));
 
     categories.value = allCategories.filter(c => finalIds.has(c.id));
+    lastFetchedCodes.value = JSON.stringify(props.items.map(i => [i.gwan, i.hang, i.mok, i.semok]));
   } catch (err) {
     console.error("계정과목 조회 실패:", err);
     categories.value = [];
@@ -364,27 +379,31 @@ watch([userDept, user], () => {
   fetchCategories();
 }, { immediate: true });
 
-const findCategory = (level, name, parentId = null) =>
-  deptCategories.value.find(c =>
-    c.level === level &&
-    c.category_name === name &&
-    (parentId === null ? true : String(c.parent_id) === String(parentId))
-  );
-
+watch(() => props.items, (newItems) => {
+  const currentCodes = JSON.stringify(newItems.map(i => [i.gwan, i.hang, i.mok, i.semok]));
+  if (currentCodes !== lastFetchedCodes.value) {
+    fetchCategories();
+  }
+}, { deep: true });
 
 // "관" 목록
 const getGwans = computed(() =>
-  deptCategories.value.filter(c => c.level === "관").map(c => c.category_name)
+  deptCategories.value.filter(c => c.level === "관")
 );
+
+watch(getGwans, (gwans) => {
+  if (!selectedGwan.value && Array.isArray(gwans) && gwans.length === 1) {
+    selectedGwan.value = gwans[0].category_id;
+  }
+}, { immediate: true });
 
 // 상단 선택용 "항" 목록
 const hangsForSelectedGwan = computed(() => {
   if (!selectedGwan.value) return [];
-  const gwan = findCategory("관", selectedGwan.value);
+  const gwan = deptCategories.value.find(c => c.category_id === selectedGwan.value);
   if (!gwan) return [];
   return deptCategories.value
-    .filter(c => c.level === "항" && String(c.parent_id) === String(gwan.id))
-    .map(c => c.category_name);
+    .filter(c => c.level === "항" && String(c.parent_id) === String(gwan.id));
 });
 
 const fetchSummaryBySelection = async () => {
@@ -396,22 +415,22 @@ const fetchSummaryBySelection = async () => {
   }
 
   try {
-    const gwan = findCategory("관", selectedGwan.value);
-    const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
-    const startCategoryId = hang?.category_id || gwan?.category_id;
-
-    if (!startCategoryId) {
+    // selectedHang은 이제 category_id(코드)입니다.
+    if (!selectedHang.value) {
       totalBudget.value = 0;
       serverExpense.value = 0;
       totalExpense.value = 0;
       return;
     }
 
+    // ✅ API는 numeric ID를 기대하므로, 코드(selectedHang)로 객체를 찾아 ID 추출
+    const hangCat = deptCategories.value.find(c => c.category_id === selectedHang.value);
+    if (!hangCat) return;
+
     const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
       params: {
-        deptId: userDeptId.value,
         year: currentYear,
-        hangCategoryId: hang.category_id, // ✅ '항'의 category_id만 전달
+        hangCategoryId: hangCat.category_id, // ✅ 코드로 변경 (ACC...)
       },
     });
 
@@ -419,7 +438,7 @@ const fetchSummaryBySelection = async () => {
     serverExpense.value = Number(data.totalExpense) || 0;
     totalExpense.value = (Number(serverExpense.value) || 0) + (Number(totalAmount.value) || 0);
   } catch (err) {
-    console.error("❌ /api/expenses/summaryByCategory 조회 실패:", err);
+    console.error("❌ /api/expenses/summaryByCategory 조회 실패:", err.response?.data || err.message);
     totalBudget.value = 0;
     serverExpense.value = 0;
     totalExpense.value = 0;
@@ -431,7 +450,7 @@ watch(
   hangsForSelectedGwan,
   (hangs) => {
     if (selectedGwan.value && !selectedHang.value && Array.isArray(hangs) && hangs.length === 1) {
-      selectedHang.value = hangs[0];
+      selectedHang.value = hangs[0].category_id;
     }
   },
   { immediate: true }
@@ -449,12 +468,6 @@ watch(userDept, async (newDept, prevDept) => {
     totalExpense.value = 0;
   }
 
-  // ✅ 관이 1개뿐이면 자동 선택 (기존 선택값이 없을 때만)
-  const gwans = getGwans.value;
-  if (!selectedGwan.value && gwans.length === 1) {
-    selectedGwan.value = gwans[0];
-  }
-
   if (isSelectionReady.value) {
     fetchSummaryBySelection();
   }
@@ -464,11 +477,7 @@ watch(userDept, async (newDept, prevDept) => {
 
 
 // "항"
-const getHangs = (item) => {
-  if (!item.gwan) return [];
-  const gwan = deptCategories.value.find(c => c.level === "관" && c.category_name === item.gwan);
-  return gwan ? deptCategories.value.filter(c => c.parent_id === gwan.id && c.level === "항").map(c => c.category_name) : [];
-};
+// const getHangs = (item) => ... (행별 관/항 선택 기능은 현재 UI에서 사용되지 않으므로 생략하거나 동일하게 수정)
 
 // ✅ 관/항 선택 시: 모든 행의 관/항 자동 반영 + 합계 재조회
 const syncSelectionToItems = () => {
@@ -495,17 +504,18 @@ const syncSelectionToItems = () => {
 };
 
 
+watch(selectedGwan, (newValue, oldValue) => {
+  // ✅ 관이 실제로 변경되었을 때만 항을 초기화 (초기 데이터 로딩 시 제외)
+  if (oldValue) {
+    selectedHang.value = "";
+    syncSelectionToItems(); // 사용자가 변경한 경우에만 아이템 동기화(초기화)
+  }
 
-watch(selectedGwan, () => {
-  // 관 변경 시 항 초기화
-  selectedHang.value = "";
-
-  syncSelectionToItems();
 
   // ✅ 항이 1개뿐이면 자동 선택
   const hangs = hangsForSelectedGwan.value;
   if (hangs.length === 1) {
-    selectedHang.value = hangs[0];
+    selectedHang.value = hangs[0].category_id;
   } else {
     fetchSummaryBySelection();
   }
@@ -525,15 +535,46 @@ watch([deptCategories, isSelectionReady, userDeptId], ([categories, ready, deptI
 // "목"
 const getMoks = (item) => {
   if (!item.hang) return [];
-  const hang = deptCategories.value.find(c => c.level === "항" && c.category_name === item.hang);
-  return hang ? deptCategories.value.filter(c => c.parent_id === hang.id && c.level === "목").map(c => c.category_name) : [];
+  const hang = deptCategories.value.find(c => c.category_id === item.hang);
+  return hang ? deptCategories.value.filter(c => c.parent_id === hang.id && c.level === "목") : [];
 };
 
 // "세목"
 const getSemoks = (item) => {
   if (!item.mok) return [];
-  const mok = deptCategories.value.find(c => c.level === "목" && c.category_name === item.mok);
-  return mok ? deptCategories.value.filter(c => c.parent_id === mok.id && c.level === "세목").map(c => c.category_name) : [];
+  const mok = deptCategories.value.find(c => c.category_id === item.mok);
+  return mok ? deptCategories.value.filter(c => c.parent_id === mok.id && c.level === "세목") : [];
+};
+
+// ✅ 목/세목 커스텀 여부 확인 (리스트에 없으면 커스텀 처리)
+const isMokCustom = (item) => {
+  if (!item.mok) return false;
+  if (item.mok === '__custom__') return true;
+  const opts = getMoks(item);
+  return !opts.some(m => m.category_id === item.mok);
+};
+
+const isSemokCustom = (item) => {
+  if (!item.semok) return false;
+  if (item.semok === '__custom__') return true;
+  const opts = getSemoks(item);
+  return !opts.some(s => s.category_id === item.semok);
+};
+
+const onMokInput = (idx, val, item) => {
+  if (item.mok === '__custom__') {
+    updateField(idx, 'customMok', val);
+  } else {
+    updateField(idx, 'mok', val);
+  }
+};
+
+const onSemokInput = (idx, val, item) => {
+  if (item.semok === '__custom__') {
+    updateField(idx, 'customSemok', val);
+  } else {
+    updateField(idx, 'semok', val);
+  }
 };
 
 // "지출내역" (세목명과 동일하게)

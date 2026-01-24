@@ -9,18 +9,6 @@
 
     <!-- 부서 & 기준일자 선택 -->
     <div class="mb-6 flex flex-wrap items-end gap-6">
-      <div>
-        <label class="font-semibold text-gray-700">부서 선택</label>
-        <select
-          v-model="selectedDeptId"
-          @change="fetchCategories"
-          class="ml-2 border rounded p-2 shadow-sm"
-        >
-          <option v-for="d in departments" :key="d.id" :value="d.id">
-            {{ d.dept_name }}
-          </option>
-        </select>
-      </div>
 
       <div>
         <label class="font-semibold text-gray-700">기준일자</label>
@@ -117,8 +105,6 @@
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 
-const departments = ref([]);
-const selectedDeptId = ref(null);
 const categories = ref([]);
 const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
@@ -145,28 +131,22 @@ const totalBudget = computed(() => {
   return roots.reduce((sum, root) => sum + sumChildren(root.id), 0);
 });
 
-// 부서 목록 로드
 onMounted(async () => {
-  const res = await axios.get("/api/departments");
-  departments.value = res.data;
-  if (departments.value.length > 0) {
-    selectedDeptId.value = departments.value[0].id;
-    fetchCategories();
-  }
+  fetchCategories();
 });
 
 // 계정과목 + 예산 로드
 const fetchCategories = async () => {
-  if (!selectedDeptId.value) return;
 
   try {
-    const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
+    // ✅ 전체 계정과목 조회 (부서 무관)
+    const res = await axios.get(`/api/accountCategories`, {
       params: { date: baseDate.value },
     });
     categories.value = res.data.categories || [];
 
-    // ✅ 해당 부서/년도 예산 불러오기
-    const budgetRes = await axios.get(`/api/budgets/${selectedDeptId.value}`, {
+    // ✅ 전체 예산 불러오기 (부서 구분 없음)
+    const budgetRes = await axios.get(`/api/budgets`, {
       params: { year: year.value },
     });
 
@@ -198,7 +178,6 @@ const formatDate = (dateStr) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value.map((c) => ({
-      dept_id: selectedDeptId.value,
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
       budget_amount: isLeafCategory(c.id)

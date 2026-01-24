@@ -63,9 +63,9 @@
         :author="author"
         :date="date"
         :total-amount="totalAmount"
-        :selected-gwan="selectedGwan"
-        :selected-hang="selectedHang"
-        :items="items"
+        :selected-gwan="selectedGwanName"
+        :selected-hang="selectedHangName"
+        :items="itemsForConfirm"
         :alias-name="aliasName"
         v-model:comment="comment"
         :attached-files="attachedFiles"
@@ -148,6 +148,7 @@ const author = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
 const deptData = ref({}); // ✅ 서버에서 가져올 dept+계정 데이터
+const allCategories = ref([]); // ✅ 전체 계정과목 (이름 변환용)
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
 ]);
@@ -163,6 +164,14 @@ onMounted(async () => {
   try {
     const deptRes = await axios.get("/api/departments");
     const depts = deptRes.data;
+
+    // ✅ 전체 계정과목 로드 (이름 변환용)
+    try {
+      const allRes = await axios.get("/api/accountCategories");
+      allCategories.value = allRes.data.categories || [];
+    } catch (e) {
+      console.error("전체 계정과목 로드 실패", e);
+    }
 
     // 모든 부서의 account_categories 가져오기
     deptMap = {};
@@ -203,64 +212,54 @@ onMounted(async () => {
           customDetail: item.customDetail || "",
         };
 
+        // Handle existing custom
         if (resolved.mok === "__custom__") {
           resolved.customMok = resolved.customMok || item.mok || "";
-        }
-
-        if (resolved.semok === "__custom__") {
-          resolved.customSemok = resolved.customSemok || item.semok || "";
-        }
-
-        const gwan = categories.find(
-          (cat) => cat.level === "관" && cat.category_name === resolved.gwan
-        );
-        const hang = gwan
-          ? categories.find(
-              (cat) =>
-                cat.level === "항" &&
-                cat.category_name === resolved.hang &&
-                String(cat.parent_id) === String(gwan.id)
-            )
-          : null;
-        const mokNames = hang
-          ? categories
-              .filter((cat) => cat.level === "목" && String(cat.parent_id) === String(hang.id))
-              .map((cat) => cat.category_name)
-          : [];
-
-        if (resolved.mok && resolved.mok !== "__custom__" && !mokNames.includes(resolved.mok)) {
-          resolved.customMok = resolved.mok;
-          resolved.mok = "__custom__";
-        }
-
-        if (resolved.mok === "__custom__") {
           if (resolved.semok) {
             resolved.customSemok = resolved.semok === "__custom__" ? resolved.customSemok : resolved.semok;
-            resolved.semok = "__custom__";
-          }
-          if (!resolved.semok && resolved.customSemok) {
             resolved.semok = "__custom__";
           }
           return resolved;
         }
 
-        const mok = hang
-          ? categories.find(
-              (cat) =>
-                cat.level === "목" &&
-                cat.category_name === resolved.mok &&
-                String(cat.parent_id) === String(hang.id)
-            )
-          : null;
-        const semokNames = mok
-          ? categories
-              .filter((cat) => cat.level === "세목" && String(cat.parent_id) === String(mok.id))
-              .map((cat) => cat.category_name)
-          : [];
+        // 1. Resolve Gwan (ID or Name -> ID)
+        let gwanCat = categories.find(c => c.level === "관" && (c.category_id === resolved.gwan || c.category_name === resolved.gwan));
+        if (gwanCat) resolved.gwan = gwanCat.category_id;
 
-        if (resolved.semok && resolved.semok !== "__custom__" && !semokNames.includes(resolved.semok)) {
-          resolved.customSemok = resolved.semok;
-          resolved.semok = "__custom__";
+        // 2. Resolve Hang
+        let hangCat = null;
+        if (gwanCat) {
+          hangCat = categories.find(c => c.level === "항" && c.parent_id === gwanCat.id && (c.category_id === resolved.hang || c.category_name === resolved.hang));
+          if (hangCat) resolved.hang = hangCat.category_id;
+        }
+
+        // 3. Resolve Mok
+        let mokCat = null;
+        if (hangCat && resolved.mok) {
+           mokCat = categories.find(c => c.level === "목" && c.parent_id === hangCat.id && (c.category_id === resolved.mok || c.category_name === resolved.mok));
+           if (mokCat) {
+             resolved.mok = mokCat.category_id;
+           } else {
+             resolved.customMok = resolved.mok;
+             resolved.mok = "__custom__";
+           }
+        }
+
+        // 4. Resolve Semok
+        if (mokCat && resolved.semok) {
+           let semokCat = categories.find(c => c.level === "세목" && c.parent_id === mokCat.id && (c.category_id === resolved.semok || c.category_name === resolved.semok));
+           if (semokCat) {
+             resolved.semok = semokCat.category_id;
+           } else {
+             resolved.customSemok = resolved.semok;
+             resolved.semok = "__custom__";
+           }
+        } else if (resolved.semok && !mokCat) {
+           // If mok is custom (or missing), semok is treated as custom
+           if (resolved.mok === "__custom__") {
+             resolved.customSemok = resolved.semok;
+             resolved.semok = "__custom__";
+           }
         }
 
         return resolved;
@@ -287,6 +286,28 @@ onMounted(async () => {
 const totalAmount = computed(() =>
   items.value.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
+
+// ✅ ConfirmTab 표시용 (코드 -> 이름 변환)
+const currentCategories = computed(() => deptData.value[selectedDept.value] || []);
+
+const getCategoryName = (code) => {
+  if (!code) return "";
+  if (code === "__custom__") return "직접입력";
+  // ✅ 전체 목록에서 우선 검색 (부모 계정 등 매핑되지 않은 항목 포함)
+  const found = allCategories.value.find(c => c.category_id === code) || currentCategories.value.find(c => c.category_id === code);
+  return found ? found.category_name : code;
+};
+
+const selectedGwanName = computed(() => getCategoryName(selectedGwan.value));
+const selectedHangName = computed(() => getCategoryName(selectedHang.value));
+
+const itemsForConfirm = computed(() => items.value.map(item => ({
+  ...item,
+  gwan: getCategoryName(item.gwan),
+  hang: getCategoryName(item.hang),
+  mok: item.mok === '__custom__' ? item.customMok : getCategoryName(item.mok),
+  semok: item.semok === '__custom__' ? item.customSemok : getCategoryName(item.semok),
+})));
 
 const showNavigationAlert = ref(false);
 const navigationAlertMessage = ref("");

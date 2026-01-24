@@ -12,13 +12,7 @@
             class="w-full rounded border px-2 py-1 text-sm"
           >
             <option value="">선택</option>
-            <option
-              v-for="g in getGwans"
-              :key="g"
-              :value="g"
-            >
-              {{ g }}
-            </option>
+            <option v-for="g in getGwans" :key="g.category_id" :value="g.category_id">{{ g.category_name }}</option>
           </select>
         </div>
 
@@ -31,13 +25,7 @@
             class="w-full rounded border px-2 py-1 text-sm"
           >
             <option value="">선택</option>
-            <option
-              v-for="h in hangsForSelectedGwan"
-              :key="h"
-              :value="h"
-            >
-              {{ h }}
-            </option>
+            <option v-for="h in hangsForSelectedGwan" :key="h.category_id" :value="h.category_id">{{ h.category_name }}</option>
           </select>
         </div>
       </div>
@@ -113,11 +101,11 @@
          <!-- 목 -->
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-600">목</label>
-            <template v-if="item.mok === '__custom__'">
+            <template v-if="isMokCustom(item)">
               <input
                 type="text"
-                :value="item.customMok || ''"
-                @input="updateField(idx, 'customMok', $event.target.value)"
+                :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok"
+                @input="onMokInput(idx, $event.target.value, item)"
                 placeholder="목 직접 입력"
                 class="w-full p-2 border rounded text-sm"
                 :disabled="!isSelectionReady"
@@ -131,7 +119,7 @@
                 :disabled="!isSelectionReady"
               >
                 <option disabled value="">선택</option>
-                <option v-for="m in moksForSelectedHang" :key="m" :value="m">{{ m }}</option>
+                <option v-for="m in moksForSelectedHang" :key="m.category_id" :value="m.category_id">{{ m.category_name }}</option>
                 <option value="__custom__">직접입력</option>
               </select>
             </template>
@@ -139,11 +127,11 @@
            <!-- 세목 -->
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-600">세목</label>
-            <template v-if="item.mok === '__custom__' || item.semok === '__custom__'">
+            <template v-if="isSemokCustom(item)">
               <input
                 type="text"
-                :value="item.customSemok || ''"
-                @input="updateField(idx, 'customSemok', $event.target.value)"
+                :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok"
+                @input="onSemokInput(idx, $event.target.value, item)"
                 placeholder="세목 직접 입력"
                 class="w-full p-2 border rounded text-sm"
                 :disabled="!isSelectionReady"
@@ -157,7 +145,7 @@
                 :disabled="!item.mok"
               >
                 <option disabled value="">선택</option>
-                <option v-for="s in getSemoks(item)" :key="s" :value="s">{{ s }}</option>
+                <option v-for="s in getSemoks(item)" :key="s.category_id" :value="s.category_id">{{ s.category_name }}</option>
                 <option value="__custom__">직접입력</option>
               </select>
             </template>
@@ -296,6 +284,7 @@ const userDeptId = computed(() => {
   return null;
 });
 
+const lastFetchedCodes = ref("");
 const fetchCategories = async () => {
   let targetId = null;
 
@@ -332,11 +321,26 @@ const fetchCategories = async () => {
     }
 
     // (2) 전체 계정 구조 조회 (부모 찾기용)
+    // (1) 전체 계정 구조 조회 (부서 매핑 무시)
     const allRes = await axios.get('/api/accountCategories');
     const allCategories = allRes.data.categories || [];
+    const mappedCategories = allCategories; // 모든 계정 사용
 
     // (3) 매핑된 ID 추출 및 부모 노드 추적
     const mappedIds = new Set(mappedCategories.map(c => c.id));
+
+    // ✅ [Fix] items에 사용된 계정과목도 강제로 포함 (기존 데이터 표시 보장)
+    if (props.items) {
+      props.items.forEach(item => {
+        [item.gwan, item.hang, item.mok, item.semok].forEach(code => {
+           if (code) {
+             const found = allCategories.find(c => c.category_id === code);
+             if (found) mappedIds.add(found.id);
+           }
+        });
+      });
+    }
+
     const finalIds = new Set(mappedIds);
 
     const addParents = (nodeId) => {
@@ -349,6 +353,7 @@ const fetchCategories = async () => {
     mappedIds.forEach(id => addParents(id));
 
     categories.value = allCategories.filter(c => finalIds.has(c.id));
+    lastFetchedCodes.value = JSON.stringify(props.items.map(i => [i.gwan, i.hang, i.mok, i.semok]));
   } catch (err) {
     console.error("계정과목 조회 실패:", err);
     categories.value = [];
@@ -359,53 +364,53 @@ watch([userDept, user], () => {
   fetchCategories();
 }, { immediate: true });
 
-const findCategory = (level, name, parentId = null) =>
-  deptCategories.value.find(
-    (c) =>
-      c.level === level &&
-      c.category_name === name &&
-      (parentId === null ? true : String(c.parent_id) === String(parentId))
-  );
+watch(() => props.items, (newItems) => {
+  const currentCodes = JSON.stringify(newItems.map(i => [i.gwan, i.hang, i.mok, i.semok]));
+  if (currentCodes !== lastFetchedCodes.value) {
+    fetchCategories();
+  }
+}, { deep: true });
 
 // "관" 목록
 const getGwans = computed(() =>
-  deptCategories.value.filter((c) => c.level === "관").map((c) => c.category_name)
+  deptCategories.value.filter((c) => c.level === "관")
 );
+
+watch(getGwans, (gwans) => {
+  if (!selectedGwan.value && Array.isArray(gwans) && gwans.length === 1) {
+    selectedGwan.value = gwans[0].category_id;
+  }
+}, { immediate: true });
 
 // 상단 선택용 "항" 목록
 const hangsForSelectedGwan = computed(() => {
   if (!selectedGwan.value) return [];
-  const gwan = findCategory("관", selectedGwan.value);
+  const gwan = deptCategories.value.find(c => c.category_id === selectedGwan.value);
   if (!gwan) return [];
   return deptCategories.value
-    .filter((c) => c.level === "항" && String(c.parent_id) === String(gwan.id))
-    .map((c) => c.category_name);
+    .filter((c) => c.level === "항" && String(c.parent_id) === String(gwan.id));
 });
 
 
 // "목" 목록 (선택된 항 기준)
 const moksForSelectedHang = computed(() => {
   if (!selectedGwan.value || !selectedHang.value) return [];
-  const gwan = findCategory("관", selectedGwan.value);
+  const gwan = deptCategories.value.find(c => c.category_id === selectedGwan.value);
   if (!gwan) return [];
-  const hang = findCategory("항", selectedHang.value, gwan.id);
+  const hang = deptCategories.value.find(c => c.category_id === selectedHang.value);
   if (!hang) return [];
   return deptCategories.value
-    .filter((c) => c.level === "목" && String(c.parent_id) === String(hang.id))
-    .map((c) => c.category_name);
+    .filter((c) => c.level === "목" && String(c.parent_id) === String(hang.id));
 });
 
 // 세목
 const getSemoks = (item) => {
   if (!selectedGwan.value || !selectedHang.value) return [];
   if (!item.mok) return [];
-  const gwan = findCategory("관", selectedGwan.value);
-  const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
-  const mok = hang ? findCategory("목", item.mok, hang.id) : null;
+  const mok = deptCategories.value.find(c => c.category_id === item.mok);
   if (!mok) return [];
   return deptCategories.value
-    .filter((c) => c.level === "세목" && String(c.parent_id) === String(mok.id))
-    .map((c) => c.category_name);
+    .filter((c) => c.level === "세목" && String(c.parent_id) === String(mok.id));
 };
 
 // ✅ items에 선택된 관/항을 동기화 (테이블에는 숨기지만 데이터에는 유지)
@@ -445,15 +450,15 @@ const fetchSummaryForSelectedHang = async () => {
   }
 
   try {
-    const gwan = findCategory("관", selectedGwan.value);
-    const hang = gwan ? findCategory("항", selectedHang.value, gwan.id) : null;
+    // ✅ API는 numeric ID를 기대하므로, 코드(selectedHang)로 객체를 찾아 ID 추출
+    const hangCat = deptCategories.value.find(c => c.category_id === selectedHang.value);
+    if (!hangCat) return;
 
     // ✅ '항'에 해당하는 예산/지출 합계
     const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
       params: {
-        deptId: userDeptId.value,
         year: currentYear,
-        hangCategoryId: hang?.category_id,
+        hangCategoryId: hangCat.category_id, // ✅ 코드로 변경 (ACC...)
       },
     });
 
@@ -463,7 +468,7 @@ const fetchSummaryForSelectedHang = async () => {
     serverExpense.value = Number(data.totalExpense) || 0;
     totalExpense.value = (Number(serverExpense.value) || 0) + (Number(totalAmount.value) || 0);
   } catch (err) {
-    console.error("❌ 예산/지출(항 기준) 조회 실패:", err);
+    console.error("❌ 예산/지출(항 기준) 조회 실패:", err.response?.data || err.message);
     totalBudget.value = 0;
     serverExpense.value = 0;
     totalExpense.value = 0;
@@ -471,15 +476,17 @@ const fetchSummaryForSelectedHang = async () => {
 };
 
 // ✅ 관 변경: 항 초기화 + items 동기화 + 자동 항 선택은 hangs watch가 처리
-watch(selectedGwan, async () => {
-  // ✅ 관 변경 시 항 초기화
-  selectedHang.value = "";
-  syncSelectionToItems();
+watch(selectedGwan, async (newValue, oldValue) => {
+  // ✅ 관이 실제로 변경되었을 때만 항을 초기화 (초기 데이터 로딩 시 제외)
+  if (oldValue) {
+    selectedHang.value = "";
+    syncSelectionToItems(); // 사용자가 변경한 경우에만 아이템 동기화(초기화)
+  }
 
   // ✅ 항 후보가 1개뿐이면 자동 선택 (ExpenseTab.vue 방식)
   const hangs = hangsForSelectedGwan.value;
   if (Array.isArray(hangs) && hangs.length === 1) {
-    selectedHang.value = hangs[0]; // selectedHang watch가 summary까지 처리
+    selectedHang.value = hangs[0].category_id; // selectedHang watch가 summary까지 처리
   } else {
     // 관만 선택된 상태이므로 summary는 0으로
     await fetchSummaryForSelectedHang();
@@ -496,7 +503,7 @@ watch(
   hangsForSelectedGwan,
   (hangs) => {
     if (selectedGwan.value && !selectedHang.value && Array.isArray(hangs) && hangs.length === 1) {
-      selectedHang.value = hangs[0];
+      selectedHang.value = hangs[0].category_id;
     }
   },
   { immediate: true }
@@ -523,10 +530,6 @@ watch(
       serverExpense.value = 0;
       totalExpense.value = 0;
     }
-
-    // ✅ 관이 1개뿐이면 자동 선택 (이미 선택된 값이 없을 때만)
-    const gwans = getGwans.value;
-    if (!selectedGwan.value && gwans.length === 1) selectedGwan.value = gwans[0];
 
     if (isSelectionReady.value) {
       fetchSummaryForSelectedHang();

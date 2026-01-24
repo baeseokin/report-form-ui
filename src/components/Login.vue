@@ -33,53 +33,55 @@
         </Suspense>
       </div>
 
-      <!-- 역할 선택 -->
-      <label class="block text-sm font-semibold mb-1">역할</label>
-      <select
-        v-model="selectedRoleId"
-        class="w-full mb-3 p-2 border rounded"
-        :disabled="!selectedDeptId || loading.roles || roles.length === 0"
-        @change="onRoleChanged"
-      >
-        <option value="" disabled>
-          {{ rolesDisabledReason || "역할을 선택하세요" }}
-        </option>
-        <option v-for="r in roles" :key="r.role_id" :value="r.role_id">
-          {{ r.role_name }}
-        </option>
-      </select>
+      <form @submit.prevent="login" autocomplete="off">
+        <!-- 역할 선택 -->
+        <label class="block text-sm font-semibold mb-1">역할</label>
+        <select
+          v-model="selectedRoleId"
+          class="w-full mb-3 p-2 border rounded"
+          :disabled="!selectedDeptId || loading.roles || roles.length === 0"
+          @change="onRoleChanged"
+        >
+          <option value="" disabled>
+            {{ rolesDisabledReason || "역할을 선택하세요" }}
+          </option>
+          <option v-for="r in roles" :key="r.role_id" :value="r.role_id">
+            {{ r.role_name }}
+          </option>
+        </select>
 
-      <!-- 사용자 선택 -->
-      <label class="block text-sm font-semibold mb-1">사용자</label>
-      <select
-        v-model="selectedUserId"
-        class="w-full mb-3 p-2 border rounded"
-        :disabled="usersDisabled"
-      >
-        <option value="" disabled>
-          {{ usersDisabledReason || "사용자를 선택하세요" }}
-        </option>
-        <option v-for="u in users" :key="u.userId" :value="u.userId">
-          {{ u.userName }} ({{ u.userId }})
-        </option>
-      </select>
+        <!-- 사용자 선택 -->
+        <label class="block text-sm font-semibold mb-1">사용자</label>
+        <select
+          v-model="selectedUserId"
+          class="w-full mb-3 p-2 border rounded"
+          :disabled="usersDisabled"
+        >
+          <option value="" disabled>
+            {{ usersDisabledReason || "사용자를 선택하세요" }}
+          </option>
+          <option v-for="u in users" :key="u.userId" :value="u.userId">
+            {{ u.userName }} ({{ u.userId }})
+          </option>
+        </select>
 
-      <!-- 비밀번호 -->
-      <input
-        v-model="password"
-        type="password"
-        placeholder="비밀번호"
-        class="w-full mb-3 p-2 border rounded"
-        @keyup.enter="login"
-      />
+        <!-- 비밀번호 -->
+        <input
+          v-model="password"
+          type="password"
+          placeholder="비밀번호"
+          class="w-full mb-3 p-2 border rounded"
+          autocomplete="new-password"
+        />
 
-      <button
-        @click="login"
-        class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
-        :disabled="!canSubmit"
-      >
-        로그인
-      </button>
+        <button
+          type="submit"
+          class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+          :disabled="!canSubmit"
+        >
+          로그인
+        </button>
+      </form>
 
       <p v-if="error" class="text-red-500 mt-3">{{ error }}</p>
 
