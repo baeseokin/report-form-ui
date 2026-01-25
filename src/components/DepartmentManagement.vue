@@ -190,7 +190,7 @@
 
 <script setup>
 import axios from "axios";
-import { computed, defineComponent, h, onMounted, ref } from "vue";
+import { computed, defineComponent, h, onMounted, ref, watch } from "vue";
 
 const departments = ref([]);
 const selected = ref(null);
@@ -412,8 +412,24 @@ const DepartmentNode = defineComponent({
     keyword: { type: String, default: "" },
     selectedId: { type: Number, default: null },
     onSelect: { type: Function, required: true },
+    depth: { type: Number, default: 1 },
   },
   setup(props) {
+    // 기본적으로 2 depth 까지만 펼치고(1 Open, 2 Closed), 3 depth는 접음
+    const isOpen = ref(props.depth < 2);
+
+    watch(
+      () => props.keyword,
+      (newVal) => {
+        if (newVal) {
+          isOpen.value = true;
+        } else {
+          isOpen.value = props.depth < 2;
+        }
+      },
+      { immediate: true }
+    );
+
     const isMatch = computed(() => {
       if (!props.keyword) return false;
       const keyword = props.keyword.toLowerCase();
@@ -423,13 +439,18 @@ const DepartmentNode = defineComponent({
       );
     });
 
+    const toggle = (e) => {
+      e.stopPropagation();
+      isOpen.value = !isOpen.value;
+    };
+
     return () =>
       h("li", { class: "space-y-1" }, [
         h(
           "div",
           {
             class: [
-              "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer",
+              "flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer select-none",
               props.selectedId === props.node.id
                 ? "bg-indigo-100 border-indigo-300 font-semibold"
                 : "hover:bg-indigo-50",
@@ -437,6 +458,18 @@ const DepartmentNode = defineComponent({
             onClick: () => props.onSelect(props.node.id),
           },
           [
+            // 토글 버튼 (하위 노드가 있을 때만 표시)
+            props.node.children && props.node.children.length
+              ? h(
+                  "span",
+                  {
+                    class: "text-gray-400 hover:text-gray-600 w-4 text-center",
+                    onClick: toggle,
+                  },
+                  isOpen.value ? "▼" : "▶"
+                )
+              : h("span", { class: "w-4" }), // 공간 확보
+
             h("span", { class: "text-gray-500 text-xs" }, props.node.dept_cd || "—"),
             h(
               "span",
@@ -445,7 +478,7 @@ const DepartmentNode = defineComponent({
             ),
           ]
         ),
-        props.node.children && props.node.children.length
+        props.node.children && props.node.children.length && isOpen.value
           ? h(
               "ul",
               { class: "pl-4 border-l border-dashed border-gray-200 space-y-1" },
@@ -456,6 +489,7 @@ const DepartmentNode = defineComponent({
                   keyword: props.keyword,
                   selectedId: props.selectedId,
                   onSelect: props.onSelect,
+                  depth: props.depth + 1,
                 })
               )
             )

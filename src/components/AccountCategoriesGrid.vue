@@ -32,7 +32,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="c in categoriesTree"
+                v-for="c in visibleCategories"
                 :key="c.id"
                 class="hover:bg-gray-50 group"
                 :class="{
@@ -45,6 +45,15 @@
                 </td>
                 <td class="border p-2">
                   <div :style="{ paddingLeft: `${(c.depth - 1) * 20}px` }" class="flex items-center">
+                    <!-- 토글 아이콘 -->
+                    <span
+                      v-if="c.children && c.children.length > 0"
+                      @click.stop="toggleExpand(c.id)"
+                      class="mr-1 cursor-pointer text-gray-500 hover:text-purple-600 w-4 text-center inline-block select-none"
+                    >
+                      {{ expandedIds.has(c.id) ? '▼' : '▶' }}
+                    </span>
+                    <span v-else class="w-4 mr-1 inline-block"></span>
                     <span class="mr-1 text-gray-400" v-if="c.depth > 1">└</span>
                     {{ c.category_name }}
                   </div>
@@ -126,6 +135,7 @@
                 </th>
                 <th class="border p-2 text-left">계정명</th>
                 <th class="border p-2 text-center w-24">ID</th>
+                <th class="border p-2 text-center w-20">단계</th>
                 <th class="border p-2 text-center w-28">Owner</th>
               </tr>
             </thead>
@@ -141,6 +151,7 @@
                   </div>
                 </td>
                 <td class="border p-2 text-center text-gray-500 text-xs">{{ c.category_id }}</td>
+                <td class="border p-2 text-center text-gray-500">{{ c.level }}</td>
                 <td class="border p-2 text-center">
                   <div v-if="c.level === '관'">
                     <span class="text-xs text-gray-300">-</span>
@@ -257,6 +268,7 @@ const categories = ref([]);
 const mappedCategoryIds = ref([]); // 우측 화면에서 체크된 ID 목록
 const leftCheckedIds = ref([]);    // 좌측 선택
 const rightCheckedIds = ref([]);   // 우측 선택
+const expandedIds = ref(new Set()); // 펼쳐진 노드 ID
 
 const showModal = ref(false);
 const modalMode = ref("add");
@@ -276,6 +288,38 @@ const categoriesTree = computed(() => {
   return buildTree(categories.value);
 });
 
+// ✅ 트리 펼침/접기 필터링 (좌측 화면용)
+const visibleCategories = computed(() => {
+  const visibleNodes = [];
+  const visibleIds = new Set();
+  const expanded = expandedIds.value;
+
+  for (const node of categoriesTree.value) {
+    // 최상위(관)는 항상 표시
+    if (!node.parent_id) {
+      visibleIds.add(node.id);
+      visibleNodes.push(node);
+    } else {
+      // 부모가 표시되어 있고 & 부모가 펼쳐져 있어야 표시
+      if (visibleIds.has(node.parent_id) && expanded.has(node.parent_id)) {
+        visibleIds.add(node.id);
+        visibleNodes.push(node);
+      }
+    }
+  }
+  return visibleNodes;
+});
+
+const toggleExpand = (id) => {
+  const newSet = new Set(expandedIds.value);
+  if (newSet.has(id)) {
+    newSet.delete(id);
+  } else {
+    newSet.add(id);
+  }
+  expandedIds.value = newSet;
+};
+
 // 전체 선택 여부
 const isAllLeftChecked = computed(() => {
   return categories.value.length > 0 && leftCheckedIds.value.length === categories.value.length;
@@ -293,6 +337,16 @@ onMounted(async () => {
     ]);
     departments.value = deptRes.data.sort((a, b) => a.dept_name.localeCompare(b.dept_name));
     categories.value = Array.isArray(catRes.data.categories) ? catRes.data.categories : [];
+
+    // ✅ 초기 로딩 시 '관' 레벨만 펼침 (항, 목, 세목은 접음)
+    // "관, 항 까지만 펼쳐주고" -> 관 Open, 항 Closed (보이는 것: 관, 항)
+    const initialExpanded = new Set();
+    categories.value.forEach(c => {
+      if (c.level === '관') {
+        initialExpanded.add(c.id);
+      }
+    });
+    expandedIds.value = initialExpanded;
   } catch (err) {
     console.error("❌ 초기 데이터 로드 실패:", err);
   }
