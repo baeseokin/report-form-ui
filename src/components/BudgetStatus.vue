@@ -30,9 +30,9 @@
       <table class="w-full border text-sm">
         <thead>
           <tr class="bg-purple-100 text-gray-800">
-            <th class="border p-2">부서명</th>
             <th class="border p-2">관</th>
-            <th class="border p-2">항</th>            
+            <th class="border p-2">항</th>
+            <th class="border p-2">Owner부서</th>
             <th class="border p-2 text-center">총예산액</th>
             <th class="border p-2 text-center">총지출액</th>
             <th class="border p-2 text-center">잔액</th>
@@ -41,9 +41,9 @@
         <tbody>
           <tr v-for="row in budgetRows" :key="row.dept_id||row.gwan_name||row.hang_name"
               :class="row.remaining_amount < 0 ? 'bg-red-100 text-red-700 font-semibold' : 'bg-white'">
-            <td class="border p-2">{{ row.dept_name }}</td>
             <td class="border p-2">{{ row.gwan_name }}</td>
-            <td class="border p-2">{{ row.hang_name }}</td>            
+            <td class="border p-2">{{ row.hang_name }}</td>
+            <td class="border p-2 text-center text-gray-600">{{ row.owner_dept_name || '-' }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.total_budget) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.total_expense) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(row.remaining_amount) }}</td>
@@ -57,7 +57,7 @@
           <tr v-else class="font-bold bg-gray-200">
             <td class="border p-2 text-center">합계</td>
             <td class="border p-2"></td>
-            <td class="border p-2"></td>            
+            <td class="border p-2"></td>
             <td class="border p-2 text-right">{{ formatAmount(totals.budget) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(totals.expense) }}</td>
             <td class="border p-2 text-right">{{ formatAmount(totals.remaining) }}</td>
@@ -110,29 +110,43 @@ const fetchBudgetStatus = async () => {
     if (requestId !== fetchRequestId.value) return;
     const rows = Array.isArray(res.data) ? res.data : [];
 
-    const selectedDept = departments.value.find(
-      (dept) => String(dept.id) === String(filters.value.deptId),
-    );
-    const selectedDeptName = selectedDept?.dept_name;
-    const filteredRows = filters.value.deptId
-      ? rows.filter((row) => {
-          const rowDeptId = row.dept_id ?? row.deptId ?? row.deptID;
-          if (rowDeptId !== undefined && rowDeptId !== null) {
-            return String(rowDeptId) === String(filters.value.deptId);
-          }
-          if (selectedDeptName) {
-            return String(row.dept_name) === String(selectedDeptName);
-          }
-          return false;
-        })
-      : rows;
-    budgetRows.value = "";    
-    budgetRows.value = filteredRows;
+    let processedRows = [];
+
+    if (!filters.value.deptId) {
+      // ✅ "전체" 선택 시: 계정(관/항) 기준으로 집계
+      const map = new Map();
+      rows.forEach((r) => {
+        const key = r.hang_category_id; // 항 코드로 그룹화
+        if (!map.has(key)) {
+          map.set(key, {
+            ...r,
+            total_expense: 0,
+            // total_budget은 전사 공통이므로 첫 번째 값 유지
+          });
+        }
+        const entry = map.get(key);
+        // 지출액은 부서별 합산
+        entry.total_expense += Number(r.total_expense);
+      });
+
+      processedRows = Array.from(map.values()).map((r) => ({
+        ...r,
+        remaining_amount: Number(r.total_budget) - r.total_expense,
+      }));
+      
+      // 정렬 (관 ID -> 항 ID)
+      processedRows.sort((a, b) => a.hang_category_id.localeCompare(b.hang_category_id));
+    } else {
+      // ✅ 특정 부서 선택 시: API 결과 그대로 사용 (이미 필터링됨)
+      processedRows = rows;
+    }
+
+    budgetRows.value = processedRows;
 
     // ✅ 합계 계산
-    const totalBudget = filteredRows.reduce((sum, r) => sum + Number(r.total_budget), 0);
-    const totalExpense = filteredRows.reduce((sum, r) => sum + Number(r.total_expense), 0);
-    const totalRemaining = filteredRows.reduce((sum, r) => sum + Number(r.remaining_amount), 0);
+    const totalBudget = processedRows.reduce((sum, r) => sum + Number(r.total_budget), 0);
+    const totalExpense = processedRows.reduce((sum, r) => sum + Number(r.total_expense), 0);
+    const totalRemaining = processedRows.reduce((sum, r) => sum + Number(r.remaining_amount), 0);
 
     totals.value = {
       budget: totalBudget,

@@ -291,7 +291,7 @@ onMounted(async () => {
       axios.get("/api/departments"),
       axios.get("/api/accountCategories") // 전체 계정과목 조회
     ]);
-    departments.value = deptRes.data;
+    departments.value = deptRes.data.sort((a, b) => a.dept_name.localeCompare(b.dept_name));
     categories.value = Array.isArray(catRes.data.categories) ? catRes.data.categories : [];
   } catch (err) {
     console.error("❌ 초기 데이터 로드 실패:", err);
