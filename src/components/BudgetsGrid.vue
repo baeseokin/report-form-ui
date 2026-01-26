@@ -155,7 +155,7 @@ const totalBudget = computed(() => {
 
 onMounted(async () => {
   const res = await axios.get("/api/departments");
-  departments.value = res.data;
+  departments.value = res.data.sort((a, b) => a.dept_name.localeCompare(b.dept_name));
   if (departments.value.length > 0) {
     selectedDeptId.value = departments.value[0].id;
     fetchCategories();

@@ -297,7 +297,7 @@ onMounted(async () => {
   if (isFinanceDept.value && departments.value.length === 0) {
     try {
       const res = await axios.get('/api/departments');
-      departments.value = res.data || [];
+      departments.value = (res.data || []).sort((a, b) => a.dept_name.localeCompare(b.dept_name));
     } catch (e) {
       console.error("부서 목록 로드 실패", e);
     }
@@ -329,7 +329,7 @@ const fetchCategories = async () => {
     if (departments.value.length === 0) {
       try {
         const res = await axios.get('/api/departments');
-        departments.value = res.data || [];
+        departments.value = (res.data || []).sort((a, b) => a.dept_name.localeCompare(b.dept_name));
       } catch (e) {
         console.error("부서 목록 로드 실패", e);
       }
