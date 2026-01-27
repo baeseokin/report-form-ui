@@ -209,7 +209,7 @@ const formatDate = (dateStr) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value
-      .filter((c) => c.level !== "관" && c.owner_dept_id === selectedDeptId.value)
+      .filter((c) => isLeafCategory(c.id) && c.owner_dept_id === selectedDeptId.value)
       .map((c) => ({
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
