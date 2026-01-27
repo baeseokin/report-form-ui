@@ -34,6 +34,7 @@ const RoleAccess = () => import("../components/RoleAccess.vue");
 const AccountCategoriesGrid = () => import("../components/AccountCategoriesGrid.vue");
 const BudgetsGrid = () => import("../components/BudgetsGrid.vue");
 const BudgetStatus = () => import("../components/BudgetStatus.vue");
+const DeptBudgetStatus = () => import("../components/DeptBudgetStatus.vue");
 const EmailTest = () => import("../views/EmailTest.vue");
 const DepartmentManagement = () =>
   import("../components/DepartmentManagement.vue");
@@ -63,6 +64,7 @@ const routes = [
   { path: "/accountCategories", component: AccountCategoriesGrid, meta: { menuName: "계정과목 관리" } },
   { path: "/budgets", component: BudgetsGrid, meta: { menuName: "예산 관리" } },
   { path: "/budgetStatus", component: BudgetStatus, meta: { menuName: "예산집행 현황" } },
+  { path: "/deptBudgetStatus", component: DeptBudgetStatus, meta: { menuName: "부서 예산집행 현황" } },  
   { path: "/departments", component: DepartmentManagement, meta: { menuName: "부서 관리" } },
 
   // ✅ 이메일 테스트 (권한 없이 접근 허용)

@@ -67,14 +67,14 @@
       <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="bg-purple-100 text-gray-700">
-            <th class="border p-3">문서종류</th>
-            <th class="border p-3">부서명</th>
-            <th class="border p-3">작성자</th>
-            <th class="border p-3">청구요청 별칭</th>
-            <th class="border p-3">청구일자</th>
-            <th class="border p-3">총액</th>
-            <th class="border p-3">진행상태</th>
-            <th class="border p-3">상세</th>
+            <th class="border p-3 text-center">문서종류</th>
+            <th class="border p-3 text-center">부서명</th>
+            <th class="border p-3 text-center">작성자</th>
+            <th class="border p-3 text-center">청구요청 별칭</th>
+            <th class="border p-3 text-center">청구일자</th>
+            <th class="border p-3 text-center">총액</th>
+            <th class="border p-3 text-center">진행상태</th>
+            <th class="border p-3 text-center">상세</th>
           </tr>
         </thead>
         <tbody>

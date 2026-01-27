@@ -69,7 +69,7 @@
           }"
         >
           <td class="border p-2">
-            <span :style="{ paddingLeft: `${(c.depth - 1) * 40}px` }">
+            <span :style="{ paddingLeft: `${20 + (c.depth - 1) * 40}px` }">
               {{ c.category_name }}
             </span>
           </td>
