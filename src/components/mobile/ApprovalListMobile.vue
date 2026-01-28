@@ -4,8 +4,17 @@
 
     <!-- ✅ 검색조건 -->
     <div class="space-y-3 mb-6">
-      <!-- 부서명은 session에서 가져오되 화면에서는 숨김 -->
-      <input type="hidden" v-model="filters.deptName" />
+      <!-- 부서명 -->
+      <div>
+        <label class="font-bold mb-1 block">부서명</label>
+        <input
+          type="text"
+          v-model="filters.deptName"
+          placeholder="부서명 입력"
+          class="border rounded p-2 w-full"
+          :readonly="!canEditDept"
+        />
+      </div>
 
       <!-- 문서종류 -->
       <div>
@@ -116,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 //import ReportPreview from "../ReportPreview.vue";
 import { defineAsyncComponent } from 'vue';
@@ -151,6 +160,14 @@ const filters = ref({
   startDate: formatDateValue(startOfYear),
   endDate: formatDateValue(today),
   status: "",
+});
+
+// ✅ 권한 체크: 재정부 or 관리자
+const canEditDept = computed(() => {
+  if (!user.value?.roles) return false;
+  return user.value.roles.some(
+    (r) => r.role_name === "재정부" || r.role_name === "관리자"
+  );
 });
 
 onMounted(() => {
