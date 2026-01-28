@@ -3,7 +3,7 @@
     <h2 class="text-2xl font-bold text-purple-700 mb-6">📊 부서 예산집행 현황</h2>
 
     <!-- 부서 & 기준일자 선택 -->
-    <div class="mb-6 flex flex-wrap items-end gap-6">
+    <div class="mb-3 flex flex-wrap items-end gap-6">
       <div>
         <label class="font-semibold text-gray-700">부서 선택</label>
         <select
@@ -39,6 +39,12 @@
           class="ml-2 border rounded p-2 w-28 shadow-sm"
         />
       </div>
+    </div>
+
+    <!-- 참고사항 -->
+    <div class="mb-6 text-xs text-gray-600 leading-relaxed">
+      <p>1. 선택된 부서의 예산금액과 지출금액을 확인할 수 있습니다.</p>
+      <p>2. 청구시 계정을 선택하지 않고 "직접입력"한 경우, 기타(ETC) 계정으로 지출금액이 표시됩니다.</p>
     </div>
 
     <!-- 계정 목록 Grid -->
