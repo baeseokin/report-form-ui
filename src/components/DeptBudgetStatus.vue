@@ -93,7 +93,7 @@
           </td>
 
           <!-- 집행률 -->
-          <td class="border p-2 text-center">
+          <td class="border p-2 text-right">
             {{ calculateRate(getBudget(c), getExpense(c)) }}%
           </td>
         </tr>
