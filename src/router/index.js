@@ -34,10 +34,15 @@ const RoleAccess = () => import("../components/RoleAccess.vue");
 const AccountCategoriesGrid = () => import("../components/AccountCategoriesGrid.vue");
 const BudgetsGrid = () => import("../components/BudgetsGrid.vue");
 const BudgetStatus = () => import("../components/BudgetStatus.vue");
-const DeptBudgetStatus = () => import("../components/DeptBudgetStatus.vue");
+const DeptBudgetStatus = () =>
+  isMobile()
+    ? import("../components/mobile/DeptBudgetStatusMobile.vue")
+    : import("../components/DeptBudgetStatus.vue");
 const EmailTest = () => import("../views/EmailTest.vue");
 const DepartmentManagement = () =>
-  import("../components/DepartmentManagement.vue");
+  isMobile()
+    ? import("../components/mobile/DepartmentManagementMobile.vue")
+    : import("../components/DepartmentManagement.vue");
 const ApprovalLineManagement = () =>
   import("../components/ApprovalLineManagement.vue");
 
