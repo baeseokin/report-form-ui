@@ -442,6 +442,37 @@ const getSemoks = (item) => {
     .filter((c) => c.level === "세목" && String(c.parent_id) === String(mok.id));
 };
 
+// ✅ 목/세목 커스텀 여부 확인 (리스트에 없으면 커스텀 처리)
+const isMokCustom = (item) => {
+  if (!item?.mok) return false;
+  if (item.mok === "__custom__") return true;
+  const opts = moksForSelectedHang.value || [];
+  return !opts.some((m) => m.category_id === item.mok);
+};
+
+const isSemokCustom = (item) => {
+  if (!item?.semok) return false;
+  if (item.semok === "__custom__") return true;
+  const opts = getSemoks(item) || [];
+  return !opts.some((s) => s.category_id === item.semok);
+};
+
+const onMokInput = (idx, val, item) => {
+  if (item?.mok === "__custom__") {
+    updateField(idx, "customMok", val);
+  } else {
+    updateField(idx, "mok", val);
+  }
+};
+
+const onSemokInput = (idx, val, item) => {
+  if (item?.semok === "__custom__") {
+    updateField(idx, "customSemok", val);
+  } else {
+    updateField(idx, "semok", val);
+  }
+};
+
 // ✅ items에 선택된 관/항을 동기화 (테이블에는 숨기지만 데이터에는 유지)
 const syncSelectionToItems = () => {
   const newItems = (props.items || []).map((it) => {
@@ -588,6 +619,36 @@ watch([totalAmount, isSelectionReady], ([newAmount, ready]) => {
 });
 
 const remainingBudget = computed(() => (Number(totalBudget.value) || 0) - (Number(totalExpense.value) || 0));
+
+// ✅ UUID 생성 (watch immediate에서 사용되므로 함수 선언으로 호이스팅)
+function genUUID() {
+  // 1) 표준 randomUUID 지원 시
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+
+  // 2) getRandomValues 지원 시 (대부분의 모바일 브라우저에서 지원)
+  if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(bytes);
+
+    // RFC4122 v4 형태로 맞춤
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    const hex = [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
+    return (
+      hex.slice(0, 8) + "-" +
+      hex.slice(8, 12) + "-" +
+      hex.slice(12, 16) + "-" +
+      hex.slice(16, 20) + "-" +
+      hex.slice(20)
+    );
+  }
+
+  // 3) 최후 폴백 (충돌 가능성 낮게)
+  return "id-" + Date.now().toString(16) + "-" + Math.random().toString(16).slice(2);
+}
 
 // ✅ 표시용 items (selected 기본값 false 보정)
 const formattedItems = computed(() =>
@@ -781,35 +842,6 @@ const onAmountBlur = (uuid) => {
   };
 
   emits("update:items", newItems);
-};
-
-const genUUID = () => {
-  // 1) 표준 randomUUID 지원 시
-  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-
-  // 2) getRandomValues 지원 시 (대부분의 모바일 브라우저에서 지원)
-  if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === "function") {
-    const bytes = new Uint8Array(16);
-    globalThis.crypto.getRandomValues(bytes);
-
-    // RFC4122 v4 형태로 맞춤
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-    const hex = [...bytes].map(b => b.toString(16).padStart(2, "0")).join("");
-    return (
-      hex.slice(0, 8) + "-" +
-      hex.slice(8, 12) + "-" +
-      hex.slice(12, 16) + "-" +
-      hex.slice(16, 20) + "-" +
-      hex.slice(20)
-    );
-  }
-
-  // 3) 최후 폴백 (충돌 가능성 낮게)
-  return "id-" + Date.now().toString(16) + "-" + Math.random().toString(16).slice(2);
 };
 
 </script>
