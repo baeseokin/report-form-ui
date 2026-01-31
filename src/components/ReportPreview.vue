@@ -115,42 +115,42 @@
         </div>
 
 
-        <!-- ✅ 부서명 -->
+        <!-- ✅ 부서명 + 관/항 -->
         <table class="w-full border text-center mb-4">
           <tbody>
             <tr>
               <td class="border w-64 bg-blue-100 font-bold">부서명</td>
               <td class="border">{{ report.deptName }}</td>
             </tr>
+            <tr>
+              <td class="border w-64 bg-blue-100 font-bold">관/항</td>
+              <td class="border">{{ gwanHangLabel }}</td>
+            </tr>
           </tbody>
         </table>
 
-        <!-- ✅ 지출내역 -->
+        <!-- ✅ 지출내역 (관/항은 부서명 영역에 표시) -->
         <h3 class="title-md flex items-center mb-4">💸 <span class="ml-2">지출내역</span></h3>
-        <table class="w-full border my-4 text-center">
+        <table class="w-full border my-4 text-center expense-table">
           <thead class="bg-blue-100 text-gray-800">
             <tr>
-              <th class="border">관</th>
-              <th class="border">항</th>
               <th class="border">목</th>
               <th class="border">세목</th>
-              <th class="border">지출내역</th>
+              <th class="border expense-col-detail">지출내역</th>
               <th class="border">금액</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(item, idx) in paddedItems" :key="idx">
-              <td class="border">{{ item.gwan }}</td>
-              <td class="border">{{ item.hang }}</td>
               <td class="border">{{ item.mok }}</td>
               <td class="border">{{ item.semok }}</td>
-              <td class="border">{{ item.detail }}</td>
+              <td class="border text-left expense-col-detail">{{ item.detail }}</td>
               <td class="border text-right">
                 <span v-if="item.amount">{{ formatAmount(item.amount) }} 원</span>
               </td>
             </tr>
             <tr class="bg-blue-100 font-bold">
-              <td colspan="5" class="border text-center">합 계</td>
+              <td colspan="3" class="border text-center">합 계</td>
               <td class="border text-right">{{ formatAmount(report.totalAmount) }} 원</td>
             </tr>
           </tbody>
@@ -304,8 +304,18 @@ const fetchCategories = async () => {
 };
 const getCategoryName = (code) => {
   const found = categories.value.find(c => c.category_id === code);
-  return found ? found.category_name : code;
+  return found ? found.category_name : code || "";
 };
+
+// ✅ 부서명 테이블용 관/항 라벨 (동일 값이므로 한 줄로 표시)
+const gwanHangLabel = computed(() => {
+  const g = props.report?.selectedGwan ?? props.report?.items?.[0]?.gwan;
+  const h = props.report?.selectedHang ?? props.report?.items?.[0]?.hang;
+  if (!g && !h) return "—";
+  const gName = getCategoryName(g);
+  const hName = getCategoryName(h);
+  return [gName, hName].filter(Boolean).join(" / ");
+});
 
 // ✅ 모바일 scale 비율 동적 계산
 const scaleValue = ref(1);
@@ -776,5 +786,27 @@ table td, table th {
   border-radius: 8px;
 }
 
+/* ✅ 지출내역 테이블: 지출내역 열 가로 폭 확대 */
+.report-content table.expense-table {
+  table-layout: fixed;
+}
+.report-content table.expense-table th.expense-col-detail,
+.report-content table.expense-table td.expense-col-detail {
+  width: 45%;
+  min-width: 0;
+  word-break: break-word;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.report-content table.expense-table th.expense-col-detail {
+  text-align: center;
+}
+.report-content table.expense-table td.expense-col-detail {
+  text-align: left;
+}
+.report-content table.expense-table th:not(.expense-col-detail),
+.report-content table.expense-table td:not(.expense-col-detail) {
+  width: auto;
+}
 
 </style>
