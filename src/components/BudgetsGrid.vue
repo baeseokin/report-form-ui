@@ -32,15 +32,24 @@
         />
       </div>
 
-      <div>
-        <label class="font-semibold text-gray-700">회계연도</label>
-        <input
-          type="number"
-          v-model="year"
-          min="2000"
-          max="2100"
-          class="ml-2 border rounded p-2 w-28 shadow-sm"
-        />
+      <div class="flex items-end gap-6">
+        <div>
+          <label class="font-semibold text-gray-700">회계연도</label>
+          <input
+            type="number"
+            v-model="year"
+            min="2000"
+            max="2100"
+            class="ml-2 border rounded p-2 w-28 shadow-sm"
+          />
+        </div>
+        <button
+          type="button"
+          @click="fetchCategories"
+          class="px-4 py-2 bg-purple-600 text-white rounded shadow-sm hover:bg-purple-700 transition"
+        >
+          조회
+        </button>
       </div>
     </div>
 

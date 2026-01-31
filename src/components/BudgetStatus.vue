@@ -5,13 +5,22 @@
     <!-- ✅ 검색조건 -->
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <!-- 기준년도 -->
-      <div class="flex items-center gap-2">
-        <label class="font-bold text-gray-700">기준년도</label>
-        <input
-          type="number"
-          v-model="filters.year"
-          class="border rounded p-2 w-24"
-        />
+      <div class="flex items-end gap-6">
+        <div class="flex items-center gap-2">
+          <label class="font-bold text-gray-700">기준년도</label>
+          <input
+            type="number"
+            v-model="filters.year"
+            class="border rounded p-2 w-24"
+          />
+        </div>
+        <button
+          type="button"
+          @click="fetchBudgetStatus"
+          class="px-4 py-2 bg-purple-600 text-white rounded shadow-sm hover:bg-purple-700 transition"
+        >
+          조회
+        </button>
       </div>
     </div>
 
@@ -63,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch  } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 
 const today = new Date();
@@ -160,13 +169,6 @@ const fetchBudgetStatus = async () => {
 onMounted(() => {
   fetchBudgetStatus();
 });
-
-watch(
-  () => filters.value.year,
-  () => {
-    fetchBudgetStatus();
-  },
-);
 
 const formatAmount = (val) => {
   if (val === null || val === undefined) return "";
