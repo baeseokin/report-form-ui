@@ -52,40 +52,50 @@
                       :src="getSignatureUrl(line.approver_role)"
                       class="signature-img"
                     />
-                    <!-- ✅ 상태 뱃지: 메시지 있음/없음 유형 구분, 메시지 있으면 호버 시 말풍선 -->
-                    <span
-                      v-if="getStatus(line.approver_role)"
-                      class="status-badge no-print inline-flex items-center justify-center mt-2 relative"
-                      :class="{ 'status-badge-has-comment': getComment(line.approver_role) }"
-                      :title="getComment(line.approver_role) ? '코멘트 보기' : undefined"
-                      @mousemove="getComment(line.approver_role) ? onCommentEmojiMouse($event, line.approver_role) : null"
-                      @mouseleave="onCommentEmojiLeave()"
-                    >
-                      <img
-                        v-if="getStatus(line.approver_role) === '기안'"
-                        src="/icons/draft.svg"
-                        alt="Draft"
-                        class="h-6 w-auto"
-                      />
-                      <img
-                        v-else-if="getStatus(line.approver_role) === '승인'"
-                        src="/icons/approved.svg"
-                        alt="Approved"
-                        class="h-6 w-auto"
-                      />
-                      <img
-                        v-else-if="getStatus(line.approver_role) === '반려'"
-                        src="/icons/rejected.svg"
-                        alt="Rejected"
-                        class="h-6 w-auto"
-                      />
-                      <!-- 메시지 있는 유형: 우측 상단에 말풍선 표시 -->
+                    <!-- ✅ 뱃지 + 말풍선을 한 덩어리로 (말풍선이 뱃지 바로 옆에만 붙도록) -->
+                    <div class="relative inline-flex items-center mt-2">
+                      <!-- ✅ 상태 뱃지: 메시지 있음/없음 유형 구분 -->
                       <span
-                        v-if="getComment(line.approver_role)"
-                        class="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] leading-none"
-                        aria-hidden="true"
-                      >💬</span>
-                    </span>
+                        v-if="getStatus(line.approver_role)"
+                        class="status-badge no-print inline-flex items-center justify-center relative"
+                        :class="{ 'status-badge-has-comment': getComment(line.approver_role) }"
+                        :title="getComment(line.approver_role) ? '코멘트 보기' : undefined"
+                        @mouseenter="getComment(line.approver_role) && (visibleCommentRole = line.approver_role)"
+                        @mouseleave="visibleCommentRole = null"
+                      >
+                        <img
+                          v-if="getStatus(line.approver_role) === '기안'"
+                          src="/icons/draft.svg"
+                          alt="Draft"
+                          class="h-6 w-auto"
+                        />
+                        <img
+                          v-else-if="getStatus(line.approver_role) === '승인'"
+                          src="/icons/approved.svg"
+                          alt="Approved"
+                          class="h-6 w-auto"
+                        />
+                        <img
+                          v-else-if="getStatus(line.approver_role) === '반려'"
+                          src="/icons/rejected.svg"
+                          alt="Rejected"
+                          class="h-6 w-auto"
+                        />
+                        <!-- 메시지 있는 유형: 우측 상단에 말풍선 표시 -->
+                        <span
+                          v-if="getComment(line.approver_role)"
+                          class="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] leading-none"
+                          aria-hidden="true"
+                        >💬</span>
+                      </span>
+                      <!-- 말풍선: 뱃지 바로 오른쪽에만 표시 (같은 wrapper 안에서 absolute) -->
+                      <div
+                        v-if="getComment(line.approver_role) && visibleCommentRole === line.approver_role"
+                        class="no-print absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-[100] whitespace-normal pointer-events-none"
+                      >
+                        💬 {{ getComment(line.approver_role) }}
+                      </div>
+                    </div>
                     <!-- ✅ 결재 시간 (PDF/프린트 시 숨김) -->
                     <small v-if="getApprovedAt(line.approver_role)" class="no-print text-gray-500 text-[10px] mt-1">
                       {{ formatDateTime(getApprovedAt(line.approver_role)) }}
@@ -115,15 +125,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <!-- ✅ 말풍선: 뱃지 마우스 오버 시 해당 뱃지 바로 옆에 표시 -->
-        <div
-          v-if="visibleCommentRole && getComment(visibleCommentRole)"
-          class="no-print fixed bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-[100] whitespace-normal pointer-events-none"
-          :style="{ left: `${commentBubbleX}px`, top: `${commentBubbleY}px`, transform: 'translateY(-50%)' }"
-        >
-          💬 {{ getComment(visibleCommentRole) }}
         </div>
 
         <!-- ✅ 부서명 + 관/항 -->
@@ -374,17 +375,7 @@ const showModal = ref(false);
 const approvalHistory = ref(props.report?.approvalHistory || []);
 const approvalLines = ref(props.report?.approvalLine || []);
 const visibleCommentRole = ref(null);
-const commentBubbleX = ref(0);
-const commentBubbleY = ref(0);
 const popupMode = ref(null);
-
-const onCommentEmojiMouse = (e, role) => {
-  visibleCommentRole.value = role;
-  const rect = e.currentTarget.getBoundingClientRect();
-  commentBubbleX.value = rect.right + 8;
-  commentBubbleY.value = rect.top + rect.height / 2;
-};
-const onCommentEmojiLeave = () => { visibleCommentRole.value = null; };
 
 const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
 const closePopup = () => { showPopup.value = false; };
