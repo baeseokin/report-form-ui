@@ -52,12 +52,14 @@
                       :src="getSignatureUrl(line.approver_role)"
                       class="signature-img"
                     />
-                    <!-- ✅ 상태 뱃지 (PDF/프린트 시 숨김) -->
+                    <!-- ✅ 상태 뱃지: 메시지 있음/없음 유형 구분, 메시지 있으면 호버 시 말풍선 -->
                     <span
-                      class="status-badge no-print inline-flex items-center justify-center mt-2"
                       v-if="getStatus(line.approver_role)"
-                      @mouseenter="visibleCommentRole = line.approver_role"
-                      @mouseleave="visibleCommentRole = null"
+                      class="status-badge no-print inline-flex items-center justify-center mt-2 relative"
+                      :class="{ 'status-badge-has-comment': getComment(line.approver_role) }"
+                      :title="getComment(line.approver_role) ? '코멘트 보기' : undefined"
+                      @mousemove="getComment(line.approver_role) ? onCommentEmojiMouse($event, line.approver_role) : null"
+                      @mouseleave="onCommentEmojiLeave()"
                     >
                       <img
                         v-if="getStatus(line.approver_role) === '기안'"
@@ -77,14 +79,12 @@
                         alt="Rejected"
                         class="h-6 w-auto"
                       />
-                    
-                      <!-- ✅ 말풍선 (status-badge와 함께 no-print로 숨김) -->
-                      <div
-                        v-if="visibleCommentRole === line.approver_role && getComment(line.approver_role)"
-                        class="absolute left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-50"
-                      >
-                        💬 {{ getComment(line.approver_role) }}
-                      </div>
+                      <!-- 메시지 있는 유형: 우측 상단에 말풍선 표시 -->
+                      <span
+                        v-if="getComment(line.approver_role)"
+                        class="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] leading-none"
+                        aria-hidden="true"
+                      >💬</span>
                     </span>
                     <!-- ✅ 결재 시간 (PDF/프린트 시 숨김) -->
                     <small v-if="getApprovedAt(line.approver_role)" class="no-print text-gray-500 text-[10px] mt-1">
@@ -117,6 +117,14 @@
           </table>
         </div>
 
+        <!-- ✅ 말풍선: 뱃지 마우스 오버 시 해당 뱃지 바로 옆에 표시 -->
+        <div
+          v-if="visibleCommentRole && getComment(visibleCommentRole)"
+          class="no-print fixed bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-[100] whitespace-normal pointer-events-none"
+          :style="{ left: `${commentBubbleX}px`, top: `${commentBubbleY}px`, transform: 'translateY(-50%)' }"
+        >
+          💬 {{ getComment(visibleCommentRole) }}
+        </div>
 
         <!-- ✅ 부서명 + 관/항 -->
         <table class="w-full border text-center mb-4">
@@ -366,7 +374,17 @@ const showModal = ref(false);
 const approvalHistory = ref(props.report?.approvalHistory || []);
 const approvalLines = ref(props.report?.approvalLine || []);
 const visibleCommentRole = ref(null);
+const commentBubbleX = ref(0);
+const commentBubbleY = ref(0);
 const popupMode = ref(null);
+
+const onCommentEmojiMouse = (e, role) => {
+  visibleCommentRole.value = role;
+  const rect = e.currentTarget.getBoundingClientRect();
+  commentBubbleX.value = rect.right + 8;
+  commentBubbleY.value = rect.top + rect.height / 2;
+};
+const onCommentEmojiLeave = () => { visibleCommentRole.value = null; };
 
 const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
 const closePopup = () => { showPopup.value = false; };
@@ -861,6 +879,11 @@ table td, table th {
   min-width: calc(100% / var(--left-col-count, 4));
   max-width: calc(100% / var(--left-col-count, 4));
   box-sizing: border-box;
+}
+
+/* ✅ 상태 뱃지: 메시지 있는 유형 (코멘트 있으면 호버 시 말풍선) */
+.report-content .status-badge-has-comment {
+  cursor: pointer;
 }
 
 /* ✅ 프린트 시: 서명란에서 상태 뱃지·말풍선·결재시간 숨김, 서명 행 높이 축소 */
