@@ -775,7 +775,7 @@ body {
 .report-content table,
 .report-content table th,
 .report-content table td {
-  border-color: #d1d5db !important; /* gray-300 */
+  border-color: #6b7280 !important; /* gray-500 */
 }
 table td, table th {
   height: 3rem;
@@ -792,9 +792,13 @@ table td, table th {
   border-radius: 8px;
 }
 
-/* ✅ 지출내역 테이블: 지출내역 열 가로 폭 확대 */
+/* ✅ 지출내역 테이블: 지출내역 열 가로 폭 확대, 폰트 한 단계 축소 */
 .report-content table.expense-table {
   table-layout: fixed;
+}
+.report-content table.expense-table th,
+.report-content table.expense-table td {
+  font-size: 0.875em; /* 14pt 기준 한 단계 축소 */
 }
 .report-content table.expense-table th.expense-col-detail,
 .report-content table.expense-table td.expense-col-detail {
