@@ -116,13 +116,15 @@ const props = defineProps([
   "items",
   "aliasName",
   "attachedFiles",
+  "selectedDept",
   "selectedGwan",
   "selectedHang",
 ]);
 
 const emits = defineEmits(["update:comment", "prev", "generate"]);
 const { user } = storeToRefs(useUserStore());
-const userDept = computed(() => user.value?.deptName || "");
+// 재정부 등이 다른 부서를 선택한 경우 선택한 부서 사용, 아니면 로그인 사용자 부서
+const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
 const router = useRouter();
 
 // ✅ 계정명 표시를 위한 데이터 조회
@@ -319,11 +321,11 @@ const showPopup = ref(false);
 
 const sendApprovalRequest = async () => {
   try {
-    // 해당 부서 결재선 존재 여부 확인
-    const deptName = userDept.value;
-    if (deptName) {
+    // 선택한 부서 기준으로 결재선 존재 여부 확인 (재정부 등이 다른 부서 선택 시 해당 부서 결재선 사용)
+    const deptNameForLines = (props.selectedDept && props.selectedDept.trim()) ? props.selectedDept.trim() : userDept.value;
+    if (deptNameForLines) {
       const lineRes = await axios.get("/api/approval-lines", {
-        params: { deptName },
+        params: { deptName: deptNameForLines },
         withCredentials: true,
       });
       const lines = Array.isArray(lineRes.data) ? lineRes.data : [];
@@ -344,9 +346,12 @@ const sendApprovalRequest = async () => {
       }));
     };
 
+    // API에는 반드시 선택한 부서명 사용 (재정부 등이 다른 부서 선택 시)
+    const payloadDeptName = (props.selectedDept && props.selectedDept.trim()) ? props.selectedDept.trim() : userDept.value;
     const data = {
       documentType: props.documentType,
-      deptName: userDept.value,
+      deptName: payloadDeptName,
+      dept_name: payloadDeptName,
       author: props.author,
       userId: user.value.userId,
       date: props.date,
@@ -358,7 +363,10 @@ const sendApprovalRequest = async () => {
       selectedHang: props.selectedHang,
     };
 
-    const res = await axios.post("/api/approval", data, { withCredentials: true });
+    const res = await axios.post("/api/approval", data, {
+      withCredentials: true,
+      headers: { "Content-Type": "application/json" },
+    });
     if (!res.data.success) throw new Error("서버 저장 실패");
     const requestId = res.data.id;
 

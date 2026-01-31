@@ -59,6 +59,7 @@
       <component
         :is="isMobile ? ConfirmTabMobile : ConfirmTab"
         v-if="activeTab === '최종 확인'"
+        :key="'confirm-' + (selectedDept || '')"
         :document-type="documentType"
         :selected-dept="selectedDept"
         :author="author"
@@ -113,6 +114,8 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
 import ModalAlert from "./ModalAlert.vue";
 
 // 📌 PC 전용 컴포넌트
@@ -158,10 +161,15 @@ const report = ref(null);
 const attachedFiles = ref([]);
 
 const route = useRoute();
+const { user } = storeToRefs(useUserStore());
 
 // ✅ 부서 + 계정과목 데이터 불러오기
 onMounted(async () => {
   let deptMap = {};
+  // ✅ 새 보고서일 때 부서명을 로그인 사용자 부서로 초기화 (최종확인 표시/API 전달 일치)
+  if (!route.params.id && !selectedDept.value && user.value?.deptName) {
+    selectedDept.value = user.value.deptName;
+  }
   try {
     const deptRes = await axios.get("/api/departments");
     const depts = deptRes.data;
