@@ -68,7 +68,7 @@
 
       <!-- 화면 제목 + HELP 버튼 -->
       <div v-if="helpContent" class="flex items-center gap-3 mb-4">
-        <h1 class="text-xl font-bold text-gray-800">{{ pageTitle }}</h1>
+        <h1 class="text-2xl font-bold text-gray-800">{{ pageTitle }}</h1>
         <HelpButton :content="helpContent" variant="amber" />
       </div>
 

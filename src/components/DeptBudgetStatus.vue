@@ -1,7 +1,5 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-2xl font-bold text-purple-700 mb-6">📊 부서 예산집행 현황</h2>
-
     <!-- 부서 & 기준일자 선택 -->
     <div class="mb-3 flex flex-wrap items-end gap-6">
       <div>

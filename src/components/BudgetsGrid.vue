@@ -1,7 +1,5 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-2xl font-bold text-purple-700 mb-6">💰 예산 관리</h2>
-
     <!-- 총 예산 표시 -->
     <div class="mb-6 p-4 bg-purple-50 border border-purple-300 rounded text-xl font-bold text-purple-800 shadow-sm">
       📊 총 예산: {{ formatAmount(totalBudget) }} 원

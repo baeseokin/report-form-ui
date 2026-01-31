@@ -2,11 +2,7 @@
   <div class="font-nanum text-gray-800">
     <!-- Header -->
     <div class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-      <div class="px-4 py-3 flex items-center justify-between gap-3">
-        <div class="min-w-0">
-          <p class="text-xs text-gray-500">조직 트리 · 코드 관리</p>
-          <h1 class="text-lg font-bold text-indigo-700 truncate">🏢 부서 관리</h1>
-        </div>
+      <div class="px-4 py-3 flex items-center justify-end gap-3">
         <button
           class="shrink-0 px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
           @click="resetForm"

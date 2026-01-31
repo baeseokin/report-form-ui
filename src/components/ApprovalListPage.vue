@@ -1,6 +1,5 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-2xl font-bold text-purple-700 mb-6">📑 내 결재목록 조회</h2>
 
     <!-- ✅ 검색조건 -->
     <div class="p-4 bg-gray-50 rounded-lg shadow-inner mb-6 flex flex-wrap gap-6 items-end">

@@ -1,9 +1,5 @@
 <template>
   <div class="p-6 font-nanum h-[calc(100vh-4rem)] flex flex-col">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-purple-700">📊 계정 과목 관리</h2>
-    </div>
-
     <div class="flex gap-4 flex-1 overflow-hidden">
       <!-- 🟢 좌측: 계정과목 마스터 관리 -->
       <div class="flex-1 flex flex-col bg-white border rounded-lg shadow-sm min-w-0">

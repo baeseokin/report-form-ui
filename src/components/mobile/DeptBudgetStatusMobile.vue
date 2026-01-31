@@ -1,7 +1,5 @@
 <template>
   <div class="p-4 font-nanum space-y-4">
-    <h2 class="text-lg font-bold text-purple-700">📊 부서 예산집행 현황</h2>
-
     <!-- 검색 영역 -->
     <div class="space-y-3 bg-white rounded-xl shadow p-3">
       <!-- 부서 선택 -->

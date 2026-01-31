@@ -2,9 +2,9 @@
   <div class="flex h-screen font-nanum">
     <!-- 좌측: 검색 & 목록 -->
     <div class="w-1/2 border-r overflow-y-auto bg-gray-50 flex flex-col">
-      <!-- ✅ 화면 제목 / 신규 버튼 -->
+      <!-- ✅ 신규 버튼 -->
       <div class="flex items-center justify-between p-4 border-b bg-white">
-        <h2 class="text-2xl font-bold text-purple-700">👥 사용자 관리</h2>
+        <span></span>
         <button
           @click="newUser"
           class="px-3 py-2 text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow hover:from-emerald-600 hover:to-teal-700 transition"

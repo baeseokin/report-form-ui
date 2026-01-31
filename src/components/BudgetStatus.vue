@@ -1,7 +1,5 @@
 <template>
   <div class="p-6 font-nanum">
-    <h2 class="text-2xl font-bold text-purple-700 mb-6">🏛 예산집행 현황</h2>
-
     <!-- ✅ 검색조건 -->
     <div class="flex flex-wrap gap-4 mb-6 items-end">
       <!-- 기준년도 -->

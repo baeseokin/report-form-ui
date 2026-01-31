@@ -1,7 +1,5 @@
 <template>
   <div class="p-4 font-nanum bg-gray-50 min-h-screen">
-    <h2 class="text-lg font-bold text-gray-800 mb-4">✅ 내결재목록 조회</h2>  
-
     <!-- ✅ [재정부 전용] 조회범위 선택 -->
     <div v-if="userDeptName === '재정부'" class="flex justify-center mb-3 space-x-4 bg-white p-2 rounded border shadow-sm">
       <label class="flex items-center space-x-1">

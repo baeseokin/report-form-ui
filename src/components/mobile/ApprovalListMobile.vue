@@ -1,7 +1,5 @@
 <template>
   <div class="p-4 font-nanum bg-gray-50 min-h-screen">
-    <h2 class="text-lg font-bold text-gray-800 mb-4">📑 청구목록 조회</h2>
-
     <!-- ✅ 검색조건 -->
     <div class="space-y-3 mb-6">
       <!-- 부서명 -->

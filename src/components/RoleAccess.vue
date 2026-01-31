@@ -1,8 +1,5 @@
 <template>
   <div class="p-6 font-nanum bg-white shadow rounded-lg">
-    <!-- ✅ 화면 제목 -->
-    <h2 class="text-2xl font-bold text-purple-700 mb-6">🔑 권한 관리</h2>
-
     <!-- 역할 선택 -->
     <div class="mb-6">
       <label class="block font-semibold mb-2">역할 선택</label>

@@ -1,10 +1,6 @@
 <template>
   <div class="font-nanum text-gray-800 space-y-6">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p class="text-sm text-gray-500">조직 트리 · 코드 관리</p>
-        <h1 class="text-2xl font-bold text-indigo-700">🏢 부서 관리</h1>
-      </div>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
       <div class="flex flex-wrap gap-2">
         <button
           class="px-3 py-2 text-sm rounded-lg bg-emerald-500 text-white shadow hover:bg-emerald-600"
