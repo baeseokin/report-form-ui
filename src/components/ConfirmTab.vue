@@ -323,6 +323,20 @@ const showPopup = ref(false);
 /* ✅ 결재요청 */
 const sendApprovalRequest = async () => {
   try {
+    // 해당 부서 결재선 존재 여부 확인
+    const deptName = userDept.value;
+    if (deptName) {
+      const lineRes = await axios.get("/api/approval-lines", {
+        params: { deptName },
+        withCredentials: true,
+      });
+      const lines = Array.isArray(lineRes.data) ? lineRes.data : [];
+      if (lines.length === 0) {
+        alert("해당 부서의 결재선 정보가 없습니다. 등록 후 진행하세요.");
+        return;
+      }
+    }
+
     const normalizeItems = (items) => {
       return (items || []).map((i) => ({
         gwan: i.gwan,
