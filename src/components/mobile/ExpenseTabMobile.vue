@@ -1,22 +1,6 @@
 <template>
   <div class="space-y-4 font-nanum px-2">
     <h2 class="text-lg font-bold text-gray-800">💸 지출내역 입력</h2>
-    <!-- ✅ [재정부 전용] 부서 선택 -->
-    <div v-if="isFinanceDept" class="bg-white border rounded-xl shadow-sm p-3 space-y-3">
-      <div class="min-w-0">
-        <label class="block text-xs font-semibold mb-1">청구 부서 (재정부)</label>
-        <select
-          :value="selectedDept"
-          @change="$emit('update:selectedDept', $event.target.value)"
-          class="w-full rounded border px-2 py-1 text-sm"
-        >
-          <option disabled value="">부서 선택</option>
-          <option v-for="d in departments" :key="d.id" :value="d.dept_name">
-            {{ d.dept_name }}
-          </option>
-        </select>
-      </div>
-    </div>
 
     <!-- ✅ 관/항 선택 (타이틀 바로 아래) -->
     <div class="bg-white border rounded-xl shadow-sm p-3 space-y-3">

@@ -323,7 +323,9 @@ export default {
     async fetchDepartments() {
       try {
         const res = await axios.get("/api/departments");
-        this.departments = res.data.map(d => ({ id: d.id, name: d.dept_name }));
+        this.departments = res.data
+          .map(d => ({ id: d.id, name: d.dept_name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
       } catch (err) {
         console.error("부서 데이터 불러오기 실패:", err);
       }

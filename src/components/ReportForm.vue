@@ -109,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 import ModalAlert from "./ModalAlert.vue";
@@ -285,6 +285,12 @@ onMounted(async () => {
 const totalAmount = computed(() =>
   items.value.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
+
+// ✅ 부서 변경 시: 관/항 선택 초기화 → 지출내역 탭에서 새 부서 계정으로 다시 선택
+watch(selectedDept, () => {
+  selectedGwan.value = "";
+  selectedHang.value = "";
+});
 
 // ✅ ConfirmTab 표시용 (코드 -> 이름 변환)
 const currentCategories = computed(() => deptData.value[selectedDept.value] || []);
