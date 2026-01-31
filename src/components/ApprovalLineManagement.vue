@@ -1,12 +1,8 @@
 <template>
   <div class="font-nanum text-gray-800 space-y-6">
     <!-- Header -->
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p class="text-sm text-gray-500">부서별 결재 순서를 손쉽게 관리하세요</p>
-        <h1 class="text-2xl font-bold text-indigo-700">📄 결재선 관리</h1>
-      </div>
-            <div class="flex flex-wrap gap-2">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+      <div class="flex flex-wrap gap-2">
         <button
           class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-50"
           :disabled="!selectedDept"
@@ -82,7 +78,6 @@
             <h2 class="text-xl font-semibold">
               {{ selectedDept ? `${selectedDept} 결재선` : '부서를 먼저 선택하세요' }}
             </h2>
-            <p class="text-sm text-gray-500">순서를 드래그 대신 버튼으로 조정할 수 있습니다.</p>
           </div>
         </div>
         <div
