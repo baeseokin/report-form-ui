@@ -254,7 +254,7 @@ const handleNext = () => {
     showBlockAlert.value = true;
     return; // 진행 중단
   }  
-  if (totalAmount.value <= 0) {
+  if (totalAmount.value === 0) {
     blockAlertMessage.value = "지출항목을 입력해야 다음으로 이동할 수 있습니다.";
     showBlockAlert.value = true;
     return;

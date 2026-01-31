@@ -332,7 +332,7 @@ const isExpenseTabBlocked = (nextIdx) => {
   return (
     currentIdx === expenseIdx &&
     nextIdx > currentIdx &&
-    totalAmount.value <= 0
+    totalAmount.value === 0
   );
 };
 
