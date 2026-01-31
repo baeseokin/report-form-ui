@@ -22,8 +22,11 @@
 
         <!-- ✅ 결재 서명란 (조회 전용) -->
         <div class="flex justify-between mb-6">
-          <!-- 좌측 결재란: approval_line 기준 -->
-          <table class="w-2/5 border text-center table-fixed approval-table">
+          <!-- 좌측 결재란: 결재선 개수만큼 td, 각 td 폭(11% of container) -->
+          <table
+            class="border text-center table-fixed approval-table approval-table-left"
+            :style="{ '--left-col-count': approvalLines.length || 4 }"
+          >
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th
@@ -93,8 +96,8 @@
             </tbody>
           </table>
 
-          <!-- 오른쪽 결재란 (기존 유지) -->
-          <table class="w-1/2 border text-center table-fixed approval-table">
+          <!-- 오른쪽 결재란 -->
+          <table class="w-2/5 border text-center table-fixed approval-table approval-table-right">
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th class="border w-1/4">담당</th>
@@ -380,17 +383,28 @@ const handleApproved = async () => { await refreshApprovalData(); showPopup.valu
 const handleModalClose = () => { showModal.value = false; emit("close"); };
 
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
-const getSignature = (role) => [...approvalHistory.value].reverse().find(h => h.approver_role === role)?.signature_path || null;
-const getComment = (role) => [...approvalHistory.value].reverse().find(h => h.approver_role === role)?.comment || null;
+
+// ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
+const APPLICANT_ROLES = ["재정부", "작성자", "회계"];
+const getHistoryRecord = (role) => {
+  const history = [...approvalHistory.value].reverse();
+  const firstLineRole = approvalLines.value[0]?.approver_role;
+  return history.find((h) => {
+    if (h.approver_role === role) return true;
+    if (firstLineRole === role && APPLICANT_ROLES.includes(h.approver_role)) return true;
+    return false;
+  }) || null;
+};
+const getSignature = (role) => getHistoryRecord(role)?.signature_path || null;
+const getComment = (role) => getHistoryRecord(role)?.comment || null;
 const getSignatureUrl = (role) => {
   const p = getSignature(role);
   if (!p) return "";
-  // 이미 인코딩된 값이 와도 안전하게 재인코딩
   let rel = p;
   try { rel = decodeURIComponent(p); } catch {}
   return `/api/files/${encodeURIComponent(rel)}`;
 };
-const getApprovedAt = (role) => [...approvalHistory.value].reverse().find(h => h.approver_role === role)?.approved_at || null;
+const getApprovedAt = (role) => getHistoryRecord(role)?.approved_at || null;
 const formatDateTime = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -405,11 +419,11 @@ const formatDateTime = (dateStr) => {
 };
 
 const getStatus = (role) => {
-  const record = [...approvalHistory.value].reverse().find(h => h.approver_role === role);
+  const record = getHistoryRecord(role);
   if (!record) return null;
 
-  // ✅ 결재 이력에 있는 "회계" → "기안"
-  if (record.approver_role === "회계") return "기안";
+  // ✅ 기안자 역할(재정부/작성자/회계) → "기안" 표시
+  if (APPLICANT_ROLES.includes(record.approver_role)) return "기안";
 
   return record.status || null;
 };
@@ -552,7 +566,19 @@ const generatePDF = async () => {
     .report-content table.approval-table tbody tr.sign-row td {
       height: ${SIGN_ROW_PX_PDF}px !important;
       min-height: ${SIGN_ROW_PX_PDF}px !important;
-    }   
+    }
+    /* ✅ 좌측 결재란: 열 개수에 따라 td 폭 = 우측과 동일 */
+    .report-content table.approval-table-left {
+      width: calc(var(--left-col-count, 4) * 11%);
+      min-width: calc(var(--left-col-count, 4) * 11%);
+    }
+    .report-content table.approval-table-left th,
+    .report-content table.approval-table-left td {
+      width: calc(100% / var(--left-col-count, 4));
+      min-width: calc(100% / var(--left-col-count, 4));
+      max-width: calc(100% / var(--left-col-count, 4));
+      box-sizing: border-box;
+    }
 
     /* 1단 래퍼: 셀과 동일 높이로 고정 */
     .report-content .vc {
@@ -822,6 +848,19 @@ table td, table th {
 .report-content table.expense-table th:not(.expense-col-detail),
 .report-content table.expense-table td:not(.expense-col-detail) {
   width: auto;
+}
+
+/* ✅ 좌측 결재란: 열 개수에 따라 테이블 너비 = N×11%, 각 td = 11% of container */
+.report-content table.approval-table-left {
+  width: calc(var(--left-col-count, 4) * 11%);
+  min-width: calc(var(--left-col-count, 4) * 11%);
+}
+.report-content table.approval-table-left th,
+.report-content table.approval-table-left td {
+  width: calc(100% / var(--left-col-count, 4));
+  min-width: calc(100% / var(--left-col-count, 4));
+  max-width: calc(100% / var(--left-col-count, 4));
+  box-sizing: border-box;
 }
 
 /* ✅ 프린트 시: 서명란에서 상태 뱃지·말풍선·결재시간 숨김, 서명 행 높이 축소 */
