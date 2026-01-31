@@ -10,14 +10,17 @@
     >
       <h2 class="text-2xl font-bold mb-8">📑 메뉴</h2>
 
-      <nav class="flex-1 space-y-4">
+      <nav class="flex-1 space-y-1">
         <!-- ✅ 로그인 사용자만 메뉴 표시 -->
         <template v-if="user">
           <router-link
             v-for="m in allowedMenus"
             :key="m.path"
             :to="m.path"
-            class="block hover:bg-gray-700 px-3 py-2 rounded"
+            :class="[
+              'block px-3 py-2 rounded transition-colors',
+              isMenuActive(m) ? 'bg-indigo-600 text-white font-medium' : 'hover:bg-gray-700'
+            ]"
             @click="closeSidebar"
           >
             {{ m.icon }} {{ m.label }}
@@ -70,14 +73,22 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
 import axios from "axios";
 const showLogoutTimer = true  //자동로그인이 안될 경우에 true 로 변경해서 확인
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
+
+// ✅ 현재 경로와 메뉴가 일치하면 선택 상태
+function isMenuActive(m) {
+  if (route.path === m.path) return true;
+  if (m.path === "/reportForm" && route.path.startsWith("/report")) return true;
+  return false;
+}
 
 // 프로젝트 로그아웃 로직: Pinia + 라우팅
 async function projectLogout() {
