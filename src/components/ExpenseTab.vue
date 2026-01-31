@@ -123,7 +123,7 @@
             </td>
             <!-- 금액 -->
             <td class="border p-2 text-right">
-              <input :disabled="!isSelectionReady" type="text" :value="formatCurrencyInput(item.amount)" @input="updateAmount($event, idx)" class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400" />
+              <input :disabled="!isSelectionReady" type="text" :value="amountMinusOnly[idx] ? '-' : formatCurrencyInput(item.amount)" @input="updateAmount($event, idx)" class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400" />
             </td>
           </tr>
           <!-- 합계 -->
@@ -646,16 +646,28 @@ const onSelect = (idx, level, value) => {
   emits("update:items", newItems);
 };
 
-// ✅ 금액 입력 처리
+// ✅ 금액 입력 처리 (마이너스 금액 허용)
 const formatCurrency = (value) => Number(value || 0).toLocaleString();
-const formatCurrencyInput = (value) => (value ? Number(value).toLocaleString() : "");
+const formatCurrencyInput = (value) => {
+  if (value === undefined || value === null || value === "") return "";
+  const n = Number(value);
+  return isNaN(n) ? "" : n.toLocaleString();
+};
+// (-)만 입력한 경우 표시 유지 (Vue :value가 0→"0"으로 덮어쓰는 것 방지)
+const amountMinusOnly = ref({});
 const updateAmount = (event, idx) => {
-  const rawValue = event.target.value.replace(/[^0-9]/g, "");
-  const amount = rawValue ? parseInt(rawValue, 10) : 0;
+  const str = event.target.value.replace(/\s/g, "");
+  // '0' 뒤에 (-) 입력해도 마이너스로 인식 (예: "0-", "0-5" → -5)
+  const isNegative = str.includes("-");
+  const rawValue = str.replace(/[^0-9]/g, "");
+  const amount = rawValue ? (isNegative ? -parseInt(rawValue, 10) : parseInt(rawValue, 10)) : 0;
+  // (-)만 있거나 "0" / "0-" 인 경우 입력란에 '-' 표시 유지
+  const showMinusOnly = isNegative && (rawValue === "" || rawValue === "0");
+  amountMinusOnly.value[idx] = showMinusOnly;
   const newItems = [...props.items];
   newItems[idx] = { ...newItems[idx], amount };
   emits("update:items", newItems);
-  event.target.value = formatCurrencyInput(amount);
+  event.target.value = amountMinusOnly.value[idx] ? "-" : formatCurrencyInput(amount);
 };
 
 // ✅ 행 추가/삭제
