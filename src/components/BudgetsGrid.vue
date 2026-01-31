@@ -44,7 +44,7 @@
         <button
           type="button"
           @click="fetchCategories"
-          class="px-4 py-2 bg-purple-600 text-white rounded shadow-sm hover:bg-purple-700 transition"
+          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
         >
           조회
         </button>
