@@ -44,9 +44,17 @@
         <button
           type="button"
           @click="fetchCategories"
-          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+          class="w-24 px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
         >
           조회
+        </button>
+        <button
+          type="button"
+          @click="downloadExcel"
+          class="w-24 px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow hover:from-emerald-600 hover:to-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="categoriesTree.length === 0"
+        >
+          Excel
         </button>
       </div>
     </div>
@@ -131,6 +139,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import ExcelJS from "exceljs";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
@@ -264,5 +273,138 @@ const formatAmount = (val) => {
   const num = Number(val);
   if (isNaN(num)) return "0";
   return num.toLocaleString("ko-KR", { maximumFractionDigits: 0 });
+};
+
+// 계정 경로 (루트 → 현재) 이름 배열
+const getPathNames = (category) => {
+  const list = categories.value;
+  const path = [];
+  let c = category;
+  while (c) {
+    path.unshift(c.category_name);
+    c = c.parent_id != null ? list.find((x) => x.id === c.parent_id) : null;
+  }
+  return path;
+};
+
+// Excel 다운로드: 첨부 양식과 동일 (색상·셀병합·정렬)
+const colLetter = (col) => String.fromCharCode(65 + col);
+
+const downloadExcel = async () => {
+  const leavesInOrder = categoriesTree.value.filter((c) => isLeafCategory(c.id));
+  const deptName = getDeptName(selectedDeptId.value) || "부서";
+
+  const dataRows = [];
+  let prevPath = [null, null, null, null];
+  leavesInOrder.forEach((c) => {
+    const path = getPathNames(c);
+    const p0 = path[0] ?? null;
+    const p1 = path[1] ?? null;
+    const p2 = path[2] ?? null;
+    const p3 = path[3] ?? null;
+    dataRows.push([
+      p0 !== prevPath[0] ? p0 : null,
+      p1 !== prevPath[1] ? p1 : null,
+      p2 !== prevPath[2] ? p2 : null,
+      p3 !== prevPath[3] ? p3 : null,
+      Number(budgets.value[c.category_id] ?? 0),
+      null,
+    ]);
+    prevPath = [p0, p1, p2, p3];
+  });
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("예산 일반 양식", { views: [{ state: "frozen", ySplit: 2 }] });
+
+  // A4 가로(랜드스케이프)에 맞춤
+  ws.pageSetup.paperSize = 9; // A4
+  ws.pageSetup.orientation = "landscape";
+  ws.pageSetup.fitToPage = true;
+  ws.pageSetup.fitToWidth = 1; // 가로 1페이지에 맞춤
+  ws.pageSetup.fitToHeight = 1; // 세로 1페이지에 맞춤 (행 많으면 여러 페이지)
+
+  const blackThin = { style: "thin", color: { argb: "FF000000" } };
+  const tableBorder = {
+    top: blackThin,
+    left: blackThin,
+    bottom: blackThin,
+    right: blackThin,
+  };
+
+  // 열 너비
+  ws.columns = [
+    { width: 12 },
+    { width: 14 },
+    { width: 16 },
+    { width: 16 },
+    { width: 12 },
+    { width: 20 },
+  ];
+
+  // 1행: 제목 (A1:F1 병합, 가운데, 굵게, 테두리)
+  ws.mergeCells("A1:F1");
+  const titleCell = ws.getCell(1, 1);
+  titleCell.value = `${deptName} ${year.value}년 예산`;
+  titleCell.font = { bold: true, size: 14 };
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  titleCell.border = tableBorder;
+
+  // 2행: 헤더 (노란 배경, 가운데, 굵게, 테두리)
+  const headerRow = ["관", "항", "목", "세목", "예산액", "비고"];
+  headerRow.forEach((val, col) => {
+    const cell = ws.getCell(2, col + 1);
+    cell.value = val;
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF00" } };
+    cell.font = { bold: true };
+    cell.alignment = { horizontal: "center", vertical: "middle" };
+    cell.border = tableBorder;
+  });
+
+  // 3행~: 데이터 (테두리)
+  const dataStartRow = 3;
+  dataRows.forEach((row, r) => {
+    const excelRow = dataStartRow + r;
+    row.forEach((val, col) => {
+      const cell = ws.getCell(excelRow, col + 1);
+      cell.value = val;
+      cell.border = tableBorder;
+      if (col === 4) {
+        cell.numFmt = "#,##0";
+        cell.alignment = { horizontal: "right", vertical: "middle" };
+      } else {
+        cell.alignment = { horizontal: "left", vertical: "middle" };
+      }
+    });
+  });
+
+  // 같은 값 연속 시 세로 병합 (관·항·목·세목)
+  const mergeRange = (sr, sc, er, ec) =>
+    ws.mergeCells(`${colLetter(sc)}${sr}:${colLetter(ec)}${er}`);
+  for (let col = 0; col <= 3; col++) {
+    let runStart = null;
+    const n = dataRows.length;
+    for (let r = 0; r < n; r++) {
+      if (dataRows[r][col] !== null) {
+        if (runStart !== null && r - 1 >= runStart + 1) {
+          mergeRange(dataStartRow + runStart, col, dataStartRow + r - 1, col);
+        }
+        runStart = r;
+      }
+    }
+    if (runStart !== null && n - 1 >= runStart + 1) {
+      mergeRange(dataStartRow + runStart, col, dataStartRow + n - 1, col);
+    }
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${deptName}_${year.value}예산서.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
 };
 </script>
