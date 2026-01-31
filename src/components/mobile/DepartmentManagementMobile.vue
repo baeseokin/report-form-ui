@@ -77,7 +77,7 @@
         </ul>
       </section>
 
-      <!-- Editor -->
+      <!-- 부서 상세 (세로 배열) -->
       <section class="bg-white rounded-xl shadow p-4 space-y-4">
         <div class="flex items-center justify-between">
           <h2 class="text-base font-semibold text-gray-800">
@@ -86,7 +86,7 @@
           <span v-if="selected" class="text-xs text-gray-500">선택됨</span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="space-y-4">
           <label class="block text-sm font-semibold text-gray-700">
             부서명
             <input
@@ -109,7 +109,7 @@
             </p>
           </label>
 
-          <label class="block text-sm font-semibold text-gray-700 sm:col-span-2">
+          <label class="block text-sm font-semibold text-gray-700">
             상위 부서
             <select
               v-model="editable.parent_dept_id"
@@ -127,7 +127,7 @@
             </select>
           </label>
 
-          <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 sm:col-span-2">
+          <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
             <div>
               <p class="font-semibold">생성일</p>
               <p class="mt-1 border rounded-lg px-3 py-2 bg-gray-50 truncate">{{ editable.created_at || "-" }}</p>
@@ -162,59 +162,6 @@
         >
           입력 초기화
         </button>
-      </section>
-
-      <!-- List (Cards) -->
-      <section class="bg-white rounded-xl shadow p-4">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-semibold">부서 목록</h3>
-          <p class="text-xs text-gray-500">검색 {{ filteredList.length }}건</p>
-        </div>
-
-        <div v-if="filteredList.length === 0" class="text-center text-gray-500 py-8 text-sm">
-          검색 결과가 없습니다.
-        </div>
-
-        <div v-else class="space-y-2">
-          <button
-            v-for="dept in filteredList"
-            :key="dept.id"
-            class="w-full text-left border rounded-lg p-3 transition"
-            :class="selected?.id === dept.id ? 'bg-indigo-50 border-indigo-200' : 'bg-white hover:bg-gray-50'"
-            @click="selectById(dept.id)"
-          >
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-mono px-2 py-0.5 rounded bg-gray-100 text-gray-700">
-                    {{ dept.dept_cd || "-" }}
-                  </span>
-                  <span class="font-semibold truncate">{{ dept.dept_name }}</span>
-                </div>
-                <div class="mt-1 text-xs text-gray-600">
-                  상위: {{ parentName(dept.parent_dept_id) || "-" }}
-                </div>
-              </div>
-              <span
-                v-if="selected?.id === dept.id"
-                class="shrink-0 text-[11px] px-2 py-1 rounded bg-indigo-100 text-indigo-800"
-              >
-                선택
-              </span>
-            </div>
-
-            <div class="mt-2 grid grid-cols-2 gap-2 text-[11px] text-gray-500">
-              <div>
-                <span class="font-semibold text-gray-600">생성</span>
-                <span class="ml-1">{{ dept.created_at || "-" }}</span>
-              </div>
-              <div class="text-right">
-                <span class="font-semibold text-gray-600">수정</span>
-                <span class="ml-1">{{ dept.updated_at || "-" }}</span>
-              </div>
-            </div>
-          </button>
-        </div>
       </section>
     </div>
   </div>

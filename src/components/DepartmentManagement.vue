@@ -28,7 +28,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
       <!-- 좌측: 조직 트리 -->
       <section class="bg-white rounded-xl shadow p-4 flex flex-col">
         <div class="flex items-center gap-2 mb-3">
@@ -64,16 +64,16 @@
         </div>
       </section>
 
-      <!-- 우측: 상세/목록 -->
-      <section class="bg-white rounded-xl shadow p-6 lg:col-span-2 flex flex-col overflow-hidden">
+      <!-- 우측: 부서 상세 (세로 배열) -->
+      <section class="bg-white rounded-xl shadow p-6 lg:col-span-2 flex flex-col">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold text-gray-800">
             {{ editable.isNew ? '🆕 새 부서 등록' : '📋 부서 상세' }}
           </h2>
-          <p class="text-sm text-gray-500">총 {{ departments.length }}개</p>
+          <p class="text-sm text-gray-500">총 {{ departments.length }}개 부서</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-4">
           <label class="block text-sm font-semibold text-gray-700">
             부서명
             <input
@@ -111,7 +111,7 @@
             </select>
           </label>
 
-          <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+          <div class="grid grid-cols-2 gap-3 text-sm text-gray-600">
             <div>
               <p class="font-semibold">생성일</p>
               <p class="mt-1 border rounded-lg px-3 py-2 bg-gray-50">{{ editable.created_at || '-' }}</p>
@@ -123,7 +123,7 @@
           </div>
         </div>
 
-        <div class="flex gap-2 mt-4">
+        <div class="flex gap-2 mt-6">
           <button
             class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-40"
             :disabled="!editable.dept_name"
@@ -144,44 +144,6 @@
           >
             초기화
           </button>
-        </div>
-
-        <div class="mt-6 flex-1 flex flex-col overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-lg font-semibold">부서 목록</h3>
-            <p class="text-sm text-gray-500">검색 결과 {{ filteredList.length }}건</p>
-          </div>
-          <div class="overflow-x-auto border rounded-lg">
-            <table class="w-full text-sm text-left">
-              <thead class="bg-indigo-50 text-indigo-900">
-                <tr>
-                  <th class="px-3 py-2 border">코드</th>
-                  <th class="px-3 py-2 border">부서명</th>
-                  <th class="px-3 py-2 border">상위 부서</th>
-                  <th class="px-3 py-2 border">생성일</th>
-                  <th class="px-3 py-2 border">수정일</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="dept in filteredList"
-                  :key="dept.id"
-                  class="hover:bg-indigo-50 cursor-pointer"
-                  :class="selected?.id === dept.id ? 'bg-indigo-100 font-semibold' : ''"
-                  @click="selectById(dept.id)"
-                >
-                  <td class="px-3 py-2 border font-mono">{{ dept.dept_cd || '-' }}</td>
-                  <td class="px-3 py-2 border">{{ dept.dept_name }}</td>
-                  <td class="px-3 py-2 border text-gray-700">{{ parentName(dept.parent_dept_id) || '-' }}</td>
-                  <td class="px-3 py-2 border text-gray-500">{{ dept.created_at || '-' }}</td>
-                  <td class="px-3 py-2 border text-gray-500">{{ dept.updated_at || '-' }}</td>
-                </tr>
-                <tr v-if="filteredList.length === 0">
-                  <td colspan="5" class="text-center text-gray-500 px-3 py-6">검색 결과가 없습니다.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
       </section>
     </div>

@@ -57,7 +57,7 @@
     ></div>
 
     <!-- ✅ 본문 -->
-    <main class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64">
+    <main class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64 relative">
       <!-- 햄버거 버튼 (Tablet/Mobile 전용) -->
       <button
         class="lg:hidden mb-4 px-3 py-2 bg-purple-600 text-white rounded"
@@ -65,6 +65,12 @@
       >
         ☰ 메뉴
       </button>
+
+      <!-- 화면 제목 + HELP 버튼 -->
+      <div v-if="helpContent" class="flex items-center gap-3 mb-4">
+        <h1 class="text-xl font-bold text-gray-800">{{ pageTitle }}</h1>
+        <HelpButton :content="helpContent" variant="amber" />
+      </div>
 
       <router-view />
     </main>
@@ -76,6 +82,8 @@ import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
+import { getHelpForPath } from "@/helpContent";
+import HelpButton from "@/components/HelpButton.vue";
 import axios from "axios";
 const showLogoutTimer = true  //자동로그인이 안될 경우에 true 로 변경해서 확인
 
@@ -129,6 +137,18 @@ const mmss = computed(() => {
 const timeVisible = computed(() => remainingMs.value >= 0);
 
 const user = computed(() => userStore.user);
+
+// ✅ 현재 화면 도움말 (경로별 용도 + 사용 순서)
+const helpContent = computed(() => getHelpForPath(route.path));
+
+// ✅ 현재 화면 제목 (라우트 meta 또는 경로 기반)
+const pageTitle = computed(() => {
+  const meta = route.meta?.menuName;
+  if (meta) return meta;
+  if (route.path === "/login") return "로그인";
+  if (route.path === "/email-test") return "이메일 테스트";
+  return "";
+});
 
 // ✅ 전체 메뉴 정의
 const allMenus = [
