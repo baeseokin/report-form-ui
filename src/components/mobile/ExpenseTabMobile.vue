@@ -341,15 +341,18 @@ const fetchCategories = async () => {
 
     // (3) 매핑된 ID 추출 및 부모 노드 추적
     const mappedIds = new Set(mappedCategories.map(c => c.id));
+    const currentDeptIdSet = new Set(mappedCategories.map(c => c.id));
 
-    // ✅ [Fix] items에 사용된 계정과목도 강제로 포함 (기존 데이터 표시 보장)
+    // ✅ items에 사용된 계정과목 중 **현재 부서** 소속만 포함 (부서 변경 시 이전 부서 관/항이 섞이지 않도록)
     if (props.items) {
       props.items.forEach(item => {
         [item.gwan, item.hang, item.mok, item.semok].forEach(code => {
-           if (code) {
-             const found = allCategories.find(c => c.category_id === code);
-             if (found) mappedIds.add(found.id);
-           }
+          if (code) {
+            const found = allCategories.find(c => c.category_id === code);
+            if (found && currentDeptIdSet.has(found.id)) {
+              mappedIds.add(found.id);
+            }
+          }
         });
       });
     }

@@ -38,6 +38,7 @@
       <component
         :is="isMobile ? ExpenseTabMobile : ExpenseTab"
         v-if="activeTab === '지출내역'"
+        :key="selectedDept || 'expense'"
         v-model:items="items"
         v-model:selected-gwan="selectedGwan"
         v-model:selected-hang="selectedHang"        
