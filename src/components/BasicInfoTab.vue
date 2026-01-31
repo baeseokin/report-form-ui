@@ -43,20 +43,26 @@
       </div>
 
       <!-- 작성자 -->
-      <input
-        type="text"
-        :value="author"
-        disabled
-        class="w-full mt-1 p-2 border rounded bg-gray-100 text-gray-600 cursor-not-allowed"
-      />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">작성자</label>
+        <input
+          type="text"
+          :value="author"
+          disabled
+          class="w-full border p-3 rounded-lg shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+        />
+      </div>
 
       <!-- 제출일자 -->
-      <input
-        type="date"
-        :value="date"
-        @input="$emit('update:date', $event.target.value)"
-        class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
-      />
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">제출일자</label>
+        <input
+          type="date"
+          :value="date"
+          @input="$emit('update:date', $event.target.value)"
+          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
     </div>
 
     <!-- ✅ 청구요청 별칭 입력란 -->
