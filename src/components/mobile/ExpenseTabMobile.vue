@@ -773,6 +773,21 @@ const confirmProceed = () => {
 
 const digitsOnly = (v) => (v ?? "").toString().replace(/[^\d]/g, "");
 
+// ✅ 금액 문자열에서 선행 마이너스 허용 후 숫자만 추출, 부호 반영해 숫자로 파싱
+const parseAmountWithSign = (raw) => {
+  const str = (raw ?? "").toString().trim();
+  const isNegative = str.startsWith("-");
+  const digits = str.replace(/[^0-9]/g, "");
+  if (digits === "") return 0;
+  return isNegative ? -parseInt(digits, 10) : parseInt(digits, 10);
+};
+
+// ✅ 포커스 시 표시할 금액 문자열 (마이너스 포함)
+const amountInputDisplay = (amt) => {
+  if (amt == null || amt === 0) return "";
+  return amt.toString();
+};
+
 const formatKRW = (n) => {
   if (n === null || n === undefined || n === "") return "";
   return "₩" + Number(n).toLocaleString("ko-KR");
@@ -789,8 +804,8 @@ const onAmountFocus = (uuid) => {
   newItems[idx] = {
     ...newItems[idx],
     amountFocused: true,
-    // ✅ 0이면 빈 값으로 시작
-    amountInput: amt && amt > 0 ? amt.toString() : ""
+    // ✅ 0이면 빈 값, 마이너스 금액 포함
+    amountInput: amountInputDisplay(amt)
   };
 
   emits("update:items", newItems);
@@ -798,7 +813,12 @@ const onAmountFocus = (uuid) => {
 
 
 const onAmountInput = (uuid, raw) => {
-  const s = digitsOnly(raw);
+  // ✅ 선행 (-) 허용, 나머지 숫자만
+  const str = (raw ?? "").toString();
+  const isNegative = str.trim().startsWith("-");
+  const digits = str.replace(/[^0-9]/g, "");
+  const amountInput = digits === "" ? (isNegative ? "-" : "") : (isNegative ? "-" + digits : digits);
+  const amount = parseAmountWithSign(amountInput);
 
   const newItems = [...(props.items || [])];
   const idx = newItems.findIndex(x => x.uuid === uuid);
@@ -806,8 +826,8 @@ const onAmountInput = (uuid, raw) => {
 
   newItems[idx] = {
     ...newItems[idx],
-    amountInput: s,
-    amount: s === "" ? null : parseInt(s, 10)
+    amountInput,
+    amount
   };
 
   emits("update:items", newItems);
@@ -818,13 +838,12 @@ const onAmountBlur = (uuid) => {
   const idx = newItems.findIndex(x => x.uuid === uuid);
   if (idx < 0) return;
 
-  const s = digitsOnly(newItems[idx].amountInput);
-  const n = s === "" ? 0 : parseInt(s, 10);
+  const n = parseAmountWithSign(newItems[idx].amountInput);
 
   newItems[idx] = {
     ...newItems[idx],
     amountFocused: false,
-    amountInput: s,
+    amountInput: "",
     amount: n
   };
 
