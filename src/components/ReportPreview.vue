@@ -771,6 +771,12 @@ body {
 .report-content { font-size: 14pt; }
 .title-lg { font-size: 20pt; font-weight: 800; }
 .title-md { font-size: 16pt; font-weight: 700; }
+/* ✅ 보고서 테이블 선색: 셀 배경(보라/파랑)에서도 잘 보이도록 옅게 */
+.report-content table,
+.report-content table th,
+.report-content table td {
+  border-color: #d1d5db !important; /* gray-300 */
+}
 table td, table th {
   height: 3rem;
   vertical-align: middle !important;
