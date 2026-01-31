@@ -8,7 +8,6 @@
         <label class="font-semibold text-gray-700">부서 선택</label>
         <select
           v-model="selectedDeptId"
-          @change="fetchData"
           class="ml-2 border rounded p-2 shadow-sm disabled:bg-gray-100 disabled:text-gray-500"
           :disabled="!canChangeDept"
         >
@@ -23,21 +22,28 @@
         <input
           type="date"
           v-model="baseDate"
-          @change="fetchData"
           class="ml-2 border rounded p-2 shadow-sm"
         />
       </div>
 
-      <div>
-        <label class="font-semibold text-gray-700">회계연도</label>
-        <input
-          type="number"
-          v-model="year"
-          min="2000"
-          max="2100"
-          @change="fetchData"
-          class="ml-2 border rounded p-2 w-28 shadow-sm"
-        />
+      <div class="flex items-end gap-6">
+        <div>
+          <label class="font-semibold text-gray-700">회계연도</label>
+          <input
+            type="number"
+            v-model="year"
+            min="2000"
+            max="2100"
+            class="ml-2 border rounded p-2 w-28 shadow-sm"
+          />
+        </div>
+        <button
+          type="button"
+          @click="fetchData"
+          class="px-4 py-2 bg-purple-600 text-white rounded shadow-sm hover:bg-purple-700 transition"
+        >
+          조회
+        </button>
       </div>
     </div>
 
