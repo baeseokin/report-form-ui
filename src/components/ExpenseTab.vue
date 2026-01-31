@@ -4,21 +4,6 @@
 
     <div class="text-sm text-gray-600">☞ 관/항을 선택하면 해당 범위 기준으로 예산/지출/잔액이 계산되고, 아래에서 목부터 입력할 수 있습니다.</div>
 
-    <!-- ✅ [재정부 전용] 부서 선택 -->
-    <div v-if="isFinanceDept" class="bg-white border rounded-xl shadow-sm p-4">
-      <div class="text-sm font-semibold text-gray-800 mb-3">청구 부서 선택 (재정부)</div>
-      <select
-        :value="selectedDept"
-        @change="$emit('update:selectedDept', $event.target.value)"
-        class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-      >
-        <option disabled value="">부서 선택</option>
-        <option v-for="d in departments" :key="d.id" :value="d.dept_name">
-          {{ d.dept_name }}
-        </option>
-      </select>
-    </div>
-
     <!-- ✅ 상단: 관/항 선택 (입력 테이블에서는 관/항 컬럼 숨김) -->
     <div class="bg-white border rounded-xl shadow-sm p-4">
       <div class="flex items-center justify-between mb-3">
@@ -486,22 +471,22 @@ watch(
   { immediate: true }
 );
 
-// ✅ 부서 변경 시: 선택값/합계 초기화
+// ✅ 부서 변경 시: 계정 목록·선택값·합계 즉시 초기화 (이전 부서 관/항이 남지 않도록)
 watch(userDept, async (newDept, prevDept) => {
-  if (!newDept) return;
   const deptChanged = prevDept && newDept !== prevDept;
   if (deptChanged) {
+    categories.value = [];
     selectedGwan.value = "";
     selectedHang.value = "";
     totalBudget.value = 0;
     serverExpense.value = 0;
     totalExpense.value = 0;
   }
+  if (!newDept) return;
 
   if (isSelectionReady.value) {
     fetchSummaryBySelection();
   }
-
 }, { immediate: true });
 
 
