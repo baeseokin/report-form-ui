@@ -49,9 +49,9 @@
                       :src="getSignatureUrl(line.approver_role)"
                       class="signature-img"
                     />
-                    <!-- ✅ 상태 뱃지 -->
+                    <!-- ✅ 상태 뱃지 (PDF/프린트 시 숨김) -->
                     <span
-                      class="status-badge inline-flex items-center justify-center mt-2"
+                      class="status-badge no-print inline-flex items-center justify-center mt-2"
                       v-if="getStatus(line.approver_role)"
                       @mouseenter="visibleCommentRole = line.approver_role"
                       @mouseleave="visibleCommentRole = null"
@@ -75,7 +75,7 @@
                         class="h-6 w-auto"
                       />
                     
-                      <!-- ✅ 말풍선 -->
+                      <!-- ✅ 말풍선 (status-badge와 함께 no-print로 숨김) -->
                       <div
                         v-if="visibleCommentRole === line.approver_role && getComment(line.approver_role)"
                         class="absolute left-1/2 transform -translate-x-1/2 mt-2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-50"
@@ -83,8 +83,8 @@
                         💬 {{ getComment(line.approver_role) }}
                       </div>
                     </span>
-                    <!-- ✅ 결재 시간 -->
-                    <small v-if="getApprovedAt(line.approver_role)" class="text-gray-500 text-[10px] mt-1">
+                    <!-- ✅ 결재 시간 (PDF/프린트 시 숨김) -->
+                    <small v-if="getApprovedAt(line.approver_role)" class="no-print text-gray-500 text-[10px] mt-1">
                       {{ formatDateTime(getApprovedAt(line.approver_role)) }}
                     </small>
                   </div>
@@ -530,10 +530,13 @@ const generatePDF = async () => {
   try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
 
   const ROW_PX = 45; // 원하는 행 높이(px): 52~60 사이로 조정해 보세요.
-  const SIGN_ROW_PX = 160; // ✅ 서명행(두번째 행) 전용 높이 (PDF 전용)
+  const SIGN_ROW_PX = 160; // ✅ 서명행 화면용 높이
+  const SIGN_ROW_PX_PDF = 100; // ✅ PDF/프린트 시 상태뱃지·말풍선 제외하여 세로 축소
 
   // ✅ 복제 DOM(캡처본)에만 적용될 PDF 전용 CSS
   const pdfOnlyCSS = `
+    /* ✅ PDF 시 상태 뱃지·말풍선·결재시간 숨김 → 서명 이미지만 표시 */
+    .report-content .no-print { display: none !important; }
     .report-content table { table-layout: fixed; border-collapse: collapse; }
     .report-content table th, .report-content table td {
       /* 테이블 자체 레이아웃 유지 */
@@ -544,11 +547,11 @@ const generatePDF = async () => {
       text-align: center;
       vertical-align: middle;      /* 백업용 */
     }
-    /* ✅ 서명란 테이블의 두번째 행만 키우기 */
+    /* ✅ 서명란 테이블: PDF 시 세로 축소(서명 이미지만) */
     .report-content table.approval-table tbody tr.sign-row th,
     .report-content table.approval-table tbody tr.sign-row td {
-      height: ${SIGN_ROW_PX}px !important;
-      min-height: ${SIGN_ROW_PX}px !important;
+      height: ${SIGN_ROW_PX_PDF}px !important;
+      min-height: ${SIGN_ROW_PX_PDF}px !important;
     }   
 
     /* 1단 래퍼: 셀과 동일 높이로 고정 */
@@ -602,20 +605,18 @@ const generatePDF = async () => {
       transform: translateY(1px) !important;
     }      
     /* =======================
-       ✅ 서명행 전용 보정
-       - 래퍼 높이/오버플로우/트랜스폼 재설정
-       - 이미지 고정폭/고정높이 무력화
+       ✅ 서명행 전용 보정 (PDF: no-print 제외 후 낮은 높이)
        ======================= */
     .report-content tr.sign-row .vc,
     .report-content tr.sign-row .vc-i {
-      height: ${SIGN_ROW_PX}px !important;
-      min-height: ${SIGN_ROW_PX}px !important;
+      height: ${SIGN_ROW_PX_PDF}px !important;
+      min-height: ${SIGN_ROW_PX_PDF}px !important;
       overflow: visible !important;
       transform: none !important;
-      white-space: normal; /* 말풍선 등 내용 있어도 안전 */
+      white-space: normal;
     }
     .report-content tr.sign-row img {
-      max-height: ${SIGN_ROW_PX - 30}px !important; /* 살짝 더 여유 */
+      max-height: ${SIGN_ROW_PX_PDF - 20}px !important;
       max-width: 80% !important;                   /* ✅ 폭 제한 (전체 셀의 80%) */
       height: auto !important;
       width: auto !important;                      /* tailwind w-20 무력화 */
@@ -637,7 +638,11 @@ const generatePDF = async () => {
       display: block;
       margin: 0 auto;
       border-radius: 8px;
-    }  
+    }
+    /* ✅ 맨 끝에 두어 .status-badge(display:inline-flex)보다 우선 적용 → 상태 뱃지/말풍선/결재시간 완전 숨김 */
+    .report-content tr.sign-row .status-badge.no-print,
+    .report-content tr.sign-row small.no-print,
+    .report-content .no-print { display: none !important; }
   `;
 
   const pdf = new jsPDF("p", "mm", "a4");
@@ -817,6 +822,18 @@ table td, table th {
 .report-content table.expense-table th:not(.expense-col-detail),
 .report-content table.expense-table td:not(.expense-col-detail) {
   width: auto;
+}
+
+/* ✅ 프린트 시: 서명란에서 상태 뱃지·말풍선·결재시간 숨김, 서명 행 높이 축소 */
+@media print {
+  .report-content .no-print {
+    display: none !important;
+  }
+  .report-content table.approval-table tbody tr.sign-row th,
+  .report-content table.approval-table tbody tr.sign-row td {
+    height: 100px !important;
+    min-height: 100px !important;
+  }
 }
 
 </style>
