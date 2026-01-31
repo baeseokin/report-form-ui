@@ -336,7 +336,12 @@ async function fetchRoles() {
 async function fetchUsers() {
   try {
     const res = await axios.get("/api/users/search");
-    userOptions.value = res.data || [];
+    const list = res.data || [];
+    userOptions.value = list.slice().sort((a, b) => {
+      const idA = String(a.userId ?? a.id ?? a.approver_user_id ?? "");
+      const idB = String(b.userId ?? b.id ?? b.approver_user_id ?? "");
+      return idA.localeCompare(idB, undefined, { numeric: true });
+    });
   } catch (err) {
     console.error(err);
     error.value = "사용자 정보를 불러오지 못했습니다.";
