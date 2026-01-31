@@ -775,7 +775,7 @@ body {
 .report-content table,
 .report-content table th,
 .report-content table td {
-  border-color: #6b7280 !important; /* gray-500 */
+  border-color: #d1d5db !important; /* gray-300 */
 }
 table td, table th {
   height: 3rem;
