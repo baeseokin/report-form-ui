@@ -36,6 +36,10 @@
               {{ step.replace(/^\d+\.\s*/, "") }}
             </li>
           </ol>
+          <template v-if="content.note">
+            <p class="font-bold text-amber-800 text-sm mb-1 mt-3">📌 참고</p>
+            <p class="text-sm leading-relaxed whitespace-pre-line">{{ content.note }}</p>
+          </template>
         </div>
       </Transition>
     </div>

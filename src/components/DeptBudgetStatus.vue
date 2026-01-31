@@ -47,12 +47,6 @@
       </div>
     </div>
 
-    <!-- 참고사항 -->
-    <div class="mb-6 text-xs text-gray-600 leading-relaxed">
-      <p>1. 선택된 부서의 예산금액과 지출금액을 확인할 수 있습니다.</p>
-      <p>2. 청구시 계정을 선택하지 않고 "직접입력"한 경우, 기타(ETC) 계정으로 지출금액이 표시됩니다.</p>
-    </div>
-
     <!-- 계정 목록 Grid -->
     <table class="w-full border text-sm mb-6">
       <thead>

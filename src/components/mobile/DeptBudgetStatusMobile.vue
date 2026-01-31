@@ -52,12 +52,6 @@
       </div>
     </div>
 
-    <!-- 참고사항 -->
-    <div class="text-[11px] text-gray-600 leading-relaxed bg-purple-50 border border-purple-100 rounded-lg p-3">
-      <p>1. 선택된 부서의 예산금액과 지출금액을 확인할 수 있습니다.</p>
-      <p>2. 청구 시 계정을 선택하지 않고 <strong>"직접입력"</strong>한 경우, 기타(ETC) 계정으로 지출금액이 표시됩니다.</p>
-    </div>
-
     <!-- 리스트 (2줄 리스트 행) -->
     <section class="space-y-2">
       <div v-if="categoriesTree.length === 0" class="text-center text-gray-500 text-sm py-8 bg-white rounded-xl shadow">
