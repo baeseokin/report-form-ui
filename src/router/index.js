@@ -79,6 +79,9 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior() {
+    return { left: 0, top: 0 };
+  },
 });
 
 router.beforeEach(async (to, from, next) => {

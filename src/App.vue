@@ -56,8 +56,8 @@
       @click="closeSidebar"
     ></div>
 
-    <!-- ✅ 본문 -->
-    <main class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64 relative">
+    <!-- ✅ 본문 (ref로 초기 로딩 시 맨 위로 스크롤) -->
+    <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64 relative">
       <!-- 햄버거 버튼 (Tablet/Mobile 전용) -->
       <button
         class="lg:hidden mb-4 px-3 py-2 bg-purple-600 text-white rounded"
@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
@@ -90,6 +90,18 @@ const showLogoutTimer = true  //자동로그인이 안될 경우에 true 로 변
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const mainEl = ref(null);
+
+// ✅ 화면 전환 시 본문(main) 스크롤 맨 위로 (모바일 메뉴 버튼이 위에 있어 바로 보이도록)
+watch(
+  () => route.path,
+  () => {
+    nextTick(() => {
+      mainEl.value?.scrollTo?.(0, 0);
+    });
+  },
+  { immediate: true }
+);
 
 // ✅ 현재 경로와 메뉴가 일치하면 선택 상태
 function isMenuActive(m) {
