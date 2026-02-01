@@ -1,6 +1,6 @@
 <template>
-  <div class="h-screen flex items-center justify-center bg-gray-100">
-    <div class="bg-white p-8 shadow rounded-lg w-96">
+  <div class="min-h-screen flex items-start justify-center pt-24 pb-10 bg-gray-100">
+    <div class="bg-white p-8 shadow-lg rounded-xl w-96 min-w-[280px] max-w-[90vw]">
       <h2 class="text-2xl font-bold mb-6 text-center">🔐 로그인</h2>
 
       <div class="mb-3">
