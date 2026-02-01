@@ -30,7 +30,8 @@ export default defineConfig({
         manualChunks: {
           vue: ["vue", "vue-router", "pinia"],
           network: ["axios"],
-          pdf: ["jspdf", "html2canvas"], // 👉 PDF 전용 청크
+          pdf: ["jspdf", "html2canvas"], // 👉 PDF 버튼 클릭 시 로드
+          exceljs: ["exceljs"], // 👉 Excel 버튼 클릭 시 로드 (BudgetsGrid)
         },
       },
     },

@@ -139,7 +139,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-import ExcelJS from "exceljs";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
@@ -287,10 +286,12 @@ const getPathNames = (category) => {
   return path;
 };
 
-// Excel 다운로드: 첨부 양식과 동일 (색상·셀병합·정렬)
+// Excel 다운로드: 첨부 양식과 동일 (색상·셀병합·정렬) — ExcelJS는 클릭 시에만 로드
 const colLetter = (col) => String.fromCharCode(65 + col);
 
 const downloadExcel = async () => {
+  const { default: ExcelJS } = await import("exceljs");
+
   const leavesInOrder = categoriesTree.value.filter((c) => isLeafCategory(c.id));
   const deptName = getDeptName(selectedDeptId.value) || "부서";
 
