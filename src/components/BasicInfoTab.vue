@@ -2,25 +2,25 @@
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">📌 기본 정보 입력</h2>
 
-    <!-- 문서 종류 선택 -->
+    <!-- 문서 종류 선택 (아래 부서명/작성자/제출일자 그리드와 동일 너비·균등 배치) -->
     <div>
       <p class="text-lg font-semibold text-purple-700 mb-3">문서 종류</p>
-      <div class="flex gap-4">
+      <div class="grid grid-cols-3 gap-4">
         <label
-          v-for="type in documentTypes"
-          :key="type"
-          class="flex-1 cursor-pointer border rounded-lg p-4 text-center shadow-sm transition
+          v-for="opt in documentTypeOptions"
+          :key="opt.value"
+          class="cursor-pointer border rounded-lg p-4 text-center shadow-sm transition
                  hover:shadow-md"
-          :class="documentType === type ? 'bg-purple-100 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-300'"
+          :class="documentType === opt.value ? 'bg-purple-100 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-300'"
         >
           <input
             type="radio"
-            :value="type"
-            :checked="documentType === type"
-            @change="$emit('update:documentType', type)"
+            :value="opt.value"
+            :checked="documentType === opt.value"
+            @change="$emit('update:documentType', opt.value)"
             class="hidden"
           />
-          {{ type }}
+          {{ opt.label }}
         </label>
       </div>
     </div>
@@ -78,11 +78,6 @@
       />
     </div>
 
-    <!-- ✅ 안내 문구 추가 -->
-    <p class="text-sm text-gray-500 italic">
-      ◎ 청구목록 조회화면에서 기존 청구내역을 재사용하여 보고서를 작성할 수 있습니다.
-    </p>
-
     <!-- 다음 버튼 -->
     <div class="flex justify-end mt-6">
       <button
@@ -119,8 +114,12 @@ const emits = defineEmits([
   "next",
 ]);
 
-// 문서 종류 리스트
-const documentTypes = ["청구지출결의서", "정산지출결의서", "가불지출결의서"];
+// 문서 종류 리스트 (value: 저장/API용, label: 버튼 표시용)
+const documentTypeOptions = [
+  { value: "청구지출결의서", label: "청구지출" },
+  { value: "정산지출결의서", label: "정산지출" },
+  { value: "가불지출결의서", label: "가불지출" },
+];
 
 // ✅ 로그인 사용자 정보 불러오기
 const userStore = useUserStore();

@@ -2,24 +2,24 @@
   <div class="space-y-6 font-nanum px-2">
     <h2 class="text-lg font-bold text-gray-800 mb-2">📌 기본 정보 입력</h2>
 
-    <!-- 문서 종류 선택 (세로 배치) -->
+    <!-- 문서 종류 선택 (아래 select와 같은 너비로 균등 배치) -->
     <div>
       <p class="text-base font-semibold text-purple-700 mb-2">문서 종류</p>
-      <div class="flex flex-col gap-2">
+      <div class="grid grid-cols-3 gap-2">
         <label
-          v-for="type in documentTypes"
-          :key="type"
+          v-for="opt in documentTypeOptions"
+          :key="opt.value"
           class="cursor-pointer border rounded-lg px-4 py-3 text-center shadow-sm transition hover:shadow-md"
-          :class="documentType === type ? 'bg-purple-100 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-300'"
+          :class="documentType === opt.value ? 'bg-purple-100 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-300'"
         >
           <input
             type="radio"
-            :value="type"
-            :checked="documentType === type"
-            @change="$emit('update:documentType', type)"
+            :value="opt.value"
+            :checked="documentType === opt.value"
+            @change="$emit('update:documentType', opt.value)"
             class="hidden"
           />
-          {{ type }}
+          {{ opt.label }}
         </label>
       </div>
     </div>
@@ -77,11 +77,6 @@
       />
     </div>
 
-    <!-- 안내 문구 -->
-    <p class="text-xs text-gray-500 italic leading-snug">
-      ◎ 청구목록 조회화면에서 기존 청구내역을 재사용하여 보고서를 작성할 수 있습니다.
-    </p>
-
     <!-- 다음 버튼 -->
     <div class="flex justify-center mt-4">
       <button
@@ -118,8 +113,12 @@ const emits = defineEmits([
   "next",
 ]);
 
-// 문서 종류 리스트
-const documentTypes = ["청구지출결의서", "정산지출결의서", "가불지출결의서"];
+// 문서 종류 리스트 (value: 저장/API용, label: 버튼 표시용)
+const documentTypeOptions = [
+  { value: "청구지출결의서", label: "청구지출" },
+  { value: "정산지출결의서", label: "정산지출" },
+  { value: "가불지출결의서", label: "가불지출" },
+];
 
 // 로그인 사용자
 const userStore = useUserStore();
