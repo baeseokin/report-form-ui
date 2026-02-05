@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "axios": "^1.11.0",
     "exceljs": "^4.4.0",
     "html2canvas": "^1.4.1",
