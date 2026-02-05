@@ -1,23 +1,23 @@
 <template>
   <div class="p-6 font-nanum">
     <!-- ✅ 검색조건 -->
-    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-blue-50 via-white to-sky-50 rounded-xl shadow-lg border-l-4 border-blue-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
+    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-purple-50 via-white to-violet-50 rounded-xl shadow-lg border-l-4 border-purple-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
       <!-- 부서명 -->
       <div class="flex flex-col w-40">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">부서명</label>
+        <label class="font-semibold text-purple-800 mb-1 text-sm">부서명</label>
         <input
           type="text"
           v-model="filters.deptName"
           placeholder="부서명 입력"
-          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition placeholder:text-slate-400"
+          class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition placeholder:text-slate-400"
           :readonly="!canEditDept"
         />
       </div>
 
       <!-- 문서종류 -->
       <div class="flex flex-col w-36">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">문서종류</label>
-        <select v-model="filters.documentType" class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition">
+        <label class="font-semibold text-purple-800 mb-1 text-sm">문서종류</label>
+        <select v-model="filters.documentType" class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition">
           <option value="">전체</option>
           <option value="청구지출결의서">청구지출결의서</option>
           <option value="정산지출결의서">정산지출결의서</option>
@@ -27,8 +27,8 @@
 
       <!-- 진행상태 -->
       <div class="flex flex-col w-32">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">진행상태</label>
-        <select v-model="filters.status" class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition">
+        <label class="font-semibold text-purple-800 mb-1 text-sm">진행상태</label>
+        <select v-model="filters.status" class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition">
           <option value="">전체</option>
           <option value="결재진행중">결재진행중</option>
           <option value="결재완료">결재완료</option>
@@ -39,21 +39,21 @@
 
       <!-- 청구 시작일자 -->
       <div class="flex flex-col w-40">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">청구 시작일자</label>
-        <input type="date" v-model="filters.startDate" class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition" />
+        <label class="font-semibold text-purple-800 mb-1 text-sm">청구 시작일자</label>
+        <input type="date" v-model="filters.startDate" class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition" />
       </div>
 
       <!-- 청구 종료일자 -->
       <div class="flex flex-col w-40">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">청구 종료일자</label>
-        <input type="date" v-model="filters.endDate" class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition" />
+        <label class="font-semibold text-purple-800 mb-1 text-sm">청구 종료일자</label>
+        <input type="date" v-model="filters.endDate" class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-full shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition" />
       </div>
 
       <!-- 조회 버튼 -->
       <div class="flex items-end">
         <button
           @click="fetchApprovals(1)"
-          class="px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
+          class="px-5 py-2.5 bg-purple-600 text-white rounded-xl shadow-md hover:bg-purple-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
         >
           조회
         </button>

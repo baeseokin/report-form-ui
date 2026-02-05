@@ -1,13 +1,13 @@
 <template>
   <div class="p-6 font-nanum">
     <!-- 부서 & 기준일자 선택 -->
-    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-blue-50 via-white to-sky-50 rounded-xl shadow-lg border-l-4 border-blue-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
+    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-purple-50 via-white to-violet-50 rounded-xl shadow-lg border-l-4 border-purple-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
       <div class="flex flex-col">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">부서 선택</label>
+        <label class="font-semibold text-purple-800 mb-1 text-sm">부서 선택</label>
         <select
           v-model="selectedDeptId"
           @change="fetchCategories"
-          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-44 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
+          class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-44 shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition"
         >
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ d.dept_name }}
@@ -16,23 +16,23 @@
       </div>
 
       <div class="flex flex-col">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">기준일자</label>
+        <label class="font-semibold text-purple-800 mb-1 text-sm">기준일자</label>
         <input
           type="date"
           v-model="baseDate"
           @change="fetchCategories"
-          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-44 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
+          class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-44 shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition"
         />
       </div>
 
       <div class="flex flex-col">
-        <label class="font-semibold text-blue-800 mb-1 text-sm">회계연도</label>
+        <label class="font-semibold text-purple-800 mb-1 text-sm">회계연도</label>
         <input
           type="number"
           v-model="year"
           min="2000"
           max="2100"
-          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-28 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
+          class="bg-white/90 border border-purple-200 rounded-xl px-3 py-2.5 w-28 shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition"
         />
       </div>
 
@@ -40,7 +40,7 @@
         <button
           type="button"
           @click="fetchCategories"
-          class="px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
+          class="px-5 py-2.5 bg-purple-600 text-white rounded-xl shadow-md hover:bg-purple-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
         >
           조회
         </button>
@@ -75,7 +75,7 @@
           :key="c.id"
           :class="{
             'bg-gray-100 font-bold': c.level === '관',
-            'bg-blue-50': c.level === '항',
+            'bg-purple-50': c.level === '항',
             'bg-green-50': c.level === '목',
             'bg-white': c.level === '세목'
           }"
