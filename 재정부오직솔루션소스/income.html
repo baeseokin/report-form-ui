@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=9,chrome=1" />
+
+	<title>오직재정 Ohjic : Oh! jesus & I communication</title>
+
+	<link rel="stylesheet" href="/css/flat/bootstrap.min.css?202601151730">
+	<link rel="stylesheet" href="/css/flat/bootstrap.fix.css?202601151730">
+	<link rel="stylesheet" href="/css/flat/fontello.css?aa">
+	<!--[if lte IE 7]><link rel="stylesheet" href="/css/flat/fontello-ie7.css?202601151730"><![endif]-->
+    <link rel="stylesheet" href="/css/flat/fontello-ie7.css?202601151730">
+
+	<link rel="stylesheet" href="/css/flat/default.css?202601151730">
+
+	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!--[if lt IE 9]>
+	  <script src="/js/html5shiv.js?202601151730"></script>
+	  <script src="/js/respond.min.js?202601151730"></script>
+	<![endif]-->
+
+<!-- flat default -->
+	<link rel="stylesheet" href="/lib/jquery-ui/1.14.1/jquery-ui.min.css?202601151730"/>
+	<script type='text/javascript' src='/js/jquery-3.7.1.min.js?202601151730'></script>
+  <script type="text/javascript" src="/lib/jquery-ui/1.14.1/jquery-ui.min.js?202601151730"></script>
+    <script type='text/javascript' src='/js/common.js?202601151730'></script>
+
+<style>
+
+
+	#title_bar {height:55px;}
+	#title_text {float:left;padding:0px 40px;height:100%;line-height:55px;}
+	.menu_btn {float:left;height:55px;width:230px;text-align:center;}
+
+	.menu_padding {padding-top:11px;padding-bottom:1px;}
+	.menu_padding i {font-size:20px;}
+	.selected .menu_padding i {color:white;}
+
+	.gradient_bar, .gradient_bar td {
+		background: #F4F4F4; /* Old browsers */
+		background: -moz-linear-gradient(top,  #F4F4F4 0%, #ebebeb 100%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#F4F4F4), color-stop(100%,#ebebeb)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top,  #F4F4F4 0%,#ebebeb 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top,  #F4F4F4 0%,#ebebeb 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top,  #F4F4F4 0%,#ebebeb 100%); /* IE10+ */
+		background: linear-gradient(to bottom,  #F4F4F4 0%,#ebebeb 100%); /* W3C */ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#F4F4F4', endColorstr='#ebebeb',GradientType=0 ); /* IE6-9 */
+	}
+
+	#title_bar .menu_btn.selected {
+		background: #1cb8eb; /* Old browsers */
+		background: -moz-linear-gradient(top,  #1cb8eb 0%, #0ea1d5 100%); /* FF3.6+ */
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#1cb8eb), color-stop(100%,#0ea1d5)); /* Chrome,Safari4+ */
+		background: -webkit-linear-gradient(top,  #1cb8eb 0%,#0ea1d5 100%); /* Chrome10+,Safari5.1+ */
+		background: -o-linear-gradient(top,  #1cb8eb 0%,#0ea1d5 100%); /* Opera 11.10+ */
+		background: -ms-linear-gradient(top,  #1cb8eb 0%,#0ea1d5 100%); /* IE10+ */
+		background: linear-gradient(to bottom,  #1cb8eb 0%,#0ea1d5 100%); /* W3C */ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1cb8eb', endColorstr='#0ea1d5',GradientType=0 ); /* IE6-9 */
+		color:white;
+
+	}
+
+	.selected a {color:#ffffff;}
+	.selected a:hover {color:#2c4061;}
+
+
+
+</style>
+<script>
+
+    var set_brows_size_gap = 21;
+</script>
+
+
+</head>
+<body>
+<div id='title_bar' class='gradient_bar'>
+	<div id='title_text'>
+	원천교회	</div>
+
+
+	<div class='menu_btn selected' style='font-weight:bold;font-size:9pt;'>
+		<a href='/bill/tempBill/bill_write/income?print_mode=2' style='width:100%;height:100%;display:block;'>
+			<div class='menu_padding'>
+				<i class='icon-credit-card' ></i>
+			</div>
+			<span>재정청구서 입력</span>
+		</a>
+	</div>
+
+	<div class='menu_btn ' style='font-weight:bold;font-size:9pt;'>
+		<a href='/bill/tempBill/listView/income?print_mode=2' style='width:100%;height:100%;display:block;'>
+			<div class='menu_padding'>
+				<i class='icon-list' ></i>
+			</div>
+			<span>재정청구서 목록</span>
+		</a>
+	</div>
+
+</div>
+<div style='background:#0ea1d5;height:4px;width:100%;clear:both;font-size:0px;'></div>
+
+<script>
+containerFrame.loadingHide();
+</script>
+<script type="text/javascript" src="/js/common/jquery-1.9.1.min.js?202601151730"></script>
+<script type="text/javascript" src="/js/common/jquery.form.js?202601151730"></script>
+<script type="text/javascript" src="/js/common/jquery.blockUI.js?202601151730"></script>
+<script type="text/javascript" src="/js/epoch_classes2.js?202601151730"></script>
+<script type="text/javascript" src='/js/jquery-ui-1.9.2.custom.min.js?202601151730'></script>
+
+<script type="text/javascript" src="/js/report.js?202601151730"></script>
+<script type="text/javascript" src="/js/hidden.js?202601151730"></script>
+<script type="text/javascript" src="/js/bill/library.js?202601151730"></script>
+<script type="text/javascript" src="/js/inputText.js?202601151730"></script>
+
+<script>var domainName = "ohjic.com";</script>
+<script type="text/javascript" src="/js/common/common_lib.js?202601151730"></script>
+<script type="text/javascript" src="/js/common.js?202601151730"></script>
+<script type="text/javascript" src='/js/bill/tempbillList_h.js?202601151730'></script>
+<script type='text/javascript' src='/js/bill/tempbillPrint_h.js?202601151730'></script>
+<script type='text/javascript' src='/js/bill/tempbillWrite_h.js?202601151730'></script>
+<script type="text/javascript" src='/js/bill/focusMove.js?202601151730'></script>
+<script type="text/javascript" src='/js/bill/selectBox-0.9.0.js?202601151730'></script>
+<script type="text/javascript" src='/js/bill/resultFunc.js?202601151730'></script>
+<script>var apiUriFile = "https://files.ohjic.com"</script>
+<script type="text/javascript" src='/js/bill/getListFunc.js?202601151730'></script>
+<link rel="stylesheet" type="text/css" href="/css/selectBox.css?202601151730"/>
+<link rel="stylesheet" type="text/css" href="/css/epoch_styles.css?202601151730"/>
+<link rel="stylesheet" type="text/css" href="/css/jquery-ui-1.9.2.custom.min.css?202601151730"/>
+<!-- <link rel="stylesheet" type="text/css" href="/css/bill.css?202601151730" /> -->
+<script type="text/javascript" src="/js/bill/acnt_select_popup.js?202601151730"></script>
+
+<script type="text/javascript" src="/js/bootstrap.min.js?202601151730"></script>
+<script type="text/javascript">
+  var agent = navigator.userAgent.toLowerCase();
+  if ((navigator.appName == 'Netscape' && agent.indexOf('trident') != -1) || (agent.indexOf('msie') != -1)) {
+    var getUserInfo4 = {
+      ticket: null
+      , param: null
+      , columnInfo: {
+        //2 : ["번호","청구자명","연락처","은행","계좌번호","예금주"]
+        2: ['번호', '봉투<br>번호', '', '수령자명', '연락처', '사업자번호', '대표자명', '은행', '계좌번호', '예금주']
+      }
+      /*
+      *	각 컬럼의 width 값 지정. 값이 0이면 width =0 으로 하지 않고 아예 td를 생성 하지 않아 버림.
+      */
+            ,columnWidth : {
+                2 : [40,0,0,80,100,0,0,100,110,80,0,0,0,0]
+            }
+
+            ,description : {
+
+                2 : "이름을 입력 해주세요"
+
+
+            }
+
+            ,getUserList : function (selectBoxObj){
+
+                var self = getUserInfo4;							// 자기 자신을 this 로 참조 하지 못해서 억지로 self 로 참조하도록 함.
+                self.selectBoxObj = selectBoxObj;					// selectBox 객체
+                self.selectBoxMethod = self.selectBoxObj.selectBoxMethod;	// 현재의 메쏘드 정보를 저장한다.	당연히 getUserInfo.getUserList 겠지.
+
+                var searchValue = selectBoxObj.inputObj.value;	// 원래 이 메쏘드에 2번째 argument로 searchValue 를 넘겨주지만 이름검색은 그것을 사용하면 포커스가 갔을 때 null 값이 넘어오므로 목록이 생기지 않는다.
+                self.searchValue = searchValue==null ? "" : searchValue;
+
+                var memType =2;
+
+                self.name = searchValue;
+                self.ssn1 = searchValue;
+                self.p_grade_name = null;
+                self.groupName = null;
+                self.birthDate = null;
+                self.age = null;
+
+                var birthYear = null;
+                var birthDay = null;
+                var age = null;
+
+                if(searchValue.indexOf("@") != -1){				// 구역에 대한 정보 파싱
+
+                    var tmp = searchValue.split("@");
+                    self.name = tmp[0];
+                    self.groupName = tmp[1];
+
+                }else if(searchValue.indexOf("#") != -1){		// 생일에 대한 정보 파싱
+
+                    var tmp = searchValue.split("#");
+                    self.name = tmp[0];
+                    if(String(tmp[1]).length >= 2 && String(tmp[1]).length <= 6){	// 2글짜에서 6글짜 사이여야 검색 시작.
+                        self.birthDate = tmp[1];
+                        var tmpYear = self.birthDate.substr(0,2);
+                        birthYear = tmpYear > 13 ? '19'+tmpYear : '20'+tmpYear;
+                        var tmpDay = self.birthDate.substr(2,4);
+                        birthDay = tmpDay.length == 4 ? tmpDay : null;
+
+                        var nowDate = new Date();
+                        var nowYear =nowDate.getYear();
+                        self.age = nowYear - birthYear + 1;
+                    }
+
+                }
+
+                self.param = {
+                    name : self.name
+                    ,ssn1 : self.ssn1
+                    ,p_grade_name : self.p_grade_name
+                    ,groupName : self.groupName
+                    ,birthYear: birthYear
+                    ,birthDay: birthDay
+                    ,memType : memType
+
+                };
+
+                self.preLoading();	 // 미리 검색창을 띄워 놓아서 사용자를 기다리지 않게 한다.
+
+                if(name == "" || searchValue=="" || searchValue == null){ return; }	// 입력 값이 없으면 이대로 종료.
+
+                // 0.02 초 이내로 타이핑이 이루어 질 경우 반복해서 호출하지 않도록. 시간차를 줌.
+                clearTimeout(self.ticket);
+
+                //$(self.selectBoxObj.inputObj).attr('loadingStatus','true');
+
+                self.ticket = setTimeout("getUserInfo4.getPost()",140);
+
+                $(selectBoxObj.inputObj).unbind('blur',self.blur);	// blur 효과가 중복으로 발생되서 그거 방지하기 위해 unbind 를 건다.
+                $(selectBoxObj.inputObj).blur(self.blur);
+
+            }
+            /*
+            *	포커스가 다른 input 으로 이동했음에도 불구하고 뒤늦게 뜨는 것을 방지하기 위함.
+            */
+            ,blur : function(){
+
+                var self = getUserInfo4;
+                clearTimeout(self.ticket);
+                $(self.selectBoxObj.inputObj).unbind('blur',self.blur);
+
+            }
+            ,getPost : function(){
+                var self = getUserInfo4;
+
+
+                $.post('/sList/memberLegendSearch',self.param,function(getListData){
+                    //$(self.selectBoxObj.inputObj).removeAttr('loadingStatus');
+
+                    var listData = [];
+                    var autoIndex = 0;	// 자동 선택 되는 row 의 index 를 지정.
+
+                    if(self.param.memType == 2){
+                        listData.push({no:"New",envNo:'','':'',name:self.name, description : "새 아이디 발급 (기존에 재정에 입력한 적이 없을 경우 새로 아이디 추가)"});
+                        autoIndex = 2;
+                    }
+
+                    var lists = $(getListData);
+
+                    if(lists.length == 0){
+                        autoIndex = 1;
+                        listData.push({message : "검색 결과가 없습니다."});
+                    }
+                    lists.each(function(){
+                        listData.push(this);
+                    });
+
+
+                    var param = {
+                        columnName : self.columnInfo[self.param.memType]
+                        ,data : listData
+                        ,tdWidth : self.columnWidth[self.param.memType]
+                        ,description : self.description[self.param.memType]
+                    };
+
+                    if(typeof(description_option) != 'undefined' && description_option == 1){
+                        param.description = '';
+                    }
+
+
+                    /*			if(typeof(description_display_flag)!= 'undefined') && description_display_flag == false){
+                                    param.description = '';
+                                }
+                                */
+
+                    // 기본 파라미터, 자동선택 index, 현재 객체(포커스 이동 후 창 띄우지 않기 위해)
+
+                    if( self.selectBoxObj.insertList(param,autoIndex,self.selectBoxMethod) == true ){
+                        self.selectBoxObj.autoChoiceBeforeSelect();	// 그 이전에 선택했던 것 다시 선택.
+                    }
+
+                },'json');
+            }
+
+
+            /*
+            *	ajax로 불러오기 전에 표시 해주어야 할 것들.
+            */
+            ,preLoading : function(){
+                var self = getUserInfo4;
+                var autoIndex = null;
+
+                var listData = [];
+
+                if(self.name == ""){
+                    //listData.push({message : "봉투번호 또는 이름을 입력 해 주세요. (아래의 설명을 참조 해주세요)"});
+                }else{
+
+                    listData.push({message : "조회 중...<img src='/images/loading.gif' style='width:16px;vertical-align:middle;'/>"});
+                }
+
+                var param = {
+                    columnName : self.columnInfo[self.param.memType]
+                    ,data : listData
+                    ,tdWidth : self.columnWidth[self.param.memType]
+                    ,description : self.description[self.param.memType]
+                };
+
+                if(typeof(description_option) != 'undefined' && description_option == 1){
+                    param.description = '';
+                }
+
+                self.selectBoxObj.insertList(param);
+
+            }
+        }
+    }
+    var tabMenu = 1; //김지연
+    var fCode = '1480';
+    var userId = 'dnjscjs';
+
+    var isLoading = false;			//true : ajax가 로딩중이다
+    var isEnd = false;				//true : 더이상 출력할 데이터가 없다
+    var cutFlag = 0;		//페이지를 나타냅니다. 데이터 로딩될때마다 1씩 증가합니다.
+
+    var useAction = true;
+    var unselToday = '20260117';
+
+    var start = '1768143600';
+    var end = '1768748399';
+    var startDate = '1768143600';
+    var endDate = '1768748399';
+    var modify_flag = "income";
+    var chkPeriod = 0;
+
+    var nowYear = '2026';
+    var nowMon = '1';
+    var nowDate = '12';
+    var nAcntYear = '2026';
+    var nAcntMonth = '1';
+    var bank_key = 0;
+    var bank_name = '현금';
+    var churchCode = '3112';
+    var writeForm = "1";
+
+    var withdraw_bank = '';
+    var withdraw_account = '';
+
+    var menuName = "tempbill";
+
+    orderName = '';
+
+    $('#infoWin').draggable({
+        handle: ".drag_handle"
+    });
+
+
+    //계정 데이타
+    var accountListData = {
+        columnName : ["번호","코드","계정명","뎁스","상위계정","계정설명","상위1","상위2","상위3"]
+        ,tdWidth : [50,0,100,0,300,300,0,0,0]
+        ,description : "번호 또는 계정명을<br>입력 해주세요"
+        ,data:[{"no":"2010100","code":"20101000000","name":"도서비","depth":"2","parentAccount":"예배비 > 도서비","descript":"","depth1":"","depth2":"예배비","depth3":"도서비"},{"no":"2010200","code":"20102000000","name":"목회활동비","depth":"2","parentAccount":"예배비 > 목회활동비","descript":"","depth1":"","depth2":"예배비","depth3":"목회활동비"},{"no":"2010300","code":"20103000000","name":"임마누엘","depth":"2","parentAccount":"예배비 > 임마누엘","descript":"","depth1":"","depth2":"예배비","depth3":"임마누엘"},{"no":"2010400","code":"20104000000","name":"할렐루야","depth":"2","parentAccount":"예배비 > 할렐루야","descript":"","depth1":"","depth2":"예배비","depth3":"할렐루야"},{"no":"2010500","code":"20105000000","name":"실내악단","depth":"2","parentAccount":"예배비 > 실내악단","descript":"","depth1":"","depth2":"예배비","depth3":"실내악단"},{"no":"20106000000","code":"20106000000","name":"샬롬 찬양대","depth":"2","parentAccount":"예배비 > 샬롬 찬양대","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"샬롬 찬양대"},{"no":"20108000000","code":"20108000000","name":"강대 미화비","depth":"2","parentAccount":"예배비 > 강대 미화비","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"강대 미화비"},{"no":"20109000000","code":"20109000000","name":"방송실 운영","depth":"2","parentAccount":"예배비 > 방송실 운영","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"방송실 운영"},{"no":"20110000000","code":"20110000000","name":"성례비","depth":"2","parentAccount":"예배비 > 성례비","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"성례비"},{"no":"20112000000","code":"20112000000","name":"음악부","depth":"2","parentAccount":"예배비 > 음악부","descript":"찬양팀 ","depth1":"","depth2":"예배비","depth3":"음악부"},{"no":"20113000000","code":"20113000000","name":"원천 문화공연단","depth":"2","parentAccount":"예배비 > 원천 문화공연단","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"원천 문화공연단"},{"no":"20114000000","code":"20114000000","name":"미디어센터","depth":"2","parentAccount":"예배비 > 미디어센터","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"미디어센터"},{"no":"20115000000","code":"20115000000","name":"원천엔젤스","depth":"2","parentAccount":"예배비 > 원천엔젤스","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"원천엔젤스"},{"no":"20116000000","code":"20116000000","name":"언노운워십","depth":"2","parentAccount":"예배비 > 언노운워십","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"언노운워십"},{"no":"20117000000","code":"20117000000","name":"시니어합창단","depth":"2","parentAccount":"예배비 > 시니어합창단","descript":"[설명을 입력하세요]","depth1":"","depth2":"예배비","depth3":"시니어합창단"},{"no":"2020100","code":"20201000000","name":"강사비","depth":"2","parentAccount":"전도봉사 > 강사비","descript":"","depth1":"","depth2":"전도봉사","depth3":"강사비"},{"no":"2020200","code":"20202000000","name":"경조비","depth":"2","parentAccount":"전도봉사 > 경조비","descript":"","depth1":"","depth2":"전도봉사","depth3":"경조비"},{"no":"2020300","code":"20203000000","name":"교통비","depth":"2","parentAccount":"전도봉사 > 교통비","descript":"","depth1":"","depth2":"전도봉사","depth3":"교통비"},{"no":"2020400","code":"20204000000","name":"구제비","depth":"2","parentAccount":"전도봉사 > 구제비","descript":"","depth1":"","depth2":"전도봉사","depth3":"구제비"},{"no":"20205000000","code":"20205000000","name":"구역운영비","depth":"2","parentAccount":"전도봉사 > 구역운영비","descript":"","depth1":"","depth2":"전도봉사","depth3":"구역운영비"},{"no":"20206000000","code":"20206000000","name":"부흥회비","depth":"2","parentAccount":"전도봉사 > 부흥회비","descript":"","depth1":"","depth2":"전도봉사","depth3":"부흥회비"},{"no":"20207000000","code":"20207000000","name":"전도비","depth":"2","parentAccount":"전도봉사 > 전도비","descript":"","depth1":"","depth2":"전도봉사","depth3":"전도비"},{"no":"2030100","code":"20301000000","name":"교육국","depth":"2","parentAccount":"교육경비 > 교육국","descript":"","depth1":"","depth2":"교육경비","depth3":"교육국"},{"no":"2030200","code":"20302000000","name":"영아부","depth":"2","parentAccount":"교육경비 > 영아부","descript":"","depth1":"","depth2":"교육경비","depth3":"영아부"},{"no":"2030300","code":"20303000000","name":"유치부","depth":"2","parentAccount":"교육경비 > 유치부","descript":"","depth1":"","depth2":"교육경비","depth3":"유치부"},{"no":"2030400","code":"20304000000","name":"유년부","depth":"2","parentAccount":"교육경비 > 유년부","descript":"","depth1":"","depth2":"교육경비","depth3":"유년부"},{"no":"2030500","code":"20305000000","name":"초등부","depth":"2","parentAccount":"교육경비 > 초등부","descript":"","depth1":"","depth2":"교육경비","depth3":"초등부"},{"no":"2030600","code":"20306000000","name":"청소년부","depth":"2","parentAccount":"교육경비 > 청소년부","descript":"","depth1":"","depth2":"교육경비","depth3":"청소년부"},{"no":"2030800","code":"20308000000","name":"청년부","depth":"2","parentAccount":"교육경비 > 청년부","descript":"","depth1":"","depth2":"교육경비","depth3":"청년부"},{"no":"20319000000","code":"20319000000","name":"젭스보조비","depth":"2","parentAccount":"교육경비 > 젭스보조비","descript":"정철영어성경학교","depth1":"","depth2":"교육경비","depth3":"젭스보조비"},{"no":"2040100","code":"20401000000","name":"복리 후생비","depth":"2","parentAccount":"교회 관리 > 복리 후생비","descript":"","depth1":"","depth2":"교회 관리","depth3":"복리 후생비"},{"no":"2040200","code":"20402000000","name":"사무 소모품비","depth":"2","parentAccount":"교회 관리 > 사무 소모품비","descript":"","depth1":"","depth2":"교회 관리","depth3":"사무 소모품비"},{"no":"2040300","code":"20403000000","name":"상회비","depth":"2","parentAccount":"교회 관리 > 상회비","descript":"","depth1":"","depth2":"교회 관리","depth3":"상회비"},{"no":"20405000000","code":"20405000000","name":"수도 광열비","depth":"2","parentAccount":"교회 관리 > 수도 광열비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"수도 광열비"},{"no":"20406000000","code":"20406000000","name":"수양관 운영비","depth":"2","parentAccount":"교회 관리 > 수양관 운영비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"수양관 운영비"},{"no":"20407000000","code":"20407000000","name":"시설 유지비","depth":"2","parentAccount":"교회 관리 > 시설 유지비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"시설 유지비"},{"no":"20408000000","code":"20408000000","name":"의료비","depth":"2","parentAccount":"교회 관리 > 의료비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"의료비"},{"no":"20409000000","code":"20409000000","name":"접대비","depth":"2","parentAccount":"교회 관리 > 접대비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"접대비"},{"no":"20410000000","code":"20410000000","name":"제세 공과비","depth":"2","parentAccount":"교회 관리 > 제세 공과비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"제세 공과비"},{"no":"20411000000","code":"20411000000","name":"제잡비","depth":"2","parentAccount":"교회 관리 > 제잡비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"제잡비"},{"no":"20412000000","code":"20412000000","name":"차량 유지비","depth":"2","parentAccount":"교회 관리 > 차량 유지비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"차량 유지비"},{"no":"20413000000","code":"20413000000","name":"특별 활동비","depth":"2","parentAccount":"교회 관리 > 특별 활동비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"특별 활동비"},{"no":"20414080000","code":"20414080000","name":"행사비","depth":"3","parentAccount":"교회 관리 > 행사비 > 행사비","descript":"[설명을 입력하세요]","depth1":"교회 관리","depth2":"행사비","depth3":"행사비"},{"no":"20414100000","code":"20414100000","name":"원천아트미션","depth":"3","parentAccount":"교회 관리 > 행사비 > 원천아트미션","descript":"[설명을 입력하세요]","depth1":"교회 관리","depth2":"행사비","depth3":"원천아트미션"},{"no":"20415000000","code":"20415000000","name":"후생비","depth":"2","parentAccount":"교회 관리 > 후생비","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"후생비"},{"no":"20416000000","code":"20416000000","name":"사회 보험 부담금","depth":"2","parentAccount":"교회 관리 > 사회 보험 부담금","descript":"[설명을 입력하세요]","depth1":"","depth2":"교회 관리","depth3":"사회 보험 부담금"},{"no":"2050000","code":"20500000000","name":"사례 인건비","depth":"1","parentAccount":"사례 인건비","descript":"","depth1":"","depth2":"","depth3":"사례 인건비"},{"no":"2060000","code":"20600000000","name":"선교비","depth":"1","parentAccount":"선교비","descript":"","depth1":"","depth2":"","depth3":"선교비"},{"no":"2070000","code":"20700000000","name":"비품 구입비","depth":"1","parentAccount":"비품 구입비","descript":"","depth1":"","depth2":"","depth3":"비품 구입비"},{"no":"20801000000","code":"20801000000","name":"기타 적립금","depth":"2","parentAccount":"적립금 > 기타 적립금","descript":"[설명을 입력하세요]","depth1":"","depth2":"적립금","depth3":"기타 적립금"},{"no":"20802000000","code":"20802000000","name":"선교 적립금","depth":"2","parentAccount":"적립금 > 선교 적립금","descript":"[설명을 입력하세요]","depth1":"","depth2":"적립금","depth3":"선교 적립금"},{"no":"20804000000","code":"20804000000","name":"성전 건축 적립금","depth":"2","parentAccount":"적립금 > 성전 건축 적립금","descript":"[설명을 입력하세요]","depth1":"","depth2":"적립금","depth3":"성전 건축 적립금"},{"no":"2090000","code":"20900000000","name":"퇴직연금","depth":"1","parentAccount":"퇴직연금","descript":"","depth1":"","depth2":"","depth3":"퇴직연금"},{"no":"2100000","code":"21000000000","name":"대출 이자","depth":"1","parentAccount":"대출 이자","descript":"","depth1":"","depth2":"","depth3":"대출 이자"},{"no":"2110000","code":"21100000000","name":"예비비","depth":"1","parentAccount":"예비비","descript":"","depth1":"","depth2":"","depth3":"예비비"},{"no":"21200000000","code":"21200000000","name":"차입금 상환","depth":"1","parentAccount":"차입금 상환","descript":"[설명을 입력하세요]","depth1":"","depth2":"","depth3":"차입금 상환"},{"no":"21301000000","code":"21301000000","name":"효행봉사단","depth":"2","parentAccount":"원천사회복지단 > 효행봉사단","descript":"[설명을 입력하세요]","depth1":"","depth2":"원천사회복지단","depth3":"효행봉사단"},{"no":"21303000000","code":"21303000000","name":"홍은누리공부방","depth":"2","parentAccount":"원천사회복지단 > 홍은누리공부방","descript":"[설명을 입력하세요]","depth1":"","depth2":"원천사회복지단","depth3":"홍은누리공부방"},{"no":"21304000000","code":"21304000000","name":"인왕어르신센터","depth":"2","parentAccount":"원천사회복지단 > 인왕어르신센터","descript":"[설명을 입력하세요]","depth1":"","depth2":"원천사회복지단","depth3":"인왕어르신센터"},{"no":"21308000000","code":"21308000000","name":"데이케어센터","depth":"2","parentAccount":"원천사회복지단 > 데이케어센터","descript":"[설명을 입력하세요]","depth1":"","depth2":"원천사회복지단","depth3":"데이케어센터"},{"no":"21401000000","code":"21401000000","name":"총남전도회","depth":"2","parentAccount":"평생교육경비 > 총남전도회","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"총남전도회"},{"no":"21402000000","code":"21402000000","name":"제1남전도회","depth":"2","parentAccount":"평생교육경비 > 제1남전도회","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"제1남전도회"},{"no":"21403000000","code":"21403000000","name":"제1여전도회","depth":"2","parentAccount":"평생교육경비 > 제1여전도회","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"제1여전도회"},{"no":"21404000000","code":"21404000000","name":"교구활동비","depth":"2","parentAccount":"평생교육경비 > 교구활동비","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"교구활동비"},{"no":"21405000000","code":"21405000000","name":"장학후원금","depth":"2","parentAccount":"평생교육경비 > 장학후원금","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"장학후원금"},{"no":"21406000000","code":"21406000000","name":"제직교육비","depth":"2","parentAccount":"평생교육경비 > 제직교육비","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"제직교육비"},{"no":"21407010000","code":"21407010000","name":"바이블아카데미","depth":"3","parentAccount":"평생교육경비 > 바이블아카데미 > 바이블아카데미","descript":"[설명을 입력하세요]","depth1":"평생교육경비","depth2":"바이블아카데미","depth3":"바이블아카데미"},{"no":"21407020000","code":"21407020000","name":"일대일제자양육","depth":"3","parentAccount":"평생교육경비 > 바이블아카데미 > 일대일제자양육","descript":"[설명을 입력하세요]","depth1":"평생교육경비","depth2":"바이블아카데미","depth3":"일대일제자양육"},{"no":"21408000000","code":"21408000000","name":"중간지도자","depth":"2","parentAccount":"평생교육경비 > 중간지도자","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"중간지도자"},{"no":"21409000000","code":"21409000000","name":"샬롬경로대학","depth":"2","parentAccount":"평생교육경비 > 샬롬경로대학","descript":"[설명을 입력하세요]","depth1":"","depth2":"평생교육경비","depth3":"샬롬경로대학"}]    };
+
+
+    //전체 계정 데이타(child = 1 인것 포함)
+    var allAccountListData = {
+        columnName : ["번호","코드","계정명","뎁스"]
+        ,tdWidth : [50,0,100,0]
+        ,description : "번호 또는 계정명을 입력 해주세요"
+        ,data:[{"no":"2010000","code":"20100000000","name":"예배비","depth":"1"},{"no":"2010100","code":"20101000000","name":"도서비","depth":"2"},{"no":"2010200","code":"20102000000","name":"목회활동비","depth":"2"},{"no":"2010300","code":"20103000000","name":"임마누엘","depth":"2"},{"no":"2010400","code":"20104000000","name":"할렐루야","depth":"2"},{"no":"2010500","code":"20105000000","name":"실내악단","depth":"2"},{"no":"20106000000","code":"20106000000","name":"샬롬 찬양대","depth":"2"},{"no":"20108000000","code":"20108000000","name":"강대 미화비","depth":"2"},{"no":"20109000000","code":"20109000000","name":"방송실 운영","depth":"2"},{"no":"20110000000","code":"20110000000","name":"성례비","depth":"2"},{"no":"20112000000","code":"20112000000","name":"음악부","depth":"2"},{"no":"20113000000","code":"20113000000","name":"원천 문화공연단","depth":"2"},{"no":"20114000000","code":"20114000000","name":"미디어센터","depth":"2"},{"no":"20115000000","code":"20115000000","name":"원천엔젤스","depth":"2"},{"no":"20116000000","code":"20116000000","name":"언노운워십","depth":"2"},{"no":"20117000000","code":"20117000000","name":"시니어합창단","depth":"2"},{"no":"2020000","code":"20200000000","name":"전도봉사","depth":"1"},{"no":"2020100","code":"20201000000","name":"강사비","depth":"2"},{"no":"2020200","code":"20202000000","name":"경조비","depth":"2"},{"no":"2020300","code":"20203000000","name":"교통비","depth":"2"},{"no":"2020400","code":"20204000000","name":"구제비","depth":"2"},{"no":"20205000000","code":"20205000000","name":"구역운영비","depth":"2"},{"no":"20206000000","code":"20206000000","name":"부흥회비","depth":"2"},{"no":"20207000000","code":"20207000000","name":"전도비","depth":"2"},{"no":"2030000","code":"20300000000","name":"교육경비","depth":"1"},{"no":"2030100","code":"20301000000","name":"교육국","depth":"2"},{"no":"2030200","code":"20302000000","name":"영아부","depth":"2"},{"no":"2030300","code":"20303000000","name":"유치부","depth":"2"},{"no":"2030400","code":"20304000000","name":"유년부","depth":"2"},{"no":"2030500","code":"20305000000","name":"초등부","depth":"2"},{"no":"2030600","code":"20306000000","name":"청소년부","depth":"2"},{"no":"2030800","code":"20308000000","name":"청년부","depth":"2"},{"no":"20319000000","code":"20319000000","name":"젭스보조비","depth":"2"},{"no":"2040000","code":"20400000000","name":"교회 관리","depth":"1"},{"no":"2040100","code":"20401000000","name":"복리 후생비","depth":"2"},{"no":"2040200","code":"20402000000","name":"사무 소모품비","depth":"2"},{"no":"2040300","code":"20403000000","name":"상회비","depth":"2"},{"no":"20405000000","code":"20405000000","name":"수도 광열비","depth":"2"},{"no":"20406000000","code":"20406000000","name":"수양관 운영비","depth":"2"},{"no":"20407000000","code":"20407000000","name":"시설 유지비","depth":"2"},{"no":"20408000000","code":"20408000000","name":"의료비","depth":"2"},{"no":"20409000000","code":"20409000000","name":"접대비","depth":"2"},{"no":"20410000000","code":"20410000000","name":"제세 공과비","depth":"2"},{"no":"20411000000","code":"20411000000","name":"제잡비","depth":"2"},{"no":"20412000000","code":"20412000000","name":"차량 유지비","depth":"2"},{"no":"20413000000","code":"20413000000","name":"특별 활동비","depth":"2"},{"no":"20414000000","code":"20414000000","name":"행사비","depth":"2"},{"no":"20414080000","code":"20414080000","name":"행사비","depth":"3"},{"no":"20414100000","code":"20414100000","name":"원천아트미션","depth":"3"},{"no":"20415000000","code":"20415000000","name":"후생비","depth":"2"},{"no":"20416000000","code":"20416000000","name":"사회 보험 부담금","depth":"2"},{"no":"2050000","code":"20500000000","name":"사례 인건비","depth":"1"},{"no":"2060000","code":"20600000000","name":"선교비","depth":"1"},{"no":"2070000","code":"20700000000","name":"비품 구입비","depth":"1"},{"no":"2080000","code":"20800000000","name":"적립금","depth":"1"},{"no":"20801000000","code":"20801000000","name":"기타 적립금","depth":"2"},{"no":"20802000000","code":"20802000000","name":"선교 적립금","depth":"2"},{"no":"20804000000","code":"20804000000","name":"성전 건축 적립금","depth":"2"},{"no":"2090000","code":"20900000000","name":"퇴직연금","depth":"1"},{"no":"2100000","code":"21000000000","name":"대출 이자","depth":"1"},{"no":"2110000","code":"21100000000","name":"예비비","depth":"1"},{"no":"21200000000","code":"21200000000","name":"차입금 상환","depth":"1"},{"no":"21300000000","code":"21300000000","name":"원천사회복지단","depth":"1"},{"no":"21301000000","code":"21301000000","name":"효행봉사단","depth":"2"},{"no":"21303000000","code":"21303000000","name":"홍은누리공부방","depth":"2"},{"no":"21304000000","code":"21304000000","name":"인왕어르신센터","depth":"2"},{"no":"21308000000","code":"21308000000","name":"데이케어센터","depth":"2"},{"no":"21400000000","code":"21400000000","name":"평생교육경비","depth":"1"},{"no":"21401000000","code":"21401000000","name":"총남전도회","depth":"2"},{"no":"21402000000","code":"21402000000","name":"제1남전도회","depth":"2"},{"no":"21403000000","code":"21403000000","name":"제1여전도회","depth":"2"},{"no":"21404000000","code":"21404000000","name":"교구활동비","depth":"2"},{"no":"21405000000","code":"21405000000","name":"장학후원금","depth":"2"},{"no":"21406000000","code":"21406000000","name":"제직교육비","depth":"2"},{"no":"21407000000","code":"21407000000","name":"바이블아카데미","depth":"2"},{"no":"21407010000","code":"21407010000","name":"바이블아카데미","depth":"3"},{"no":"21407020000","code":"21407020000","name":"일대일제자양육","depth":"3"},{"no":"21408000000","code":"21408000000","name":"중간지도자","depth":"2"},{"no":"21409000000","code":"21409000000","name":"샬롬경로대학","depth":"2"},{"no":"3010000","code":"30100000000","name":"당좌자산","depth":"1"},{"no":"3010100","code":"30101000000","name":"현금","depth":"2"},{"no":"3010200","code":"30102000000","name":"당좌예금","depth":"2"},{"no":"3010300","code":"30103000000","name":"보통예금","depth":"2"},{"no":"3010400","code":"30104000000","name":"기타제예금","depth":"2"},{"no":"3010800","code":"30108000000","name":"외상매출금","depth":"2"},{"no":"3010900","code":"30109000000","name":"대손충당금","depth":"2"},{"no":"3011000","code":"30110000000","name":"받을어음","depth":"2"},{"no":"3011100","code":"30111000000","name":"대손충당금","depth":"2"},{"no":"3011200","code":"30112000000","name":"직원대여금","depth":"2"},{"no":"3011300","code":"30113000000","name":"대손충당금","depth":"2"},{"no":"3011400","code":"30114000000","name":"미수수익","depth":"2"},{"no":"3011500","code":"30115000000","name":"대손충당금","depth":"2"},{"no":"3011600","code":"30116000000","name":"미수금","depth":"2"},{"no":"3011700","code":"30117000000","name":"대손충당금","depth":"2"},{"no":"3011800","code":"30118000000","name":"소모품","depth":"2"},{"no":"3011900","code":"30119000000","name":"교회 설정 계정과목","depth":"2"},{"no":"3012000","code":"30120000000","name":"선급금","depth":"2"},{"no":"3012100","code":"30121000000","name":"대손충당금","depth":"2"},{"no":"3012200","code":"30122000000","name":"선급비용","depth":"2"},{"no":"3012300","code":"30123000000","name":"가지급금","depth":"2"},{"no":"3012400","code":"30124000000","name":"부가세대급금","depth":"2"},{"no":"3012500","code":"30125000000","name":"선납세금","depth":"2"},{"no":"3012600","code":"30126000000","name":"주.임.종 단기채권","depth":"2"},{"no":"3012700","code":"30127000000","name":"전도금","depth":"2"},{"no":"3012800","code":"30128000000","name":"선급공사비","depth":"2"},{"no":"3012900","code":"30129000000","name":"교회 설정 계정과목","depth":"2"},{"no":"3013000","code":"30130000000","name":"현금과부족","depth":"2"},{"no":"3013100","code":"30131000000","name":"미결산","depth":"2"},{"no":"3013200","code":"30132000000","name":"본점","depth":"2"},{"no":"3013300","code":"30133000000","name":"지점","depth":"2"},{"no":"3013400","code":"30134000000","name":"교회 설정 계정과목","depth":"2"},{"no":"3020000","code":"30200000000","name":"재고자산","depth":"1"},{"no":"3020100","code":"30201000000","name":"상품","depth":"2"},{"no":"3020200","code":"30202000000","name":"매입환출 및 에누리","depth":"2"},{"no":"3020300","code":"30203000000","name":"매입할인","depth":"2"},{"no":"3020400","code":"30204000000","name":"관세환급금","depth":"2"},{"no":"3020500","code":"30205000000","name":"제품","depth":"2"},{"no":"3020600","code":"30206000000","name":"관세환급금","depth":"2"},{"no":"3020700","code":"30207000000","name":"원재료","depth":"2"},{"no":"3020800","code":"30208000000","name":"매입환출 및 에누리","depth":"2"},{"no":"3020900","code":"30209000000","name":"매입할인","depth":"2"},{"no":"3021000","code":"30210000000","name":"부재료","depth":"2"},{"no":"3021100","code":"30211000000","name":"매입환출 및 에누리","depth":"2"},{"no":"3021200","code":"30212000000","name":"매입할인","depth":"2"},{"no":"3021300","code":"30213000000","name":"저장품","depth":"2"},{"no":"3021400","code":"30214000000","name":"미착품","depth":"2"},{"no":"3021500","code":"30215000000","name":"재공품","depth":"2"},{"no":"3021600","code":"30216000000","name":"교회 설정 계정과목","depth":"2"},{"no":"3021700","code":"30217000000","name":"교회 설정 계정과목","depth":"2"},{"no":"3030000","code":"30300000000","name":"투자자산","depth":"1"},{"no":"3030100","code":"30301000000","name":"장기성예금","depth":"2"},{"no":"3030200","code":"30302000000","name":"특정현금예금","depth":"2"},{"no":"3030300","code":"30303000000","name":"장기투자증권","depth":"2"},{"no":"3030400","code":"30304000000","name":"장기대여금","depth":"2"},{"no":"3030500","code":"30305000000","name":"대손충당금","depth":"2"},{"no":"3030600","code":"30306000000","name":"장기외상매출금","depth":"2"},{"no":"3030700","code":"30307000000","name":"현재가치 할인차금","depth":"2"},{"no":"3030800","code":"30308000000","name":"대손충당금","depth":"2"},{"no":"3030900","code":"30309000000","name":"장기받을어음","depth":"2"},{"no":"3031000","code":"30310000000","name":"현재가치 할인차금","depth":"2"},{"no":"3031100","code":"30311000000","name":"대손충당금","depth":"2"},{"no":"3031200","code":"30312000000","name":"투자부동산","depth":"2"},{"no":"3031300","code":"30313000000","name":"임차보증금","depth":"2"},{"no":"3031400","code":"30314000000","name":"기타보증금","depth":"2"},{"no":"3031500","code":"30315000000","name":"부도어음과수표","depth":"2"},{"no":"3031600","code":"30316000000","name":"대손충당금","depth":"2"},{"no":"3031700","code":"30317000000","name":"전신전화가입권","depth":"2"},{"no":"3031800","code":"30318000000","name":"이연법인세차","depth":"2"},{"no":"3031900","code":"30319000000","name":"회사설정계정과목","depth":"2"},{"no":"3032000","code":"30320000000","name":"퇴직보험예치금","depth":"2"},{"no":"3032100","code":"30321000000","name":"국민연금전환금","depth":"2"},{"no":"3040000","code":"30400000000","name":"유형자산","depth":"1"},{"no":"3040100","code":"30401000000","name":"토지","depth":"2"},{"no":"3040200","code":"30402000000","name":"건물","depth":"2"},{"no":"3040300","code":"30403000000","name":"감가상각누계액","depth":"2"},{"no":"3040400","code":"30404000000","name":"구축물","depth":"2"},{"no":"3040500","code":"30405000000","name":"감가상각누계액","depth":"2"},{"no":"3040600","code":"30406000000","name":"기계장치","depth":"2"},{"no":"3040700","code":"30407000000","name":"감가상각누계액","depth":"2"},{"no":"3040800","code":"30408000000","name":"차량운반구","depth":"2"},{"no":"3040900","code":"30409000000","name":"감가상각누계액","depth":"2"},{"no":"3041000","code":"30410000000","name":"공구와기구","depth":"2"},{"no":"3041100","code":"30411000000","name":"감가상각누계액","depth":"2"},{"no":"3041200","code":"30412000000","name":"비품","depth":"2"},{"no":"3041300","code":"30413000000","name":"감가상각누계액","depth":"2"},{"no":"3041400","code":"30414000000","name":"시설장치","depth":"2"},{"no":"3041500","code":"30415000000","name":"감가상각누계액","depth":"2"},{"no":"3050000","code":"30500000000","name":"무형자산","depth":"1"},{"no":"3050100","code":"30501000000","name":"영업권","depth":"2"},{"no":"3050200","code":"30502000000","name":"산업재산권","depth":"2"},{"no":"3050300","code":"30503000000","name":"광업권","depth":"2"},{"no":"3050400","code":"30504000000","name":"창업비","depth":"2"},{"no":"3050500","code":"30505000000","name":"개발비","depth":"2"},{"no":"3050600","code":"30506000000","name":"교회 설정 계정과목","depth":"2"},{"no":"3050700","code":"30507000000","name":"교회 설정 계정과목","depth":"2"},{"no":"4010000","code":"40100000000","name":"유동부채","depth":"1"},{"no":"4010100","code":"40101000000","name":"외상매입금","depth":"2"},{"no":"4010200","code":"40102000000","name":"지급어음","depth":"2"},{"no":"4010300","code":"40103000000","name":"미지급금","depth":"2"},{"no":"4010400","code":"40104000000","name":"예수금","depth":"2"},{"no":"4010500","code":"40105000000","name":"부가세 예수금","depth":"2"},{"no":"4010600","code":"40106000000","name":"당좌차월","depth":"2"},{"no":"4010700","code":"40107000000","name":"가수금","depth":"2"},{"no":"4010800","code":"40108000000","name":"예수보증금","depth":"2"},{"no":"4010900","code":"40109000000","name":"선수금","depth":"2"},{"no":"4011000","code":"40110000000","name":"단기차입금","depth":"2"},{"no":"4011100","code":"40111000000","name":"미지급세금","depth":"2"},{"no":"4011200","code":"40112000000","name":"미지급비용","depth":"2"},{"no":"4011300","code":"40113000000","name":"선수수익","depth":"2"},{"no":"4011400","code":"40114000000","name":"미지급 배당금","depth":"2"},{"no":"4011500","code":"40115000000","name":"이연법인세대","depth":"2"},{"no":"4011600","code":"40116000000","name":"교회 설정 계정과목","depth":"2"},{"no":"4011700","code":"40117000000","name":"교회 설정 계정과목","depth":"2"},{"no":"4011800","code":"40118000000","name":"교회 설정 계정과목","depth":"2"},{"no":"4020000","code":"40200000000","name":"고정부채","depth":"1"},{"no":"4020100","code":"40201000000","name":"사채","depth":"2"},{"no":"4020200","code":"40202000000","name":"사채할인발행차금","depth":"2"},{"no":"4020300","code":"40203000000","name":"장기차입금","depth":"2"},{"no":"4020400","code":"40204000000","name":"임대보증금","depth":"2"},{"no":"4020500","code":"40205000000","name":"퇴직급여충당금","depth":"2"},{"no":"4020600","code":"40206000000","name":"퇴직보험충당금","depth":"2"},{"no":"4020700","code":"40207000000","name":"장기미지급금","depth":"2"},{"no":"4020800","code":"40208000000","name":"주.임.종장기차입금","depth":"2"},{"no":"4020900","code":"40209000000","name":"관계회사장기차입금","depth":"2"},{"no":"4021000","code":"40210000000","name":"외화장기차입금","depth":"2"},{"no":"4021100","code":"40211000000","name":"장기임대보증금","depth":"2"},{"no":"4021200","code":"40212000000","name":"장기성지급어음","depth":"2"},{"no":"4021300","code":"40213000000","name":"교회 설정 게정과목","depth":"2"},{"no":"4021400","code":"40214000000","name":"교회 설정 계정과목","depth":"2"},{"no":"5010000","code":"50100000000","name":"기본금","depth":"1"},{"no":"5020000","code":"50200000000","name":"수익금","depth":"1"},{"no":"5030000","code":"50300000000","name":"인출금","depth":"1"}]    };
+
+    //계좌 데이타
+    var bankListData = {
+        columnName : ["번호","요약","은행명","은행분류","설명","외화구분"]
+        ,tdWidth : [50,105,100,60,250,0]
+        ,description : "번호 또는 요약명을 입력 해주세요"
+        ,data:[{"no":"0","name":"현금","bankName":"현금","bankType":"","description":"* 현금 입금,출금시 선택 ","currency_flag":"0"}]    };
+
+
+    //전체계좌 데이타
+    var allBankListData = {
+        columnName : ["번호","요약","은행명","은행분류","설명",""]
+        ,tdWidth : [50,60,100,60,300,0]
+        ,description : "번호 또는 요약명을 입력 해주세요"
+        ,data:[{"no":"0","name":"현금","bankName":"현금","bankType":"","description":"* 현금 입금,출금시 선택 ","currency_flag":"0"}]    };
+
+
+    //은행 표준코드 데이터
+    var standard_bank = {
+        columnName : ["코드","은행명"]
+        ,tdWidth : [60,100]
+        ,description : "번호 또는 요약명을 입력 해주세요"
+        ,data:[{"code":"2","name":"산업"},{"code":"3","name":"기업"},{"code":"4","name":"국민"},{"code":"5","name":"외환"},{"code":"7","name":"수협"},{"code":"11","name":"농협"},{"code":"12","name":"단위농협"},{"code":"20","name":"우리"},{"code":"23","name":"SC(스탠다드차타드)"},{"code":"27","name":"한국씨티(구한미)"},{"code":"31","name":"대구"},{"code":"32","name":"부산"},{"code":"34","name":"광주"},{"code":"35","name":"제주"},{"code":"37","name":"전북"},{"code":"39","name":"경남"},{"code":"45","name":"새마을금고"},{"code":"48","name":"신용협동조합"},{"code":"50","name":"상호저축은행중앙회"},{"code":"54","name":"홍콩상하이(HSBC)"},{"code":"55","name":"도이치"},{"code":"57","name":"제이피모간체이스"},{"code":"60","name":"뱅크오브아메리카"},{"code":"61","name":"비엔피파리바"},{"code":"64","name":"산림조합"},{"code":"71","name":"우체국"},{"code":"81","name":"하나"},{"code":"88","name":"신한(구조흥포함)"},{"code":"89","name":"케이뱅크"},{"code":"90","name":"카카오뱅크"},{"code":"92","name":"토스뱅크"},{"code":"209","name":"유안타증권"},{"code":"218","name":"KB증권"},{"code":"230","name":"미래에셋증권"},{"code":"238","name":"미래에셋대우"},{"code":"240","name":"삼성증권"},{"code":"243","name":"한국투자증권"},{"code":"247","name":"NH투자증권"},{"code":"261","name":"교보증권"},{"code":"262","name":"하이투자증권"},{"code":"263","name":"HMC투자증권"},{"code":"264","name":"키움증권"},{"code":"265","name":"이트레이드증권"},{"code":"266","name":"SK증권"},{"code":"267","name":"대신증권"},{"code":"268","name":"솔로몬투자증권"},{"code":"269","name":"한화투자증권"},{"code":"270","name":"하나대투증권"},{"code":"278","name":"신한금융투자"},{"code":"279","name":"동부증권"},{"code":"280","name":"유진투자증권"},{"code":"287","name":"메리츠종합금융증권"},{"code":"289","name":"NH투자증권"},{"code":"290","name":"부국증권"},{"code":"291","name":"신영증권"},{"code":"292","name":"LIG투자증권"}]    };
+
+    var selectRow = null;
+    setBrowsHeight('inputBox1',349+set_brows_size_gap); //김지연
+
+    function click_test(obj){
+
+        var replace_expend_code = $(obj).attr('value');
+
+    }
+
+    var modify_balance_flag = 0;
+    var modify_sum_monney = 0;
+    var tempBillFormMode = null;
+
+    var accountLock = (function(){
+        var _show = function(){
+            $('#account_mask_area').show();
+            $('#account_text_area').html($('#acntName').val());
+            $('#budget_text_area').html($('#account_budget_section').html());
+            $('#account_select_area').css('visibility','hidden');
+
+        };
+
+        // 계정과목이 변경될 경우 기 입력한 여러건에 대한 계정과목도 예산 확인을 해서 다시 입력하는게 맞음.
+        var _unlock = function(){
+            MessageBox.confirm("계정을 수정할 경우 아래 입력한 내용이 초기화 되고\n다시 입력하여야합니다.\n계정과목을 수정하시겠습니까?", () => {
+                $('#account_mask_area').hide();
+                $('#account_text_area').html('');
+                $('#budget_text_area').html('');
+                $('#account_select_area').css('visibility','visible');
+                _clear();
+            })
+        };
+
+        // 목록 초기화
+        var _clear = function(){
+            tempBillList.data = new Array();
+            CDVList.count_no = 0;
+            sumMoney();
+            $('#inputBox1 .innerTable').html('');
+        };
+
+        return {
+            show : _show
+            ,unlock : _unlock
+        }
+    })();
+
+    function calc_budget(m_flag) {
+        var acntCode = $('#acntCodeTemp').val();
+        var date = $('#date').val();
+
+        if (acntCode != '' && $('#date').val().length == 8) {
+
+            $.post("/bill/tempBill/getBudget/" + acntCode + "/" + date +"/"+modify_flag, function (data) {
+                var budget_data = JSON.parse(data);
+
+                if ($('.expend_type .active input').val() == '가지급대체') {
+                    $('#budget').text(number_format(budget_data.budget));
+                    $('#last_balance').text(number_format(budget_data.last_balance));
+                    $('#calc_balance').text(number_format(budget_data.last_balance));
+                    $('#last_payment').text(number_format(budget_data.last_payment));
+
+                } else {
+                    $('#budget').text(number_format(budget_data.budget));
+                    $('#last_balance').text(number_format(budget_data.last_balance));
+                    $('#last_payment').text(number_format(budget_data.last_payment));
+
+                    if (m_flag == 1) {
+                        modify_balance_flag = 1;
+                        modify_sum_monney = sumMoney();
+
+                        $('#calc_balance').text(number_format(budget_data.last_balance - modify_sum_monney));
+
+                    } else if (modify_balance_flag == 1) {
+                        $('#calc_balance').text(number_format(budget_data.last_balance - sumMoney()));
+
+                    } else {
+
+                        $('#calc_balance').text(number_format(budget_data.last_balance - sumMoney()));
+                    }
+
+                }
+
+                if (budget_data.last_balance - sumMoney() < 0) {
+                    $('#over_budget').show();
+                } else {
+                    $('#over_budget').hide();
+                }
+
+
+
+                if(tempBillFormMode != 'write_tabs_3'){
+                    accountLock.show();
+                }
+            });
+        } else {
+            $('#budget').text("");
+            $('#last_balance').text("");
+            $('#calc_balance').text("");
+            $('#over_budget').hide();
+        }
+    }
+
+    $(function(){
+        $('.expend_type .btn-default').click(function(){
+            var len = $('#write_tabs_content .innerTable tr').length;
+            if(len > 0){
+                MessageBox.confirm('타입을 변경하시면 작성중이신 내역이 모두 초기화 됩니다. \n 초기화 하시겠습니까?', function() {
+                    WindowLocation.href = '/bill/tempBill/bill_write/income';
+                }, function() {
+                    return false;
+                })
+            }
+
+            if($(this).find('input').val() == '가지급금'){
+                $("#sub_date").show();
+                $("#bankName").val('');
+                $("#bankID").val('');
+                $("#bankName").prop('disabled',false);
+                $("#bank").prop('disabled',false);
+                $("#holder").prop('disabled',false);
+                $("#account_no").prop('disabled',false);
+                $("#uName").prop('disabled',false);
+                $("#acntName").prop('disabled',false);
+                clearUnsel();
+                set_acntCode();
+
+            }else if($(this).find('input').val() == '가지급대체'){
+                $("#state_btn").html('대체 영수증 선택<span class="caret"></span>');
+                $("#acntName").val('');
+                $("#acntCodeTemp").val('');
+                $("#sub_date").hide();
+                $("#bank").prop('disabled',true);
+                $("#holder").prop('disabled',true);
+                $("#account_no").prop('disabled',true);
+                $("#uName").prop('disabled',true);
+                $("#acntName").prop('disabled',true);
+                clearUnsel();
+
+            }else{
+                $("#acntName").val('');
+                $("#acntCodeTemp").val('');
+                $("#sub_date").hide();
+
+                $("#bankName").val('');
+                $("#bankID").val('');
+                $("#bankName").prop('disabled',false);
+                $("#bank").prop('disabled',false);
+                $("#holder").prop('disabled',false);
+                $("#account_no").prop('disabled',false);
+                $("#uName").prop('disabled',false);
+                $("#acntName").prop('disabled',false);
+                clearUnsel();
+                set_acntCode();
+            }
+
+        });
+
+        $(".sel_sub_type .btn-default").click(function(){
+            var diffMoney = sumMoney();
+            if($(this).find('input').val() == '잔금반환'){
+                $('#replaceModalMsg4').html(withdraw_bank + ' ' + withdraw_account + '<br/> 예금주 : (사)기독교 할렐루야 선교원 <br/> ' + number_format(-diffMoney) + '원');
+                $('#replaceModalMsg3').text(' 선택하신 반환/이월을후에 청구서 등록 및 인쇄 버튼을 클릭하면 청구서가 등록됩니다.');
+
+            }else{
+                $('#replaceModalMsg4').text('이월금 : ' + number_format(-diffMoney) + '원');
+                $('#replaceModalMsg3').text('이월금을 확인후에 청구서 등록 및 인쇄 버튼을 클릭하면 청구서가 등록됩니다.');
+            }
+
+        });
+    });
+
+
+    $(function(){
+        $('#date,#date2').datepicker({
+            changeMonth : true,
+            changeYear : true,
+            dateFormat : 'yymmdd',
+            monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+            monthNamesShort: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+            dayNames: ['일','월','화','수','목','금','토'],
+            NamesShort: ['일','월','화','수','목','금','토'],
+            dayNamesMin: ['일','월','화','수','목','금','토'],
+            showMonthAfterYear: true,
+            yearSuffix: '년',
+            showButtonPanel: true,
+            currentText : '이번 달',
+            closeText : '닫기'
+        });
+
+        $('#calendar1_').click(function(){
+            $('#date').datepicker('show');
+        });
+        $('#calendar3').click(function(){
+            $('#date2').datepicker('show');
+        });
+    });
+
+    function disableReplace() {
+        $("#bank").prop('disabled',true);
+        $("#holder").prop('disabled',true);
+        $("#account_no").prop('disabled',true);
+        $("#uName").prop('disabled',true);
+        $("#acntName").prop('disabled',true);
+    }
+
+    // 계정선택기 실행완료시 실행됨
+    var acntCallBack = function(){
+        var code = $('#acntCodeTemp').val();
+        $.each(accountListData.data,function(k,v){
+            if(v.code == code){
+                calc_budget();
+                return false;
+            }
+
+        });
+    };
+
+    ///bill/resultFunc.js 에 있는건데 임시로 가져옴 엄태범 (2016-01-09)
+    function adjustBank(sObj) {
+
+        if (sObj.selectDataIndex >= 0) {
+            var data = sObj.list.data[sObj.selectDataIndex];
+
+            $('#bankID').val(data.no);
+            $('#currency_flag').val(data.currency_flag);
+
+            if(data.currency_flag==0){
+				$('#bank').prop('readonly',true).val("");
+                //, #holder, #account_no
+            }else{
+				$('#bank').prop('readonly',false).val("");
+            }
+
+        } else {
+            $('#bankID').val("");
+            $('#bankName').val("");
+            $('#currency_flag').val("");
+        }
+    }
+    /*지출결의서에서 사용*/
+    function adjustCustomer(sObj) {
+        if (sObj.selectDataIndex >= 0) {
+            var data = sObj.list.data[sObj.selectDataIndex];
+
+            if (data.no == 0) {
+                resetCustomer();
+            } else {
+                var memType = 2;
+
+                $('#name1Tag').attr('class', 'memType' + memType);
+                $('#memType').val(memType);
+
+                $('#pid').val(data.no);
+                $('#uName').val(data.name);
+
+                if($('#bankID').val() > 0){
+                    $('#bank').val(data.bankName);
+                    $('#account_no').val(data.accountNo);
+                    $('#holder').val(data.accountHolder);
+                    $('#standardCode').val(data.standardCode);
+                }else{
+                    $('#bank').val('');
+                    $('#account_no').val('');
+                    $('#holder').val('');
+                    $('#standardCode').val('');
+                }
+
+
+                $('#parent_pid').val(data.no);
+                $('#parent_receiver').val(data.name);
+                if($('#parent_bankID').val() == 1){
+                    $('#parent_bank').val(data.bankName);
+                    $('#parent_account_no').val(data.accountNo);
+                    $('#parent_holder').val(data.accountHolder);
+                    $('#parent_standardCode').val(data.standardCode);
+                }
+
+
+            }
+        } else {	// selectIndex 가 -1 일땐 아무것도 수행하지 않음.
+            resetCustomer();
+        }
+    }
+</script>
+<!-- 전표 목록에서 가져온 js,css 들 -->
+
+<style>
+
+    .form-control {font-size:9pt;}
+
+    #tabs {	width: 750px;  }
+    #tabs-1 {  border-top: 1px solid #aaa;  width: 750px; height:100%;}
+    .tabs2_btn { float: left; height: 53px; position: absolute; top: 65px; left: 400px; }
+
+    #searchValue input{border: 1px solid #4a8cc3; height: 17px; line-height: 17px; }
+    .billBoardDetail2 {	border-left: 1px solid #aaa; border-top: 1px solid #aaa; }
+    .billBoardDetail2 .thead td { background: url('/images/table_bg.gif') repeat-x; border-bottom: 1px solid #555; height: 26px; }
+    .billBoardDetail2 tr td { border-right: 1px solid #aaa; border-bottom: 1px solid #555; height: 28px; text-align: center; background: white;	}
+    #expend_popup { position: absolute; top: 0px; left: 0px; width: 600px; height: 300px; background: #ccd7e1; border: 1px solid #5b6395; }
+    #printOption { position: absolute; top: 100px; left: 200px; width: 550px; height: 335px; background: #EEEEEF; border: 1px solid #5b6395; }
+    .top_bar { background: url('/images/search_top_bar.gif') repeat; height: 39px; width: 100%; border-bottom: 1px solid #061b37; color: #fff; font-weight: bold; font-size: 15px; }
+    .selectListTable tr td { height: 30px; color: white; border-bottom: 1px solid white; }
+    .selectSel {background:#abc;}
+
+    .board td {background:white;}
+    .board tbody td{height:20px; text-align:center; border:0px; border-right:1px solid #ddd; border-bottom:1px solid #ddd;}
+
+    #inputBox1 img {vertical-align:middle;}
+    #inputBox2 img {vertical-align:middle;}
+
+    #name1Tag {width:4px;height:21px;background:#f6f6f6;vertical-align:middle;margin-right:2px;}
+
+    .billBoardDetail thead td.amount {color:#0e4ead;cursor:default;}
+    .billBoardDetail thead td.amount span {color:#9aa7ba;font-weight:normal;}
+
+    #sumResultText {color:red;}
+
+    .board .click_point:hover {cursor:pointer}
+
+    .data_write_table td{text-align:center;}
+    .data_write_table thead td {background:#eeeeee;}
+    .data_write_table thead td input {margin-right:4px;}
+    .data_write_table tbody td input {height:27px;line-height:27px;text-align: left;}
+
+    #inputValue2 {background:#d9edf7;}
+    #custom_input th{padding:0px 0px 0px 6px;vertical-align: middle;color:#777;}
+
+    .date_list thead td{text-align:center;border-bottom:2px solid #ccc;height:34px;font-weight:bold;background: #eeeeee;}
+
+    #inputBox1 td {height:30px;}
+
+    .list_btn i{font-size:11pt;}
+    .list_btn {height:20px;width:20px;padding:0px;text-align:center;line-height:20px;}
+
+
+    .write_tabs_menu{background-color:#FFF;}
+    .write_tabs_menu.active{background-color:red;}
+    .write_tabs_item{display:none;}
+    .write_tabs_item.active{display:inline;}
+    #contentForm{display:none;}
+    #write_tab_change_content.write_tabs_1 .write_content{width:860px;float:left;}
+    #write_tab_change_content.write_tabs_2 .write_content{width:100%;}
+    #write_tab_change_content.write_tabs_3 .write_content{width:860px;float:left;}
+    #write_tab_change_content.write_tabs_1 .write_button{padding-left:7px;float:left;}
+    #write_tab_change_content.write_tabs_3 .write_button{padding-left:7px;float:left;}
+    #write_tab_change_content.write_tabs_1 .inputValue3{display: none;}
+    #write_tab_change_content.write_tabs_1 .write_input3{display:none;}
+    #write_tab_change_content.write_tabs_2 .write_input3{display:none;}
+    #write_tab_change_content.write_tabs_2 .inputValue3{display: none;}
+    #write_tab_change_content.write_tabs_2 .write_button{display:none;}
+    #write_tab_change_content.write_tabs_2 .write_input{display:none;}
+    #write_tab_change_content.write_tabs_3 .inputValue{display: none;}
+    #write_tab_change_content.write_tabs_3 .write_input{display:none;}
+    #write_tab_change_content.write_tabs_2 .panel{margin-bottom:0;}
+
+    /* 계정과목 선택기에서 사용하는 부분 */
+    .acnt_select_depth {float:left;width:150px;margin:5px;}
+    .bill_select label{vertical-align: middle;}
+    .hasChild0 {color: #366fd6;}
+    /* 계정과목 선택기에서 사용하는 부분 */
+</style>
+<script>
+    </script>
+<div id="left_content" style="float:left;">
+    <div id="tabs-1" style="width:950px; border-top:0px;">
+        <div style="padding:7px;">
+            <div class="input-group" style='width:110px;float:left;margin-right:10px'>
+                <input type="text" id="date" name="date" value="20260117" dataType='date' class="form-control" style="line-height:34px; float:left; width:70px;">
+                <div class="input-group-btn">
+                    <button class="btn btn-info" type="button" id='calendar1_' style="width:45px;height:34px;"><i class='icon-calendar'></i></button>
+                </div>
+            </div><!-- /input-group -->
+
+            <div class="btn-group expend_type" data-toggle="buttons" style='float:left;'>
+                <label class="btn btn-default active">
+                    <input type="radio" name="expend_type" value="영수증완비">영수증완비
+                </label>
+                <label class="btn btn-default">
+                    <input type="radio" name="expend_type" value="가지급금">가지급금
+                </label>
+                <label class="btn btn-default">
+                    <input type="radio" name="expend_type" value="가지급대체">가지급대체
+                </label>
+            </div>
+
+                            <div id="sub_date">
+                    <span style="float:left;line-height:40px; height:40px;margin-left:10px;">가지급대체예정일</span>
+                    <div class="input-group" style='width:130px; float:left; padding-left:5px' >
+                        <input type="text" id="date2" name="date2" dataType='date2' value="" class="form-control" style="line-height:34px; width:80px; float:left;" placeholder='대쳬예정일'>
+                        <div class="input-group-btn" style=" float:left">
+                            <button class="btn btn-info" type="button" id='calendar3' style="width:45px;height:34px;float:left"><i class='icon-calendar'></i></button>
+                        </div>
+                    </div><!-- /input-group -->
+                </div>
+                <div id="bill_replace_list" class="btn-group" style="width:200px; float:left; margin-left: 10px;display: none;">
+                    <button type="button" style="width: 100%; line-height:27px !important;" class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="state_btn">
+                        대체 영수증 선택<span class="caret"></span>
+                    </button>
+                    <ul id="bill_replace_list_ul" class="dropdown-menu" role="menu" class="state_li">
+                        <li val="all"><a href="javascript:;" value="-1">선택할 수 있는 영수증이 존재하지 않습니다.</a></li>
+                    </ul>
+                </div>
+                <div id="write_tabs" class="btn-group" role="group" style="margin-left:7px;">
+                    <button  type="button" style="width:100px;" class="write_tabs_menu btn btn-default dropdown-toggle" data-toggle="dropdown" id ="write_type">
+                        양식선택<span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li val="1"><a id="tab1" data-tab="write_tabs_1" data-write-input-type="1">재정청구서A</a></li>
+                        <li class="divider tab3_series"></li>
+                        <li val="3" class="tab3_series"><a id="tab3" data-tab="write_tabs_3" data-write-input-type="3" >재정청구서B</a></li>
+                        <li class="divider"></li>
+                        <li val="2"><a id="tab2" data-tab="write_tabs_2" data-write-input-type="2" >기안문작성</a></li>
+                    </ul>
+                </div>
+                <button type="button" class="btn btn-info" style='float:right; width:140px;padding:0;display:block;margin-bottom:7px;font-weight:bold;' onclick="tempSubmit2()" id="modify_button">청구서 등록 및 인쇄</button>
+                <!-- <button type="button" class="btn btn-default" style='float:right;display:block;width:100px; font-weight:bold;color:#777;' onclick="list_go()">취소</button> -->
+                <div style='clear:both'></div>
+            
+        </div>
+                <input type="hidden" id="acntCodeTemp"  name="acntCode" />
+        <input type="hidden" id="depth1"  name="depth1" />
+        <input type="hidden" id="depth2"  name="depth2" />
+        <input type="hidden" id="depth3"  name="depth3" />
+        <input type="hidden" id="parent_billType"  name="billType" value="2" />
+        <div style='padding:7px;padding-top:0px;padding-right:0px;'>
+            <div class="panel panel-default" style="margin-bottom: 0px;padding-top: 7px;background-color: #E1F5FB;">
+                <div style=" margin-bottom:10px;padding-left: 7px;" class="inputValue">
+                    <span>발의부서</span>
+                    <input type="text" autocomplete="off"id="proposal_department" value="선교부" class="form-control" style='width:80px;display:inline; height: 27px;' tabIndex=1 placeholder=''/>
+                    <span>발의자</span>
+                    <input type="text" id="proposer" value="조은경" class="form-control" style='width:80px;display:inline; height: 27px;' tabIndex=1 placeholder=''/>
+                    <div style="display:inline-block;position:relative;" class="common_account_info_area">
+                        <div id="account_select_area">
+                            <span style="padding-left:10px;">계정</span>
+                                                        <input type="text" id="acntName" class="form-control" sList="data:accountListData" resultFunc= "adjustAccountLoadBudget" numberAllow=true   style='width:152px;display:inline; height: 27px;' tabIndex=1 placeholder='계정과목을 선택하세요.' autocomplete="off">
+                            <div id='account_budget_section' style="display:inline-block;">
+                                <span style="margin: 3px;  color:#999">예산</span>
+                                <span  id="budget" style="font-weight:bold;"></span>
+                                <span style="margin: 3px;  color:#999; display:none">지난 주 잔액</span>
+                                <span  id="last_balance" style="font-weight:bold;display:none"></span>
+                                <span style="margin: 3px;  color:#999 ">이전 누계</span>
+                                <span  id="last_payment" style="font-weight:bold;"></span>
+                                <span style="margin: 3px;  color:#999">집행 후 잔액</span>
+                                <span  id="calc_balance" style="font-weight:bold;"></span>
+                                <span id="over_budget"  style="position:absolute;right:0;font-size: 100%; color:red; font-weight:bold; font-size:12px; display: none;">예산초과</span>
+                            </div>
+                        </div>
+                        <div id="account_mask_area" style="display:none;padding:5px;position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.1);z-index:10;">
+                            <div onclick="accountLock.unlock()" style="display:inline-block;">
+                                <span style="padding:0 3px;color:#999;">계정</span>
+                                <div style="display:inline-block;vertical-align:middle;width:152px;overflow:hidden;" id="account_text_area"></div> <i class='icon-pencil'></i>
+                            </div>
+                            <div style="display:inline-block;" id="budget_text_area"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style=" margin-bottom:10px;padding-left: 7px;display:none;" class="inputValue common_bank_info_area">
+                    <span>지급방식</span>
+                    <input type="text" id="parent_bankName" name="parent_bankName" class="form-control" sList="data:bankListData"  resultFunc= "adjustBank2" style='width:65px; height:27px; display:inline;' tabIndex=1/>
+                    <span>수령인</span>
+                    <input type="text" id="parent_receiver" name="parent_receiver" sList="func:getUserInfo4.getUserList" numberAllow="true"  resultFunc="adjustCustomer"  class="form-control"  correct = "false"  style='width:90px;display:inline-block;height:27px;' tabIndex=1/>
+                    <input type="hidden" id="parent_pid" name="parent_pid" >
+                    <input type="hidden" id="parent_memType" name="parent_memType" >
+                    <span>은행명</span>
+                    <input type="text" id="parent_bank" name="parent_bank"  class="form-control" numberAllow="true" correct="true" style='width: 65px; display:inline; height: 27px;'  sList="data:standard_bank"  resultFunc= "adjustBank" tabIndex=1 />
+                    <input type="hidden" id="parent_standardCode" name="parent_standardCode" >
+                    <span>예금주</span>
+                    <input type="text" id="parent_holder" name="parent_holder"  class="form-control" numberAllow="true" correct="false" style='width: 165px; display:inline; height: 27px;' tabIndex=1 />
+                    <span>계좌번호</span>
+                    <input type="text" id="parent_account_no" name="parent_account_no"  class="form-control" numberAllow="true" correct="false" style='width: 165px; display:inline; height: 27px;' tabIndex=1 />
+
+                    <input type="hidden" id="parent_bankID" name="parent_bankID" value="" >
+                </div>
+
+            </div>
+        </div>
+                <div id="write_tab_change_content" style='padding:7px;padding-top:0px;padding-right:0px;'>
+            <!-- 입력폼1 -->
+            <!-- 일자, 분류, 계좌, 계정이름 -->
+            <form name='contentForm' id='contentForm' method='post'>
+                <div class="write_content" style=''>
+
+                    <div class="panel panel-default">
+                        <!-- Table -->
+                        <table class="table data_write_table1">
+                            <col width="90">
+                            <col width="120">
+                            <col width="70">
+                            <col width="130">
+                            <col width="120">
+                            <col width="100">
+                            <thead>
+                            <tr class="inputValue">
+                                <td><label>지급방식</label></td>
+                                <td><label>수령자 </label></td>
+                                <td><label>은행</label></td>
+                                <td><label>예금주</label></td>
+                                <td><label>계좌번호</label></td>
+                                <td id='amount1Tag' class='amount'	><label>금액</label></td>
+                            </tr>
+                            <tr class="inputValue3">
+                                <td colspan="2"><label>계정과목</label></td>
+                                <td colspan="2"><label>금액</label></td>
+                                <td colspan="2"><label>지출내역</label></td>
+                            </tr>
+                            </thead>
+                            <tbody class='formTable'>
+                            <tr id = 'inputValue' class="inputValue">
+                                <td>
+                                    <input type="text" autocomplete="off"id="bankName" class="form-control" sList="data:bankListData"  resultFunc= "adjustBank" style='width:100%;' tabIndex=1 />
+                                    <input type="hidden" id="bankID" name="bankID" value="">
+                                    <input type="hidden" id="billType" name="billType"  value="2"> <!-- 지출은 기본이 2로 저장되도록 함.-->
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off"id="uName" name="uName" sList="func:getUserInfo4.getUserList" numberAllow="true"  resultFunc="adjustCustomer"  class="form-control"  correct = "false"  style='width:100%;display:inline-block;height:27px;' tabIndex=2/>
+                                    <input type="hidden" name="pid" id="pid">
+                                    <input type="hidden" name="memType" id="memType">
+                                    <input type="hidden" name="registrant" id="registrant">
+                                    <input type="hidden" name="registrant_name" id="registrant_name">
+                                    <input type="hidden" name="standard_code" id="standard_code">
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off"id="bank" name="bank"  class="form-control" numberAllow="true" correct="false" style='width:100%; text-indent:2px; float:left;'tabIndex=1  sList="data:standard_bank"  resultFunc= "adjuststandard_bank" />
+                                </td><td>
+                                    <input type="text" autocomplete="off"id="holder" name="holder"  class="form-control" numberAllow="true" correct="false" style='width:100%; text-indent:2px; float:left;'tabIndex=1 />
+                                </td><td>
+                                    <input type="text" autocomplete="off"id="account_no" name="account_no"  class="form-control" numberAllow="true" correct="false" style='width:100%; text-indent:2px; float:left;'tabIndex=1 />
+                                </td>
+                                <td>
+                                    <input type="text" autocomplete="off"name="amount" id='amount' class="amount form-control" style='width:100%;text-align:right;padding:0px;' dataType='money' tabIndex=1 >
+                                </td>
+
+                            </tr>
+                            <tr class="write_input">
+                                <td>
+                                    <label> 지출내역 </label>
+                                </td>
+                                <td colspan="5">
+                                    <input type="text" autocomplete="off"id="sumName" name="sumName"  class="form-control" numberAllow="true" correct="false" style='width:100%; text-indent:2px; float:left;'tabIndex=1 />
+                                </td>
+                            </tr>
+                            <tr class="write_input3">
+                                <td colspan="2">
+                                    <input type="text" autocomplete="off"id="child_account_name" class="form-control"  sList="data:accountListData" resultFunc= "adjustChildAccount" numberAllow="true"  tabIndex=1 placeholder='계정과목을 선택하세요.' style='width:100%;' tabIndex=1 tabMoveIndex="1000"/>
+                                    <input type="hidden" id="child_account_code" name="child_account_code" value="" >
+                                </td>
+                                <td colspan="2">
+                                    <input type="text" autocomplete="off"name="amount" id='amount3' class="amount form-control" dataType='money' style='width:100%;text-align:right;padding:0px;' tabIndex=1   tabMoveIndex="1000">
+                                </td>
+                                <td colspan="2">
+                                    <input type="text" autocomplete="off"id="sumName3" name="sumName"  class="form-control" numberAllow="true" correct="false" style='width:100%; text-indent:2px; float:left;'tabIndex=1   tabMoveIndex="1000"/>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+                <div class="write_button">
+                    <button type="button" class="btn btn-sm btn-info" style='width:70px;height:120px;' id="btn_save" value="1">추가</button>
+                </div>
+                <div style="clear:both;"></div>
+            </form>
+        </div>
+        <div id="write_tabs_content">
+            <div class="write_tabs_item" data-tab="write_tabs_1">
+                <div style="padding:7px;">
+                    <div class="panel panel-success" style='clear:both'>
+                        <table class='board date_list' style='background:transparent;width:100%;'>
+                            <col width="90">
+                            <col width="120">
+                            <col width="70">
+                            <col width="80">
+                            <col width="120">
+                            <col width="100">
+                            <col width="200">
+                            <thead>
+                            <tr style="cursor:pointer;">
+                                <td >지급방식</td>
+                                <td >수령자</td>
+                                <td >은행</td>
+                                <td >예금주</td>
+                                <td >계좌번호</td>
+                                <td >금액</td>
+                                <td >지출내역</td>
+                            </tr>
+                            </thead>
+                        </table>
+                        <div id="inputBox1" style='width:100%;height:300px;overflow-x:hidden;overflow-y:scroll;'>
+                            <table class='board' style='width:100%;' >
+                                <col width="90">
+                                <col width="120">
+                                <col width="70">
+                                <col width="80">
+                                <col width="120">
+                                <col width="100">
+                                <col width="200">
+                                <tbody style='' id="innerTable" class="innerTable">
+                                </tbody>
+                            </table>
+                        </div>
+                        <table id="sumTable1" style="height:24px;border-top:1px solid #ccc;width:100%;background:transparent;">
+                            <col width="30">
+                            <col width="10">
+                            <col width="10">
+                            <col width="30">
+                            <col width="10">
+                            <col width="20">
+                            <tr>
+                                <td style='text-align:center;'>합 계<span class='sumResultText'></span></td>
+                                <td style='text-align:right;'><span style='padding:0px 2px;color:#2a7add;'  class='sum'></span></td>
+                                <td style='text-align:right;'><span style='padding:0px 2px;color:#2a7add;'  class='sum2'></span></td>
+                                <td style='text-align:center;'><span class='replaceSumText'></span></td>
+                                <td style='text-align:right;'><span style='padding:0px 2px;color:#2a7add;'  class='replaceSum'></span></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="write_tabs_item" data-tab="write_tabs_2">
+                <div class="write_content" style="border:1px solid transparent;border-radius:4px;width:100%;padding-left:7px;">
+                    <table width="100%">
+                        <colgroup>
+                            <col width="30px"/>
+                            <col width="*"/>
+                        </colgroup>
+                        <tr>
+                            <td style="font-weight:bold;padding:0px 7px;font-size:9pt;background-color:#eeeeee; border-radius: 4px;">
+                                지출내역
+                            </td>
+                            <td rowspan="2">
+                                <textarea id="sumName2" name="sumName2" style="width:100%;"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="height: 1px;"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="write_tabs_item" data-tab="write_tabs_3">
+                <div style="padding:7px;">
+                    <div class="panel panel-success" style='clear:both'>
+                        <table class='board date_list' style='background:transparent;width:100%;'>
+                            <col width="33%">
+                            <col width="33%">
+                            <col width="33%">
+                            <thead>
+                            <tr style="cursor:pointer;">
+                                <td>계정과목</td>
+                                <td>금&nbsp;&nbsp;&nbsp;&nbsp;액</td>
+                                <td>지출내역</td>
+                            </tr>
+                            </thead>
+                        </table>
+                        <div id="inputBox3" style='width:100%;height:300px;overflow-x:hidden;overflow-y:scroll;'>
+                            <table class='board' style='width:100%;' >
+                                <col width="33%">
+                                <col width="33%">
+                                <col width="33%">
+                                <tbody style='' class="innerTable">
+                                </tbody>
+                            </table>
+                        </div>
+                        <table id="sumTable3" style="height:24px;border-top:1px solid #ccc;width:100%;background:transparent;">
+                            <col width="30">
+                            <col width="10">
+                            <col width="10">
+                            <col width="30">
+                            <col width="10">
+                            <col width="20">
+                            <tr>
+                                <td style='text-align:center;'>합 계<span class='sumResultText'></span></td>
+                                <td style='text-align:right;'><span style='padding:0px 2px;color:#2a7add;'  class='sum'></span></td>
+                                <td style='text-align:right;'><span style='padding:0px 2px;color:#2a7add;'  class='sum2'></span></td>
+                                <td style='text-align:center;'><span class='replaceSumText'></span></td>
+                                <td style='text-align:right;'><span style='padding:0px 2px;color:#2a7add;'  class='replaceSum'></span></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- tabs-1 -->
+
+</div>
+
+
+<div class="modal fade" id="acntCodePanel" tabindex="-1" role="dialog" >
+    <div class="modal-dialog" role="document" style="width:900px;">
+        <div class="modal-content">
+            <form method="post" onsubmit="return acntSearch.adjust(event, acntCallBack)">
+                <div class="modal-header" style="padding:5px 15px;">
+
+                    <h4 style="font-size:11pt;" class="pull-left">계정선택</h4>
+
+                    <div class="pull-right" style="padding-top:4px;">
+                        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">취소</button>
+                        <button type="submit" class="btn btn-primary btn-sm" style="padding-left:50px;padding-right:50px;" >적용</button>
+                    </div>
+                    <div class="clearfix"></div>
+
+                </div>
+                <div class="modal-body">
+                    <div class="bill_select">
+                        <label><input type="radio" name="acntType" value="2"> 지출</label>
+                    </div>
+                    <div id="acnt_frame">
+                        <select id="acnt_select_depth1" size="15" data-depth="1" class="form-control acnt_select_depth"></select>
+                        <select id="acnt_select_depth2" size="15" data-depth="2" class="form-control acnt_select_depth"></select>
+                        <select id="acnt_select_depth3" size="15" data-depth="3" class="form-control acnt_select_depth"></select>
+                        <select id="acnt_select_depth4" size="15" data-depth="4" class="form-control acnt_select_depth"></select>
+                        <select id="acnt_select_depth5" size="15" data-depth="5" class="form-control acnt_select_depth"></select>
+                        <div class="clearfix"></div>
+                    </div>
+
+                </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" id="replaceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="replaceModalLabel">청구서 등록 확인</h4>
+            </div>
+            <div class="modal-body">
+                <p id="replaceModalMsg1"></p>
+                <p id="replaceModalMsg2"></p>
+                <div id="replaceModalWithdrawAccount" style="margin-top:20px; margin-left:180px; margin-bottom:20px;" >
+                    <div class="btn-group sel_sub_type" data-toggle="buttons">
+                        <label class="btn btn-default active">
+                            <input type="radio" name="sel_sub_type" value="잔금반환">잔금반환
+                        </label>
+                        <label class="btn btn-default">
+                            <input type="radio" name="sel_sub_type" value="잔금이월">잔금이월
+                        </label>
+                    </div>
+                    <input type="hidden" name="expend_sub_type"  class="expend_sub_type" id="expend_sub_type"  value=""/>
+
+                </div>
+                <span id="replaceModalMsg4" style="text-align: center; display: block; font-size: 15px; font-weight: bold;"> 신한 110-000-0000 </span>
+                <p id="replaceModalMsg3"></p>
+                <div id="replaceModalAccount" class="panel panel-default" style="margin-top: 10px; display: none;">
+                    <div class="panel-body" style="text-align: center;">
+                        은행&nbsp;&nbsp;<input class="form-control" id="replace_bank" style="width: 100px;display: inline;margin-right: 10px;" type="text" autocomplete="off"/>
+                        계좌번호&nbsp;&nbsp;<input class="form-control" id="replace_account" style="width: 100px;display: inline;margin-right: 10px;" type="text" autocomplete="off"/>
+                        예금주&nbsp;&nbsp;<input class="form-control" id="replace_holder" style="width: 100px;display: inline;margin-right: 10px;" type="text" autocomplete="off"/>
+                    </div>
+
+                </div>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="replaceSubmit();">청구서 등록 및 인쇄</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- 청구서 등록 한 후에 뜨는 판넬창 -->
+<div id="save_info" style='position:absolute;left:250px;top:240px;width:300px;height:200px; padding-left:35px;padding-top:20px; display:none' class='panel panel-default'>
+    <span>청구서가 등록되었습니다.<br/>이동 메뉴를 선택해주세요.</span>
+    <div style="position:absolute; top:0px; right:0; width:20px; height:20px;  cursor:pointer;text-align:right;"  onclick="$('#save_info').css('display','none');"><i class='icon-cancel'></i></div>
+    <div style="height:10px;"></div>
+
+    <div>
+        <a class='btn btn-info' id="save_info_view" expend_code=''>방금 작성한 청구서 확인하기</a>
+    </div>
+    <div style="padding-top:5px;">
+        <a class='btn btn-default' id="save_info_new">새 청구서 입력</a>
+        <a class='btn btn-default' id="save_info_modify"  expend_code=''>수정</a>
+        <a class='btn btn-default' id="save_info_list">목록으로</a>
+    </div>
+</div>
+
+
+
+
+<!-- 선택 목록 표기 -->
+<div id='selectBox' >
+    <div id='selectHead'></div>
+    <div id='selectList'></div>
+    <div id='selectDescription'></div>
+</div>
+<!-- 선택 목록 표기 -->
+
+<!-- 지출결의서 인쇄 설정 팝업 시작-->
+<div id="expend_popup" style="display: none;position: absolute;">
+    <form id="printExpendForm" method="post" target="_blank">
+        <input type="hidden" name="list" id="list">
+        <input type="hidden" name="print_flag" id="print_flag">
+        <input type="hidden" name="printModeSeq" value="1" >
+        <div class="wrap" style="float:left">
+            <div class="top_bar">
+                <div style="padding-top:10px;">
+                    <div style="padding-left:10px; float:left;">지출결의서 인쇄페이지 옵션설정</div>
+                    <div class ="pointer" style="cursor:pointer;padding-right:10px; float:right;" onclick="printExpendBoxClose()">×</div>
+                </div>
+            </div>
+            <div style="background:#586e85; width:570px; height:200px; margin:auto; border:1px solid #aaa;">
+                <table class="board2" style="width:100%;">
+                    <col width="220"><col width="150"><col width="*">
+                    <thead>
+                    <tr>
+                        <td>제목</td><td>선택사항</td><td>내용</td>
+                    </tr>
+                    </thead>
+                </table>
+                <div class='scrollContents' style="height:175px;overflow-y:auto;">
+                    <table class='selectListTable'>
+                        <col width="220"><col width="150"><col width="*">
+                        <tbody class="popupMainDiv">
+
+                        <tr>
+                            <td><span style="font-weight: bold; padding:5px;">결재선 선택</span></td>
+                            <td>
+                                <select name="seal_option1" id="seal_option1">
+                                    <option value="0">결재선 미표시</option>
+                                                                    </select>
+                            </td>
+                            <td>
+                                <select name="seal_option2" id="seal_option2">
+                                    <option value="0">결재선 미표시</option>
+                                                                    </select>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="padding-left:300px; padding-top:10px;">
+                <div style="float:left; cursor: pointer; width:100px; height:24px; background:#586e85; color:#fff; font-weight:bold; padding-top:12px; padding-left:20px" onclick="printExpendBoxPrint(1)">인쇄 미리보기</div>
+                <div style="margin-left:10px; cursor: pointer; width:50px; height:24px; background:#586e85; float:left; color:#fff; font-weight:bold; padding-top:12px; padding-left:20px" onclick="printExpendBoxPrint(2)">인쇄</div>
+                <div style=" margin-left:10px; float:left; cursor: pointer; width:50px; height:24px; background:#586e85; color:#fff; font-weight:bold; padding-top:12px; padding-left:20px" onclick="printExpendBoxClose()">닫기</div>
+            </div>
+        </div>
+    </form>
+
+    <script type="text/javascript" src="/lib/smart-editor/js/HuskyEZCreator.js?202601151730" charset="utf-8"></script>
+    <script>
+        var domainBaseName = "ohjic.com";
+        var oEditors = [];
+        // 	window.onbeforeunload = leavePage;
+        function leavePage(){
+            var row = $("#innerTable").attr('rows').length;
+            // 수정했을경우 경고 메세지
+            if (row > 1) {
+                containerFrame.loadingHide();
+                return '저장하지 않은 변동사항이 있습니다.';
+            }
+        }
+
+        function toPrint(){
+            printExpendBoxOpen();
+        }
+
+        function tempSubmit2(){
+            if($('.expend_type .active input').val() == '가지급대체' && replace_code == '' && !modify){
+
+                MessageBox.alert('대체 영수증을 선택해 주십시오.');
+                return;
+            }
+
+            if(churchCode == 4726){
+
+                if($('#parent_bankID').val()==''){
+                    MessageBox.alert('지급방식을 선택해 주세요.');
+                    $('#parent_bankName').focus();
+                    return;
+                }
+
+                if($('#parent_receiver').val() == ''){
+
+                    MessageBox.alert('수령인을 입력해 주세요.');
+                    $('#parent_receiver').focus();
+                    return;
+                }
+                if($('#parent_bankID').val()==1 && ($('#parent_bank').val() == '' || $('#parent_holder').val() == '' || $('#parent_account_no').val() == '')){
+                    MessageBox.alert('수령 계좌정보를 입력해주세요');
+                    $('#parent_bank').focus();
+                    return;
+                }
+            }
+
+            var url = "/bill/tempBill/bill_write/income?print_mode=2";
+            CDVList.submit(url, function(re){
+                if(re==true){
+                    sAlert('지출결의서가 등록되었습니다.');
+                    endInput();
+                }
+            });
+        }
+
+        function refreshWriteForm(){
+            if(typeof parent.tabMenuController != 'undefined'){
+                parent.tabMenuController.refreshSelectedTab();
+            }
+        }
+
+        function replaceSubmit(){
+            var sum = sumMoney();
+            var msg = "입력하신 항목을 영수증 대체 청구서로 등록 하시겠습니까?";
+            if(sum > 0){
+                var replace_bank = $('#replace_bank').val();
+                var replace_account = $('#replace_account').val();
+                var replace_holder = $('#replace_holder').val();
+                if(replace_bank == '' ||  replace_account == '' || replace_holder == ''){
+                    msg = "계좌 정보가 모두 입력되지 않았습니다.\n계좌정보를 입력하지 않고 청구서로 등록하시겠습니까?";
+                }
+            }
+
+            MessageBox.confirm(msg, () => {
+                if(expend_edit.get_modify_flag()){	// 수정모드일 때의 처리.
+                    modify_submit2(tempBillList,CDVList.expend_code);
+                    sumMoney();
+                    $('#checkAll').prop('checked', false);
+                }else{
+                    _submit3(tempBillList);
+                }
+                $('#checkAll').prop('checked', false);
+            })
+
+        }
+
+        function set_replace_bill_list(){
+            $.post("/bill/tempBill/getReplaceBillList",  function(replaceData){
+                if(replaceData == 'null'){
+                    return;
+                }
+                var data = JSON.parse(replaceData);
+                // console.dir(data);
+
+                if(data.length > 0){
+                    $('#bill_replace_list_ul').empty();
+                    for(var i=0;i<data.length;i++){
+
+                        var html = '<li val="all"><a href="javascript:;" onclick="set_replace_bill(this);" sum="' + data[i].money + '" value="'+ data[i].expend_code +'"> 신청일:'+ data[i].billDate+' ['+ data[i].acntName +'] ' + number_format(data[i].money) + '원 </a></li>';
+                        $('#bill_replace_list_ul').append(html);
+
+                    }
+                }
+            });
+        }
+        var replace_code = '';
+        var replace_money = -1;
+
+        function set_replace_bill(obj){
+            var code = $(obj).attr('value');
+            replace_code = code;
+            var replace_expend_name =  $(obj).text();
+            $('#bill_replace_list button').text(replace_expend_name);
+            $('#bill_replace_list button').attr('sum', $(obj).attr('sum'));
+            $("#innerTable").html('');
+            CDVList.prepare_list.data = [];
+
+            $.post("/bill/tempBill/get_modify_expend_list",{code : code},  function(replaceData){
+                var reData = JSON.parse(replaceData);
+                var tempDate = $("#date").val();
+                for(var i=0;i<reData.data.length;i++){
+                    var item = reData.data[i];
+                    $("#date").val(tempDate);
+                    $("#acntCodeTemp").val(item.acntCode);
+                    $("#acntName").val(item.acntName);
+                    $("#acntName").prop('disabled',true);
+
+                }
+                $("#date").val(tempDate);
+                $("#bankName").val('');
+                $("#bankID").val('');
+
+                $("#sumName").val('');
+                $("#amount").val('');
+
+                $('#bank').val('');
+                $('#holder').val('');
+                $('#account_no').val('');
+                $('#uName').val('');
+                calc_budget();
+            });
+
+        }
+        $(function(){
+            $("#btn_save").click(function(){
+                if($("#btn_save").text() == '추가'){
+                    _submit(function(re){
+                        if(re==true){
+                            endInput();
+                            //return self.firstIndex;
+                            // 체크가 한개도 안되어있을 경우 자바스크립트 오류나서 수정.
+                            var indexNo = typeof(focusMove.firstIndex) == 'undefined' ? 0 : focusMove.firstIndex;
+                            $("#contentForm").find("input:text").get(indexNo).select();
+                        }else{
+                            //return -1;
+                        }
+                    });
+                }
+                if($("#btn_save").text() == '항목수정'){
+
+                    modifyBill();
+                }
+            });
+
+
+            if(modify_flag != null && modify_flag != 'income'){
+                expend_edit.init(modify_flag);
+
+            }
+
+            selectBox.init('.inputValue');			// 선택박스 사용시작
+            selectBox.init('.write_input3');
+            var seqSetting = {};
+            inputMode = "";
+
+            if(inputMode==''){
+                seqSetting = {
+                    date : 0
+                    ,bankName : 0
+                    ,acntName : 0
+                    ,amount : 1
+                    ,sumName : 1
+                }
+            }else{
+                seqSetting = eval("(" + inputMode + ")");
+            }
+
+            if(modify_flag == "income"){
+                $("#write_tabs").customizeTabs("#write_tabs_content","#write_tab_change_content","#tab1");
+                $("#contentForm").show();
+            }
+            else{
+                $("#write_tabs").customizeTabs("#write_tabs_content","#write_tab_change_content","none");
+            }
+            if(churchCode == 4726){
+                $('.expend_type').hide();
+            }
+
+            inputSeqCheck.init('.inputCheckBox', '#contentForm', 1000, seqSetting, 'tempBill');	// tabindex 1000 인것들에 번호부여
+            focusMove.init('#contentForm',1000);		// 포커스이동 클래스 초기화
+            $('.expend_type .btn-default').click(function(){
+                calc_budget();
+                if($(this).find('input').val() == '가지급대체'){
+                    $('#bill_replace_list').show();
+                }else{
+                    replace_code = '';
+                    $('#bill_replace_list').hide();
+                }
+
+            });
+            set_replace_bill_list();
+            set_acntCode();
+
+        });
+
+        function set_acntCode(){
+            if(accountListData.data.length == 1){
+                $('#acntCodeTemp').val(accountListData.data[0].code);
+                $('#acntName').val(accountListData.data[0].name);
+                calc_budget();
+            }
+        }
+
+        $.fn.customizeTabs = function(control,changeControl,initActive){
+            var doNotClickWriteTab2 = true,
+                element = $(this);
+            control = $(control);
+            changeControl = $(changeControl);
+
+            element.delegate("li a","click",function(){
+                //탭 이름을 얻는다
+                var tabName = $(this).attr("data-tab");
+
+                //탭을 클릭하면 커스텀 이벤트가 발생한다
+                element.trigger("change.customizeTabs",tabName);
+            });
+
+            //커스텀 이벤트를 바인드한다
+            element.bind("change.customizeTabs",function(e,tabName){
+                element.find("li").removeClass("active");
+                element.find(">[data-tab='"+tabName+"']").addClass("active");
+            });
+
+            element.bind("change.customizeTabs",function(e,tabName){
+                control.find(">[data-tab]").removeClass("active");
+                control.find(">[data-tab='"+tabName+"']").addClass("active");
+            });
+
+            element.bind("change.customizeTabs",function(e,tabName){
+                changeControl.removeClass("write_tabs_1 write_tabs_2 write_tabs_3");
+                changeControl.addClass(tabName);
+            });
+
+            element.bind("change.customizeTabs",function(e,tabName){
+                tempBillFormMode = tabName;
+                if(tabName == "write_tabs_2"){
+                    if(doNotClickWriteTab2){
+                        nhn.husky.EZCreator.createInIFrame({
+                            oAppRef: oEditors,
+                            elPlaceHolder: "sumName2",
+                            sSkinURI: "/lib/smart-editor/SmartEditor2Skin.html",
+                            htParams : {
+                                bUseToolbar : true,				// 툴바 사용 여부 (true:사용/ false:사용하지 않음)
+                                bUseVerticalResizer : true,		// 입력창 크기 조절바 사용 여부 (true:사용/ false:사용하지 않음)
+                                bUseModeChanger : true			// 모드 탭(Editor | HTML | TEXT) 사용 여부 (true:사용/ false:사용하지 않음)
+                            }, //boolean
+                            fOnAppLoad : function(){
+                                // var sDefaultFont = '굴림';
+                                var nFontSize = 11;
+                                oEditors.getById["sumName2"].setDefaultFont(sDefaultFont, nFontSize);
+                            },
+                            fCreator: "createSEditor2"
+
+                        });
+                        doNotClickWriteTab2=false;
+                    }
+                    clear_array();
+                    $(".common_bank_info_area").hide();
+                    $(".common_account_info_area").show();
+                    $("#btn_save").val("2");
+                    $("#write_type").text("기안문작성");
+                    $("#write_type").html('기안문작성<span class="caret"></span>');
+                }
+                else if(tabName == "write_tabs_3"){
+                    $(".common_bank_info_area").show()
+                        .find("input").val('').attr('selectno','').attr('selectname','');
+                    $(".common_account_info_area").hide()
+                        .find("input").val('').attr('selectno','').attr('selectname','');;
+                    $(".write_button").find("button").css("height","86");
+                    $("#btn_save").val("3");
+                    $("#write_type").text("재정청구서B");
+                    $("#write_type").html('재정청구서B<span class="caret"></span>');
+                    clear_array();
+                    calc_budget();
+                    $("#innerTable tr").remove();
+                }
+                else if(tabName == "write_tabs_1"){
+                    $(".common_bank_info_area").hide();
+                    $(".common_account_info_area").show();
+                    $(".write_button").find("button").css("height","120");
+                    $("#write_type").text("재정청구서A");
+                    $("#write_type").html('재정청구서A<span class="caret"></span>');
+                    $("#btn_save").val("1");
+                    clear_array();
+                    calc_budget();
+                    $("#inputBox3 .innerTable tr").remove();
+
+                }
+            });
+            if(initActive != "none"){
+                var firstName = element.find(initActive).attr("data-tab");
+                element.trigger("change.customizeTabs",firstName);
+            }
+
+            if(churchCode == '4726') {   // 오륜교회는 재정청구서 B타입만 있으면 됨
+                element.trigger("change.customizeTabs", 'write_tabs_3');
+                $('#write_tabs').hide();
+            }else{      // 다른 데서는 재정 B타입 보여질 필요없음
+                $('.tab3_series').hide();
+            }
+            return this;
+        }
+        function clear_array()
+        {
+            tempBillList = {};
+            CDVList.prepare_list = {data:new Array()};
+            $("#contentForm input:text").each(function(){
+                $(this).val("");
+            });
+        }
+
+        var endInput = function(){
+            var billType = $("#billType").val();
+            $("#contentForm input").get(0).focus();
+            $("#billType").val(billType);
+        }
+    </script>
+
+</body>
+</html>
