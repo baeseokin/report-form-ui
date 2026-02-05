@@ -1,18 +1,13 @@
 <template>
   <div class="p-6 font-nanum">
-    <!-- 총 예산 표시 -->
-    <div class="mb-6 p-4 bg-purple-50 border border-purple-300 rounded text-xl font-bold text-purple-800 shadow-sm">
-      📊 총 예산: {{ formatAmount(totalBudget) }} 원
-    </div>
-
     <!-- 부서 & 기준일자 선택 -->
-    <div class="mb-6 flex flex-wrap items-end gap-6">
-      <div>
-        <label class="font-semibold text-gray-700">부서 선택</label>
+    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-blue-50 via-white to-sky-50 rounded-xl shadow-lg border-l-4 border-blue-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
+      <div class="flex flex-col">
+        <label class="font-semibold text-blue-800 mb-1 text-sm">부서 선택</label>
         <select
           v-model="selectedDeptId"
           @change="fetchCategories"
-          class="ml-2 border rounded p-2 shadow-sm"
+          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-44 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
         >
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ d.dept_name }}
@@ -20,38 +15,39 @@
         </select>
       </div>
 
-      <div>
-        <label class="font-semibold text-gray-700">기준일자</label>
+      <div class="flex flex-col">
+        <label class="font-semibold text-blue-800 mb-1 text-sm">기준일자</label>
         <input
           type="date"
           v-model="baseDate"
           @change="fetchCategories"
-          class="ml-2 border rounded p-2 shadow-sm"
+          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-44 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
         />
       </div>
 
-      <div class="flex items-end gap-6">
-        <div>
-          <label class="font-semibold text-gray-700">회계연도</label>
-          <input
-            type="number"
-            v-model="year"
-            min="2000"
-            max="2100"
-            class="ml-2 border rounded p-2 w-28 shadow-sm"
-          />
-        </div>
+      <div class="flex flex-col">
+        <label class="font-semibold text-blue-800 mb-1 text-sm">회계연도</label>
+        <input
+          type="number"
+          v-model="year"
+          min="2000"
+          max="2100"
+          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-28 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
+        />
+      </div>
+
+      <div class="flex items-end gap-3">
         <button
           type="button"
           @click="fetchCategories"
-          class="w-24 px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+          class="px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
         >
           조회
         </button>
         <button
           type="button"
           @click="downloadExcel"
-          class="w-24 px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow hover:from-emerald-600 hover:to-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl shadow-md hover:bg-emerald-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           :disabled="categoriesTree.length === 0"
         >
           Excel
@@ -60,10 +56,11 @@
     </div>
 
     <!-- 계정 목록 Grid -->
-    <table class="w-full border text-sm mb-6">
-      <thead>
-        <tr class="bg-purple-100 text-gray-800">
-          <th class="border p-2 text-center">계정명</th>
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+      <table class="w-full border-collapse text-sm">
+        <thead>
+          <tr class="bg-purple-100 text-gray-800">
+            <th class="border p-2 text-center">계정명</th>
           <th class="border p-2 text-center">계정ID</th>
           <th class="border p-2 text-center">단계</th>
           <th class="border p-2 text-center">상위 계정</th>
@@ -117,12 +114,13 @@
           </td>
         </tr>
         <tr v-if="categoriesTree.length === 0">
-          <td colspan="6" class="text-center p-4 text-gray-500">
+          <td colspan="7" class="text-center p-4 text-gray-500">
             데이터가 없습니다.
           </td>
         </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
 
     <!-- 저장 버튼 -->
     <div class="flex justify-end">

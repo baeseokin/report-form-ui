@@ -10,24 +10,26 @@
     </div>
 
     <!-- 메뉴 접근 권한 테이블 -->
-    <table class="w-full border text-center mb-6">
-      <thead class="bg-purple-100 text-gray-800">
-        <tr>
-          <th class="border p-2">메뉴</th>
-          <th class="border p-2">접근 (all)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="m in menus" :key="m" class="hover:bg-gray-50">
-          <td class="border p-2 font-medium text-gray-700">{{ m }}</td>
-          <td class="border">
-            <input type="checkbox"
-                   v-model="localAccess[m]"
-                   class="w-5 h-5 accent-purple-600" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+      <table class="w-full border-collapse text-sm text-center">
+        <thead class="bg-purple-100 text-gray-800">
+          <tr>
+            <th class="border p-2">메뉴</th>
+            <th class="border p-2">접근 (all)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="m in menus" :key="m" class="hover:bg-gray-50">
+            <td class="border p-2 font-medium text-gray-700">{{ m }}</td>
+            <td class="border">
+              <input type="checkbox"
+                     v-model="localAccess[m]"
+                     class="w-5 h-5 accent-purple-600" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- ✅ 저장 버튼 -->
     <div class="flex justify-end">

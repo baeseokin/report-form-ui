@@ -1,30 +1,28 @@
 <template>
   <div class="p-6 font-nanum">
     <!-- ✅ 검색조건 -->
-    <div class="flex flex-wrap gap-4 mb-6 items-end">
+    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-blue-50 via-white to-sky-50 rounded-xl shadow-lg border-l-4 border-blue-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
       <!-- 기준년도 -->
-      <div class="flex items-end gap-6">
-        <div class="flex items-center gap-2">
-          <label class="font-bold text-gray-700">기준년도</label>
-          <input
-            type="number"
-            v-model="filters.year"
-            class="border rounded p-2 w-24"
-          />
-        </div>
-        <button
-          type="button"
-          @click="fetchBudgetStatus"
-          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
-        >
-          조회
-        </button>
+      <div class="flex flex-col">
+        <label class="font-semibold text-blue-800 mb-1 text-sm">기준년도</label>
+        <input
+          type="number"
+          v-model="filters.year"
+          class="bg-white/90 border border-blue-200 rounded-xl px-3 py-2.5 w-28 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition"
+        />
       </div>
+      <button
+        type="button"
+        @click="fetchBudgetStatus"
+        class="px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
+      >
+        조회
+      </button>
     </div>
 
     <!-- ✅ 결과 목록 -->
-    <div>
-      <table class="w-full border text-sm">
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="bg-purple-100 text-gray-800">
             <th class="border p-2 w-32">관</th>

@@ -2,35 +2,29 @@
   <div class="p-6 font-nanum">
 
     <!-- ✅ 검색조건 -->
-    <div class="p-4 bg-gray-50 rounded-lg shadow-inner mb-6 flex flex-wrap gap-6 items-end">
+    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-blue-50 via-white to-sky-50 rounded-xl shadow-lg border-l-4 border-blue-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
       <!-- ✅ [재정부 전용] 조회범위 선택 -->
       <div v-if="userDeptName === '재정부'" class="flex flex-col">
-        <label class="font-semibold text-gray-800 mb-1">조회범위</label>
-        <div class="flex space-x-4">
-          <label class="flex items-center space-x-1">
-            <input type="radio" v-model="financeScope" value="finance" @change="updateFinanceScope" />
-            <span class="text-gray-700">재정부 청구</span>
+        <label class="font-semibold text-blue-800 mb-1 text-sm">조회범위</label>
+        <div class="flex gap-4 flex-wrap">
+          <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl bg-white/80 border border-blue-200 hover:border-blue-400 transition">
+            <input type="radio" v-model="financeScope" value="finance" @change="updateFinanceScope" class="w-4 h-4 accent-blue-600" />
+            <span class="text-slate-700">재정부 청구</span>
           </label>
-          <label class="flex items-center space-x-1">
-            <input type="radio" v-model="financeScope" value="others" @change="updateFinanceScope" />
-            <span class="text-gray-700">타부서 청구</span>
+          <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl bg-white/80 border border-blue-200 hover:border-blue-400 transition">
+            <input type="radio" v-model="financeScope" value="others" @change="updateFinanceScope" class="w-4 h-4 accent-blue-600" />
+            <span class="text-slate-700">타부서 청구</span>
           </label>
         </div>
       </div>
 
       <!-- 요청기간 -->
       <div class="flex flex-col">
-        <label class="font-semibold text-gray-800 mb-1">청구기간</label>
-        <div class="flex space-x-4">
-          <label v-for="m in [1,3,6,12]" :key="m" class="flex items-center space-x-1">
-            <input
-              type="radio"
-              name="months"
-              :value="m"
-              v-model="search.months"
-              @change="updateDateRange"
-            />
-            <span class="text-gray-700">{{ m }}개월</span>
+        <label class="font-semibold text-blue-800 mb-1 text-sm">청구기간</label>
+        <div class="flex gap-2 flex-wrap">
+          <label v-for="m in [1,3,6,12]" :key="m" class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl bg-white/80 border border-blue-200 hover:border-blue-400 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input type="radio" name="months" :value="m" v-model="search.months" @change="updateDateRange" class="w-4 h-4 accent-blue-600" />
+            <span class="text-slate-700">{{ m }}개월</span>
           </label>
         </div>
       </div>
@@ -39,7 +33,7 @@
       <div class="flex items-end">
         <button
           @click="page=1; searchList()"
-          class="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+          class="px-6 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition font-medium"
         >
           조회
         </button>
