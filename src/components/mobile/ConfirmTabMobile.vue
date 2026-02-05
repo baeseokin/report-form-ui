@@ -82,10 +82,12 @@
         이전
       </button>
       <button
+        type="button"
+        :disabled="isSubmitting"
         @click="sendApprovalRequest"
-        class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700"
+        class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        결재요청
+        {{ isSubmitting ? "처리 중..." : "결재요청" }}
       </button>
     </div>
 
@@ -318,8 +320,11 @@ const clearCanvas = (skipMark = false) => {
    결재 요청
    ========================= */
 const showPopup = ref(false);
+const isSubmitting = ref(false);
 
 const sendApprovalRequest = async () => {
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
   try {
     // 선택한 부서 기준으로 결재선 존재 여부 확인 (재정부 등이 다른 부서 선택 시 해당 부서 결재선 사용)
     const deptNameForLines = (props.selectedDept && props.selectedDept.trim()) ? props.selectedDept.trim() : userDept.value;
@@ -331,6 +336,7 @@ const sendApprovalRequest = async () => {
       const lines = Array.isArray(lineRes.data) ? lineRes.data : [];
       if (lines.length === 0) {
         alert("해당 부서의 결재선 정보가 없습니다. 등록 후 진행하세요.");
+        isSubmitting.value = false;
         return;
       }
     }
@@ -416,6 +422,8 @@ const sendApprovalRequest = async () => {
   } catch (err) {
     console.error("❌ 결재요청 오류:", err);
     alert("❌ 결재요청 실패");
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
