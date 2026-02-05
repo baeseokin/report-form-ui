@@ -4,20 +4,20 @@
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
       <div class="flex flex-wrap gap-2">
         <button
-          class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-50"
+          class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-50"
           :disabled="!selectedDept"
           @click="prepareNewLine('existing')"
         >
           ＋ 선택 부서에 결재선 추가
         </button>
         <button
-          class="px-4 py-2 bg-white border text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50"
+          class="px-3 py-2 text-sm bg-white border text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50"
           @click="prepareNewLine('new')"
         >
           ＋ 새 부서 결재선 등록
         </button>
         <button
-          class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          class="px-3 py-2 text-sm bg-white border border-indigo-200 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50"
           @click="fetchLines"
         >
           새로고침

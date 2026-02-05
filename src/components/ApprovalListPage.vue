@@ -2,7 +2,7 @@
   <div class="p-6 font-nanum">
 
     <!-- ✅ 검색조건 -->
-    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-purple-50 via-white to-violet-50 rounded-xl shadow-lg border-l-4 border-purple-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
+    <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-gradient-to-br from-purple-50 via-white to-violet-50 rounded-xl shadow border-l-4 border-purple-500 py-[15px] px-[14px] sm:p-6 md:p-8 mb-6 flex flex-wrap gap-6 items-end">
       <!-- ✅ [재정부 전용] 조회범위 선택 -->
       <div v-if="userDeptName === '재정부'" class="flex flex-col">
         <label class="font-semibold text-purple-800 mb-1 text-sm">조회범위</label>
