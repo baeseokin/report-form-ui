@@ -1,9 +1,9 @@
 <template>
   <div
-    class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center p-10 font-nanum"
+    class="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center p-5 font-nanum"
   >
     <div
-      class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white shadow-2xl rounded-2xl p-4 sm:p-6 md:p-8 border border-gray-200"
+      class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white shadow-2xl rounded-2xl py-[15px] px-[14px] sm:p-6 md:p-8 border border-gray-200"
     >
       <!-- 📌 PC: 상단 탭 -->
       <div v-if="!isMobile" class="flex border-b mb-6">
