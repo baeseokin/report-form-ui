@@ -52,7 +52,7 @@ const access = ref([]);
 const localAccess = reactive({}); // ✅ 체크박스 로컬 상태
 
 const menus = [
-  "보고서 작성",
+  "지출결의서 작성",
   "청구목록 조회",
   "내결재목록 조회",
   "부서 관리",
