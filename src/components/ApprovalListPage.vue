@@ -84,7 +84,7 @@
         @click="page=p; searchList()"
         :class="[
           'px-4 py-1 rounded-lg transition',
-          page===p ? 'bg-purple-600 text-white' : 'bg-white border hover:bg-gray-100'
+          page===p ? 'bg-purple-400 text-white' : 'bg-white border hover:bg-gray-100'
         ]"
       >
         {{ p }}
