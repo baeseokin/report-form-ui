@@ -23,7 +23,7 @@
             ]"
             @click="closeSidebar"
           >
-            {{ m.icon }} {{ m.label }}
+            {{ m.icon }} {{ m.displayLabel || m.label }}
           </router-link>
         </template>
       </nav>
@@ -164,7 +164,7 @@ const pageTitle = computed(() => {
 
 // ✅ 전체 메뉴 정의
 const allMenus = [
-  { label: "보고서 작성", path: "/reportForm", icon: "📝" },
+  { label: "보고서 작성", displayLabel: "지출결의서 작성", path: "/reportForm", icon: "📝" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },

@@ -106,7 +106,7 @@
         @click="fetchApprovals(page)"
         :class="[
           'px-3 py-1 border rounded',
-          currentPage === page ? 'bg-purple-400 text-white' : 'bg-white hover:bg-gray-100'
+          currentPage === page ? 'bg-gray-300 text-gray-800' : 'bg-white hover:bg-gray-100'
         ]"
       >
         {{ page }}

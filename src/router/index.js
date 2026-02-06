@@ -51,8 +51,8 @@ const routes = [
   { path: "/login", component: Login },
 
   // 보고서 관련
-  { path: "/reportForm", component: ReportForm, meta: { menuName: "보고서 작성" } },
-  { path: "/report/:id?", name: "ReportForm", component: ReportForm, props: true, meta: { menuName: "보고서 작성" } },
+  { path: "/reportForm", component: ReportForm, meta: { menuName: "지출결의서 작성" } },
+  { path: "/report/:id?", name: "ReportForm", component: ReportForm, props: true, meta: { menuName: "지출결의서 작성" } },
 
   // ✅ 청구목록 조회 → 모바일/PC 분기 (동적 import로 분리 청크 생성)
   { path: "/approvalList", component: ApprovalList, meta: { menuName: "청구목록 조회" } },

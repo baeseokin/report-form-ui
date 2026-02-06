@@ -63,7 +63,7 @@
         v-for="p in totalPages"
         :key="p"
         @click="page=p; searchList()"
-        :class="['px-3 py-1 rounded text-sm', page===p ? 'bg-purple-400 text-white' : 'bg-gray-200']"
+        :class="['px-3 py-1 rounded text-sm', page===p ? 'bg-gray-300 text-gray-800' : 'bg-gray-200']"
       >
         {{ p }}
       </button>
