@@ -38,7 +38,7 @@
         <label class="block text-sm font-semibold mb-1">역할</label>
         <select
           v-model="selectedRoleId"
-          class="w-full mb-3 p-2 border rounded"
+          class="w-full mb-3 mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           :disabled="!selectedDeptId || loading.roles || roles.length === 0"
           @change="onRoleChanged"
         >
@@ -54,7 +54,7 @@
         <label class="block text-sm font-semibold mb-1">사용자</label>
         <select
           v-model="selectedUserId"
-          class="w-full mb-3 p-2 border rounded"
+          class="w-full mb-3 mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           :disabled="usersDisabled"
           name="username"
           autocomplete="username"

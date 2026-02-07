@@ -1,7 +1,8 @@
 <template>
   <div class="flex h-screen font-nanum" :class="{ 'left-menu-open': isOpen }">
-    <!-- ✅ Sidebar (메뉴 많을 때 nav만 스크롤, 상단/하단 고정) -->
+    <!-- ✅ Sidebar (로그인 화면에서는 숨김) -->
     <aside
+      v-if="!isLoginPage"
       :class="[
         'bg-gray-800 text-white flex flex-col fixed top-0 left-0 h-full z-40 transform transition-transform duration-300',
         isOpen ? 'translate-x-0' : '-translate-x-full',
@@ -49,17 +50,18 @@
       </div>
     </aside>
 
-    <!-- ✅ Overlay (Tablet/Mobile 전용, 터치 스크롤 전파 방지) -->
+    <!-- ✅ Overlay (Tablet/Mobile 전용, 터치 스크롤 전파 방지, 로그인 화면 제외) -->
     <div
-      v-if="isOpen"
+      v-if="isOpen && !isLoginPage"
       class="fixed inset-0 bg-black/50 z-30 lg:hidden overlay-no-scroll"
       @click="closeSidebar"
     ></div>
 
-    <!-- ✅ 본문 (ref로 초기 로딩 시 맨 위로 스크롤) -->
-    <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64 relative">
-      <!-- 모바일 메뉴 버튼: 좌측 플로팅 책갈피, 상하 드래그로 위치 조정 (터치 스크롤 방해 방지) -->
+    <!-- ✅ 본문 (로그인 시 여백 없음) -->
+    <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto relative" :class="{ 'lg:ml-64': !isLoginPage }">
+      <!-- 플로팅 책갈피 메뉴: 좌측 고정, 28px만 살짝 노출, 터치 시 슬라이드·상하 드래그 가능 (로그인 시 숨김) -->
       <div
+        v-if="!isLoginPage"
         class="mobile-menu-tab lg:hidden"
         :class="{ 'mobile-menu-tab--open': isOpen }"
         :style="{ top: menuTabTopPx + 'px' }"
@@ -100,6 +102,8 @@ const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
 const mainEl = ref(null);
+
+const isLoginPage = computed(() => route.path === "/login");
 
 // ✅ 화면 전환 시 본문(main) 스크롤 맨 위로 (모바일 메뉴 버튼이 위에 있어 바로 보이도록)
 watch(
