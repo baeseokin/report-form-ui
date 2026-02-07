@@ -1,16 +1,18 @@
 <template>
-  <div class="flex h-screen font-nanum">
-    <!-- ✅ Sidebar -->
+  <div class="flex h-screen font-nanum" :class="{ 'left-menu-open': isOpen }">
+    <!-- ✅ Sidebar (메뉴 많을 때 nav만 스크롤, 상단/하단 고정) -->
     <aside
       :class="[
-        'bg-gray-800 text-white flex flex-col p-6 fixed top-0 left-0 h-full z-40 transform transition-transform duration-300',
+        'bg-gray-800 text-white flex flex-col fixed top-0 left-0 h-full z-40 transform transition-transform duration-300',
         isOpen ? 'translate-x-0' : '-translate-x-full',
         'w-64 lg:translate-x-0' // PC에서는 항상 보이도록
       ]"
     >
-      <h2 class="text-2xl font-bold mb-8">📑 메뉴</h2>
+      <div class="flex-shrink-0 p-6 pb-4">
+        <h2 class="text-2xl font-bold">📑 메뉴</h2>
+      </div>
 
-      <nav class="flex-1 space-y-1">
+      <nav class="left-menu-nav flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 space-y-1">
         <!-- ✅ 로그인 사용자만 메뉴 표시 -->
         <template v-if="user">
           <router-link
@@ -28,13 +30,11 @@
         </template>
       </nav>
 
-      <!-- ⏱ 자동 로그아웃 카운트다운 -->
-      <div v-if="showLogoutTimer && timeVisible" class="mb-3 px-3 py-2 rounded bg-yellow-100 text-yellow-800 text-sm">
-        ⏱ 자동 로그아웃까지: <strong>{{ mmss }}</strong>
-      </div>
-
-      <!-- 사용자 정보 & 로그아웃 -->
-      <div class="mt-auto text-sm text-gray-300">
+      <!-- ⏱ 자동 로그아웃 카운트다운 + 사용자 정보 & 로그아웃 (하단 고정) -->
+      <div class="flex-shrink-0 p-6 pt-4 text-sm text-gray-300">
+        <div v-if="showLogoutTimer && timeVisible" class="mb-3 px-3 py-2 rounded bg-yellow-100 text-yellow-800 text-sm">
+          ⏱ 자동 로그아웃까지: <strong>{{ mmss }}</strong>
+        </div>
         <div v-if="user">
           👤 {{ user.userName }} ({{ user.userId }})<br />
           권한: {{ user.roles.map(r => r.role_name).join(", ") }}<br />
@@ -49,10 +49,10 @@
       </div>
     </aside>
 
-    <!-- ✅ Overlay (Tablet/Mobile 전용) -->
+    <!-- ✅ Overlay (Tablet/Mobile 전용, 터치 스크롤 전파 방지) -->
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+      class="fixed inset-0 bg-black/50 z-30 lg:hidden overlay-no-scroll"
       @click="closeSidebar"
     ></div>
 
@@ -171,9 +171,9 @@ const pageTitle = computed(() => {
   return "";
 });
 
-// ✅ 전체 메뉴 정의
+// ✅ 전체 메뉴 정의 (label은 권한 관리/role_access의 menu_name과 일치해야 함)
 const allMenus = [
-  { label: "보고서 작성", path: "/reportForm", icon: "📝" },
+  { label: "지출결의서 작성", path: "/reportForm", icon: "📝" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
@@ -282,6 +282,27 @@ const logout = async () => {
 </script>
 
 <style scoped>
+/* ✅ Android: 메뉴 열렸을 때 본문 스크롤 잠금 → 메뉴만 스크롤되도록 */
+@media (max-width: 1023px) {
+  .left-menu-open main {
+    overflow: hidden !important;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+}
+
+.overlay-no-scroll {
+  touch-action: none;
+  overflow: hidden;
+}
+
+/* 좌측 메뉴 nav: 터치 스크롤을 메뉴 안에만 묶기 (Android 스크롤 격리) */
+.left-menu-nav {
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* 모바일 전용: 좌측 플로팅 책갈피 탭 (기본: 28px 노출, 터치 시 튀어나옴, 상하 드래그로 위치 조정) */
 .mobile-menu-tab {
   position: fixed;

@@ -67,9 +67,9 @@ function isActive(path) {
 const allowedMenus = computed(() => {
   if (!user.value) return [];
 
-  // 전체 메뉴 정의
+  // 전체 메뉴 정의 (label은 role_access의 menu_name과 일치해야 함)
   const allMenus = [
-    { label: "보고서 작성", path: "/reportForm" },
+    { label: "지출결의서 작성", path: "/reportForm" },
     { label: "청구목록 조회", path: "/approvalList" },
     { label: "내결재목록 조회", path: "/approvalStatus" },
     { label: "부서 관리", path: "/departments" },
