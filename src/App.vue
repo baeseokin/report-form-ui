@@ -58,13 +58,22 @@
 
     <!-- ✅ 본문 (ref로 초기 로딩 시 맨 위로 스크롤) -->
     <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64 relative">
-      <!-- 햄버거 버튼 (Tablet/Mobile 전용) -->
-      <button
-        class="lg:hidden mb-4 px-3 py-2 bg-purple-600 text-white rounded"
-        @click="toggleSidebar"
+      <!-- 모바일 메뉴 버튼: 좌측 플로팅 책갈피, 상하 드래그로 위치 조정 (터치 스크롤 방해 방지) -->
+      <div
+        class="mobile-menu-tab lg:hidden"
+        :class="{ 'mobile-menu-tab--open': isOpen }"
+        :style="{ top: menuTabTopPx + 'px' }"
+        @pointerdown.prevent="onMenuTabPointerDown"
       >
-        ☰ 메뉴
-      </button>
+        <button
+          type="button"
+          class="mobile-menu-tab__btn"
+          aria-label="메뉴 열기"
+          @click="onMenuTabClick"
+        >
+          <span class="mobile-menu-tab__label">MENU</span>
+        </button>
+      </div>
 
       <!-- 화면 제목 + HELP 버튼 -->
       <div v-if="helpContent" class="flex items-center gap-3 mb-4">
@@ -133,7 +142,7 @@ onMounted(() => {
   });
 
   userStore.loadSession();
-
+  menuTabTopPx.value = defaultMenuTabTop();
 });
 onBeforeUnmount(() => stop());
 
@@ -207,6 +216,63 @@ const isOpen = ref(false);
 const toggleSidebar = () => { isOpen.value = !isOpen.value; };
 const closeSidebar = () => { isOpen.value = false; };
 
+// ✅ 모바일 메뉴 탭 상하 위치 (드래그로 조정, localStorage 저장)
+const MENU_TAB_STORAGE_KEY = "report-form-ui:menuTabTop";
+const MENU_TAB_HEIGHT = 72;
+const defaultMenuTabTop = () => {
+  if (typeof window === "undefined") return 16;
+  const saved = localStorage.getItem(MENU_TAB_STORAGE_KEY);
+  if (saved != null) {
+    const n = parseInt(saved, 10);
+    if (!Number.isNaN(n) && n >= 0) return Math.min(n, window.innerHeight - MENU_TAB_HEIGHT);
+  }
+  return 16;
+};
+const menuTabTopPx = ref(16);
+
+const menuTabDrag = ref({ active: false, startY: 0, startTop: 0 });
+const menuTabDidDrag = ref(false);
+
+function onMenuTabPointerDown(e) {
+  if (e.button !== 0 && e.pointerType !== "touch") return;
+  e.preventDefault(); /* 터치 시 스크롤이 아닌 드래그로 인식되도록 */
+  menuTabDidDrag.value = false;
+  menuTabDrag.value = { active: true, startY: e.clientY, startTop: menuTabTopPx.value };
+  const el = e.currentTarget;
+  if (el && el.setPointerCapture) el.setPointerCapture(e.pointerId);
+  window.addEventListener("pointermove", onMenuTabPointerMove, { passive: false });
+  window.addEventListener("pointerup", onMenuTabPointerUp);
+  window.addEventListener("pointercancel", onMenuTabPointerUp);
+}
+
+function onMenuTabPointerMove(e) {
+  if (!menuTabDrag.value.active) return;
+  e.preventDefault(); /* 터치 드래그 시 본문 스크롤 방지 */
+  const dy = e.clientY - menuTabDrag.value.startY;
+  if (Math.abs(dy) > 5) menuTabDidDrag.value = true;
+  const minTop = 0;
+  const maxTop = Math.max(0, window.innerHeight - MENU_TAB_HEIGHT);
+  let next = menuTabDrag.value.startTop + dy;
+  next = Math.max(minTop, Math.min(maxTop, next));
+  menuTabTopPx.value = Math.round(next);
+}
+
+function onMenuTabPointerUp() {
+  if (menuTabDrag.value.active) {
+    try { localStorage.setItem(MENU_TAB_STORAGE_KEY, String(menuTabTopPx.value)); } catch (_) {}
+  }
+  menuTabDrag.value = { active: false, startY: 0, startTop: 0 };
+  window.removeEventListener("pointermove", onMenuTabPointerMove);
+  window.removeEventListener("pointerup", onMenuTabPointerUp);
+  window.removeEventListener("pointercancel", onMenuTabPointerUp);
+  setTimeout(() => { menuTabDidDrag.value = false; }, 0);
+}
+
+function onMenuTabClick() {
+  if (menuTabDidDrag.value) return;
+  toggleSidebar();
+}
+
 const logout = async () => {
   await axios.post("/api/logout", {}, { withCredentials: true });
   userStore.clearUser();
@@ -214,3 +280,57 @@ const logout = async () => {
 };
 
 </script>
+
+<style scoped>
+/* 모바일 전용: 좌측 플로팅 책갈피 탭 (기본: 28px 노출, 터치 시 튀어나옴, 상하 드래그로 위치 조정) */
+.mobile-menu-tab {
+  position: fixed;
+  left: 0;
+  z-index: 35;
+  transform: translateX(calc(-100% + 28px)); /* 기본: 28px 나오게 (기존 2배) */
+  transition: transform 0.25s ease-out;
+  touch-action: none; /* 터치 스크롤 방해 없이 탭 드래그만 처리 */
+  overflow: visible;
+}
+
+.mobile-menu-tab--open {
+  transform: translateX(0); /* 메뉴 열렸을 때 탭 전체 노출 */
+}
+
+.mobile-menu-tab__btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* MENU가 노출 영역(오른쪽)에 오도록 */
+  gap: 0.35rem;
+  min-width: 52px;
+  height: 72px; /* 세로 사이즈 확대 */
+  padding: 0 8px 0 14px;
+  background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+  color: white;
+  border: none;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  overflow: visible;
+}
+
+.mobile-menu-tab__btn:active {
+  transform: scale(0.98);
+}
+
+/* MENU 글씨 세로 배치 + 노출되는 오른쪽 28px 안에 확실히 위치 */
+.mobile-menu-tab__label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  padding-right: 2px; /* 노출 영역 쪽으로 밀어서 보이게 */
+}
+</style>
