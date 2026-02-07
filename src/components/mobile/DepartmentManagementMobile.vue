@@ -37,7 +37,7 @@
               v-model="searchKeyword"
               type="search"
               placeholder="부서명·코드 검색"
-              class="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="mobile-form-control pl-9"
             />
           </div>
           <button
@@ -87,7 +87,7 @@
             부서명
             <input
               v-model="editable.dept_name"
-              class="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="mt-1 mobile-form-control"
               placeholder="예: 기획팀"
             />
           </label>
@@ -96,7 +96,7 @@
             부서 코드
             <input
               v-model="editable.dept_cd"
-              class="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="mt-1 mobile-form-control"
               placeholder="예: PLAN"
               maxlength="10"
             />
@@ -109,7 +109,7 @@
             상위 부서
             <select
               v-model="editable.parent_dept_id"
-              class="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="mt-1 mobile-form-control mobile-form-control-select"
             >
               <option :value="null">(최상위)</option>
               <option

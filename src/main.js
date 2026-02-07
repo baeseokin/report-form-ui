@@ -3,6 +3,7 @@ import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
 import "./index.css";
+import "./assets/mobile-form-controls.css";
 import axios from "axios";
 
 axios.defaults.baseURL = "";

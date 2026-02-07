@@ -12,21 +12,26 @@
       </label>
     </div>
 
-    <!-- ✅ 요청기간 선택 (모바일 friendly: select box) -->
-    <div class="flex justify-center mb-4 space-x-2">
-    <select
-    v-model="search.months"
-    @change="updateDateRange"
-    class="border rounded px-2 py-1 text-sm"
-    >
-    <option v-for="m in [1,3,6,12]" :key="m" :value="m">
-    {{ m }}개월
-    </option>
-    </select>
-    <button
-    @click="page=1; searchList()"
-    class="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-    >조회</button>
+    <!-- ✅ 요청기간 선택 + 조회 버튼 (ApprovalListMobile과 동일하게 조회 버튼 아래로) -->
+    <div class="space-y-3 mb-6">
+      <div>
+        <label class="font-bold mb-1 block">요청기간</label>
+        <select
+          v-model="search.months"
+          @change="updateDateRange"
+          class="mobile-form-control mobile-form-control-select"
+        >
+          <option v-for="m in [1,3,6,12]" :key="m" :value="m">
+            {{ m }}개월
+          </option>
+        </select>
+      </div>
+      <button
+        @click="page=1; searchList()"
+        class="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+      >
+        조회
+      </button>
     </div>
 
     <!-- ✅ 카드형 목록 -->

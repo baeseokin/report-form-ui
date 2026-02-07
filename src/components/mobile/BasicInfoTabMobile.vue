@@ -33,7 +33,7 @@
           :value="selectedDept"
           @input="$emit('update:selectedDept', $event.target.value)"
           :disabled="!canSelectDept"
-          class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 w-full text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+          class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
             {{ d.dept_name }}
@@ -48,19 +48,23 @@
         type="text"
         :value="author"
         disabled
-        class="w-full mt-1 p-2 border rounded bg-gray-100 text-gray-600 cursor-not-allowed text-sm"
+        class="mobile-form-control bg-gray-100 text-gray-600 cursor-not-allowed"
       />
       </div>
 
       <!-- 제출일자 -->
       <div>
         <label class="block text-sm font-semibold text-gray-600 mb-1">제출일자</label>
-        <input
-          type="date"
-          :value="date"
-          @input="$emit('update:date', $event.target.value)"
-          class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 w-full text-sm"
-        />
+        <div class="mobile-form-control-date-wrap">
+          <input
+            ref="dateInputRef"
+            type="date"
+            :value="date"
+            @input="$emit('update:date', $event.target.value)"
+            class="mobile-form-control mobile-form-control-date"
+          />
+          <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="dateInputRef?.click()" @keydown.enter="dateInputRef?.click()">📅</span>
+        </div>
       </div>
     </div>
 
@@ -73,7 +77,7 @@
         @input="$emit('update:aliasName', $event.target.value)"
         maxlength="100"
         placeholder="청구요청 별칭 입력"
-        class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 w-full text-sm"
+        class="mobile-form-control"
       />
     </div>
 
@@ -126,6 +130,7 @@ const { user } = storeToRefs(userStore);
 
 // 부서 목록 (기본정보 탭에서 선택용)
 const departments = ref([]);
+const dateInputRef = ref(null);
 // 재정부 또는 관리자 권한일 때만 부서 선택 가능, 그 외는 본인 부서만 표시·비활성
 const canSelectDept = computed(() => {
   const roles = user.value?.roles || [];

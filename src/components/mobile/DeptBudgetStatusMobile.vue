@@ -7,7 +7,7 @@
         <label class="block text-xs font-semibold text-gray-700 mb-1">부서 선택</label>
         <select
           v-model="selectedDeptId"
-          class="w-full border rounded-lg px-3 py-2 text-sm disabled:bg-gray-100 disabled:text-gray-500"
+          class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-500"
           :disabled="!canChangeDept"
         >
           <option v-for="d in departments" :key="d.id" :value="d.id">
@@ -20,11 +20,15 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="block text-xs font-semibold text-gray-700 mb-1">기준일자</label>
-          <input
-            type="date"
-            v-model="baseDate"
-            class="w-full border rounded-lg px-3 py-2 text-sm"
-          />
+          <div class="mobile-form-control-date-wrap">
+            <input
+              ref="baseDateInputRef"
+              type="date"
+              v-model="baseDate"
+              class="mobile-form-control mobile-form-control-date"
+            />
+            <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="baseDateInputRef?.click()" @keydown.enter="baseDateInputRef?.click()">📅</span>
+          </div>
         </div>
         <div>
           <label class="block text-xs font-semibold text-gray-700 mb-1">회계연도</label>
@@ -33,7 +37,7 @@
             v-model="year"
             min="2000"
             max="2100"
-            class="w-full border rounded-lg px-3 py-2 text-sm"
+            class="mobile-form-control"
           />
         </div>
       </div>
@@ -124,6 +128,7 @@ const selectedDeptId = ref(null);
 const categories = ref([]);
 const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
+const baseDateInputRef = ref(null);
 const budgets = ref({});
 const expenses = ref([]); // approval_items raw data
 

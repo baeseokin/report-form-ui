@@ -55,7 +55,7 @@
           type="text"
           v-model="f.aliasName" 
           :placeholder="'별칭입력'"
-          class="max-w-[7rem] w-full border rounded p-2 text-sm shadow-sm focus:ring-2 focus:ring-purple-400"
+          class="mobile-form-control max-w-[7rem] w-full"
         />
 
 

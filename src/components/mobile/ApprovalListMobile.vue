@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 font-nanum bg-gray-50 min-h-screen">
-    <!-- ✅ 검색조건 -->
+    <!-- ✅ 검색조건 (input/select/date 동일 세로 높이, Android/iOS 통일) -->
     <div class="space-y-3 mb-6">
       <!-- 부서명 -->
       <div>
@@ -9,7 +9,7 @@
           type="text"
           v-model="filters.deptName"
           placeholder="부서명 입력"
-          class="border rounded p-2 w-full"
+          class="mobile-form-control"
           :readonly="!canEditDept"
         />
       </div>
@@ -17,7 +17,7 @@
       <!-- 청구 유형 -->
       <div>
         <label class="font-bold mb-1 block">청구 유형</label>
-        <select v-model="filters.documentType" class="border rounded p-2 w-full">
+        <select v-model="filters.documentType" class="mobile-form-control mobile-form-control-select">
           <option value="">전체</option>
           <option value="청구지출결의서">청구지출결의서</option>
           <option value="정산지출결의서">정산지출결의서</option>
@@ -27,7 +27,7 @@
      <!-- 진행상태 -->
       <div>
         <label class="font-bold mb-1 block">진행상태</label>
-        <select v-model="filters.status" class="border rounded p-2 w-full">
+        <select v-model="filters.status" class="mobile-form-control mobile-form-control-select">
           <option value="">전체</option>
           <option value="결재진행중">결재진행중</option>
           <option value="결재완료">결재완료</option>
@@ -38,13 +38,19 @@
       <!-- 청구 시작일자 -->
       <div>
         <label class="font-bold mb-1 block">청구 시작일자</label>
-        <input type="date" v-model="filters.startDate" class="border rounded p-2 w-full" />
+        <div class="mobile-form-control-date-wrap">
+          <input ref="startDateInputRef" type="date" v-model="filters.startDate" class="mobile-form-control mobile-form-control-date" />
+          <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="startDateInputRef?.click()" @keydown.enter="startDateInputRef?.click()">📅</span>
+        </div>
       </div>
 
       <!-- 청구 종료일자 -->
       <div>
         <label class="font-bold mb-1 block">청구 종료일자</label>
-        <input type="date" v-model="filters.endDate" class="border rounded p-2 w-full" />
+        <div class="mobile-form-control-date-wrap">
+          <input ref="endDateInputRef" type="date" v-model="filters.endDate" class="mobile-form-control mobile-form-control-date" />
+          <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="endDateInputRef?.click()" @keydown.enter="endDateInputRef?.click()">📅</span>
+        </div>
       </div>
 
       <!-- 조회 버튼 -->
@@ -139,6 +145,8 @@ const approvals = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const previewReport = ref(null);
+const startDateInputRef = ref(null);
+const endDateInputRef = ref(null);
 
 const today = new Date();
 const year = today.getFullYear();
