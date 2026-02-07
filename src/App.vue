@@ -4,9 +4,8 @@
     <aside
       v-if="!isLoginPage"
       :class="[
-        'bg-gray-800 text-white flex flex-col fixed top-0 left-0 h-full z-40 transform transition-transform duration-300',
-        isOpen ? 'translate-x-0' : '-translate-x-full',
-        'w-64 lg:translate-x-0' // PC에서는 항상 보이도록
+        'bg-gray-800 text-white flex flex-col fixed top-0 left-0 h-full z-40 transform transition-transform duration-300 w-64 lg:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full'
       ]"
     >
       <div class="flex-shrink-0 p-6 pb-4">
@@ -334,7 +333,7 @@ const logout = async () => {
   -webkit-overflow-scrolling: touch;
 }
 
-/* 모바일 전용: 좌측 플로팅 책갈피 탭 (기본: 28px 노출, 터치 시 튀어나옴, 상하 드래그로 위치 조정) */
+/* 모바일 전용: 좌측 플로팅 책갈피 탭 (기본: 28px 노출, 터치 시 메뉴 열림·상하 드래그로 위치 조정) */
 .mobile-menu-tab {
   position: fixed;
   left: 0;
