@@ -165,24 +165,34 @@
             />
           </div>
 
-          <!-- 금액 -->
+          <!-- 금액 (마이너스 입력 가능: 키보드 "-" 또는 음수 버튼) -->
           <div class="space-y-1">
             <label class="block text-xs font-semibold text-gray-600">금액</label>
-            <input
-              type="text"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              autocomplete="off"
-              class="w-full p-2 border rounded text-sm text-right disabled:bg-gray-100 disabled:text-gray-400"
-              :disabled="!isSelectionReady"
-              :value="item.amountFocused
-                        ? item.amountInput
-                        : formatKRW(item.amount)"
-              @focus="onAmountFocus(item.uuid)"
-              @input="onAmountInput(item.uuid, $event.target.value)"
-              @blur="onAmountBlur(item.uuid)"
-              placeholder="₩0"
-            />
+            <div class="flex gap-2 items-stretch">
+              <input
+                type="text"
+                inputmode="decimal"
+                autocomplete="off"
+                class="flex-1 min-w-0 p-2 border rounded text-sm text-right disabled:bg-gray-100 disabled:text-gray-400"
+                :disabled="!isSelectionReady"
+                :value="item.amountFocused
+                          ? item.amountInput
+                          : formatKRW(item.amount)"
+                @focus="onAmountFocus(item.uuid)"
+                @input="onAmountInput(item.uuid, $event.target.value)"
+                @blur="onAmountBlur(item.uuid)"
+                placeholder="₩0 또는 - 입력"
+              />
+              <button
+                type="button"
+                class="shrink-0 px-3 py-2 border rounded text-sm whitespace-nowrap bg-gray-50 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700"
+                :disabled="!isSelectionReady"
+                :title="(Number(item.amount) || 0) < 0 ? '양수로' : '음수로'"
+                @click="toggleAmountSign(item.uuid)"
+              >
+                {{ (Number(item.amount) || 0) < 0 ? '＋' : '－' }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -773,10 +783,11 @@ const confirmProceed = () => {
 
 const digitsOnly = (v) => (v ?? "").toString().replace(/[^\d]/g, "");
 
-// ✅ 금액 문자열에서 선행 마이너스 허용 후 숫자만 추출, 부호 반영해 숫자로 파싱
+// ✅ 금액 문자열에서 선행 마이너스 허용 (ASCII "-", 유니코드 "－" 등) 후 숫자만 추출, 부호 반영해 숫자로 파싱
 const parseAmountWithSign = (raw) => {
   const str = (raw ?? "").toString().trim();
-  const isNegative = str.startsWith("-");
+  const minusChars = /^[\-\u2212\u2010\u2013\u2014]/; // -, －(U+2212), ‐‑–
+  const isNegative = minusChars.test(str);
   const digits = str.replace(/[^0-9]/g, "");
   if (digits === "") return 0;
   return isNegative ? -parseInt(digits, 10) : parseInt(digits, 10);
@@ -813,11 +824,11 @@ const onAmountFocus = (uuid) => {
 
 
 const onAmountInput = (uuid, raw) => {
-  // ✅ 선행 (-) 허용, 나머지 숫자만
+  // ✅ 선행 (-) 허용 (ASCII, 유니코드 마이너스), 나머지 숫자만
   const str = (raw ?? "").toString();
-  const isNegative = str.trim().startsWith("-");
+  const hasLeadingMinus = /^[\s]*[\-\u2212\u2010\u2013\u2014]/.test(str);
   const digits = str.replace(/[^0-9]/g, "");
-  const amountInput = digits === "" ? (isNegative ? "-" : "") : (isNegative ? "-" + digits : digits);
+  const amountInput = digits === "" ? (hasLeadingMinus ? "-" : "") : (hasLeadingMinus ? "-" + digits : digits);
   const amount = parseAmountWithSign(amountInput);
 
   const newItems = [...(props.items || [])];
@@ -846,6 +857,46 @@ const onAmountBlur = (uuid) => {
     amountInput: "",
     amount: n
   };
+
+  emits("update:items", newItems);
+};
+
+// ✅ 금액 부호 전환 (안드로이드/iOS 숫자 키패드에 － 키가 없을 때 대비)
+const toggleAmountSign = (uuid) => {
+  const newItems = [...(props.items || [])];
+  const idx = newItems.findIndex(x => x.uuid === uuid);
+  if (idx < 0) return;
+
+  const item = newItems[idx];
+  const currentAmount = Number(item.amount) || 0;
+  const currentInput = (item.amountInput ?? "").toString().trim();
+
+  if (currentAmount === 0 && !currentInput.startsWith("-")) {
+    // 0 또는 빈 값 → "-" 로 시작해 다음 입력이 음수가 되도록
+    newItems[idx] = {
+      ...item,
+      amountFocused: true,
+      amountInput: "-",
+      amount: 0
+    };
+  } else if (currentAmount === 0 && currentInput.startsWith("-")) {
+    // "-" 만 입력된 상태 → 부호 제거
+    newItems[idx] = {
+      ...item,
+      amountFocused: true,
+      amountInput: "",
+      amount: 0
+    };
+  } else {
+    // 비 zero → 부호 반전
+    const newAmount = -currentAmount;
+    newItems[idx] = {
+      ...item,
+      amountFocused: true,
+      amountInput: amountInputDisplay(newAmount),
+      amount: newAmount
+    };
+  }
 
   emits("update:items", newItems);
 };
