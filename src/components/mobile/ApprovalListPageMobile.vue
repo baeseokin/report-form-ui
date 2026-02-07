@@ -24,7 +24,7 @@
           <span class="font-semibold text-gray-700">검색조건 접기</span>
           <span class="text-gray-400">▲</span>
         </button>
-        <div class="p-3 pt-4 space-y-3">
+        <div class="p-3 pt-4 space-y-3 bg-white">
           <!-- ✅ [재정부 전용] 조회범위 선택 -->
           <div v-if="userDeptName === '재정부'" class="flex justify-center space-x-4 p-2 rounded bg-purple-200/70">
             <label class="flex items-center space-x-1">
