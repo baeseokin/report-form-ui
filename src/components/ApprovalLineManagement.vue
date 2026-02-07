@@ -1,23 +1,23 @@
 <template>
   <div class="font-nanum text-gray-800 space-y-6">
     <!-- Header -->
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
       <div class="flex flex-wrap gap-2">
         <button
-          class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-50"
+          class="px-3 py-2 text-sm bg-white border text-purple-700 rounded-lg shadow-sm hover:bg-purple-50 disabled:opacity-50"
           :disabled="!selectedDept"
           @click="prepareNewLine('existing')"
         >
-          ＋ 선택 부서에 결재선 추가
+          ＋ 최상위 부서
         </button>
         <button
-          class="px-3 py-2 text-sm bg-white border text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50"
+          class="px-3 py-2 text-sm bg-white border text-purple-700 rounded-lg shadow-sm hover:bg-purple-50"
           @click="prepareNewLine('new')"
         >
-          ＋ 새 부서 결재선 등록
+          ＋ 하위 부서
         </button>
         <button
-          class="px-3 py-2 text-sm bg-white border border-indigo-200 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-50"
+          class="px-3 py-2 text-sm bg-white border border-purple-200 text-purple-700 rounded-lg shadow-sm hover:bg-purple-50"
           @click="fetchLines"
         >
           새로고침
@@ -27,7 +27,7 @@
 
     <div
       v-if="loading"
-      class="flex items-center gap-2 text-sm text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3"
+      class="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 border border-purple-100 rounded-lg px-4 py-3"
     >
       <span class="animate-pulse">⏳</span>
       결재선 정보를 불러오는 중입니다...
@@ -47,7 +47,7 @@
             v-model="deptKeyword"
             type="search"
             placeholder="부서명 검색"
-            class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
           <button
             class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
@@ -61,8 +61,8 @@
           <button
             v-for="dept in filteredDepartments"
             :key="dept"
-            class="w-full text-left px-4 py-3 text-sm hover:bg-indigo-50"
-            :class="selectedDept === dept ? 'bg-indigo-100 font-semibold text-indigo-700' : ''"
+            class="w-full text-left px-4 py-3 text-sm hover:bg-purple-50"
+            :class="selectedDept === dept ? 'bg-purple-100 font-semibold text-purple-700' : ''"
             @click="selectDept(dept)"
           >
             {{ dept }}
@@ -82,20 +82,20 @@
         </div>
         <div
           v-if="newDeptMode"
-          class="flex items-center gap-2 text-sm text-indigo-800 bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3"
+          class="flex items-center gap-2 text-sm text-purple-800 bg-purple-50 border border-purple-100 rounded-lg px-4 py-3"
         >
           <span class="font-semibold">새 부서 등록 모드</span>
           <span>부서 선택 후 바로 결재선을 등록할 수 있습니다.</span>         
         </div>
 
         <!-- Form -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-purple-50 border border-purple-100 rounded-lg p-4">
           <label class="block text-sm font-semibold text-gray-700">
             부서명
             <select
               v-model="editable.dept_name"
               :disabled="isDeptLocked"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="">부서를 선택하세요</option>
               <option
@@ -112,7 +112,7 @@
             결재 역할
             <select
               v-model="editable.approver_role"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
             >
               <option value="">역할을 선택하세요</option>
               <option
@@ -129,7 +129,7 @@
             사용자 ID
             <select
               v-model="editable.approver_user_id"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
             >
               <option value="">사용자를 선택하세요</option>
               <option
@@ -148,13 +148,13 @@
               v-model.number="editable.order_no"
               type="number"
               min="1"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </label>
 
           <div class="md:col-span-2 flex flex-wrap gap-2">
             <button
-              class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-50"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 disabled:opacity-50"
               :disabled="!isValid"
               @click="saveLine"
             >
@@ -174,7 +174,7 @@
         <!-- Table -->
         <div class="overflow-hidden border rounded-lg">
           <table class="w-full text-sm">
-            <thead class="bg-indigo-50 text-indigo-900">
+            <thead class="bg-purple-50 text-purple-900">
               <tr>
                 <th class="px-3 py-2 border">순서</th>
                 <th class="px-3 py-2 border">결재 역할</th>
@@ -186,7 +186,7 @@
               <tr
                 v-for="line in filteredLines"
                 :key="line.id"
-                class="hover:bg-indigo-50"
+                class="hover:bg-purple-50"
               >
                 <td class="px-3 py-2 border text-center font-mono">{{ line.order_no }}</td>
                 <td class="px-3 py-2 border">{{ line.approver_role }}</td>
@@ -208,7 +208,7 @@
                       ▼ 아래로
                     </button>
                     <button
-                      class="px-2 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                      class="px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700"
                       @click="editExisting(line)"
                     >
                       수정
@@ -497,7 +497,7 @@ async function move(line, direction) {
   width: 8px;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(99, 102, 241, 0.4);
+  background-color: rgba(147, 51, 234, 0.4);
   border-radius: 9999px;
 }
 .custom-scroll::-webkit-scrollbar-track {
