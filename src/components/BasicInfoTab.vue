@@ -4,7 +4,7 @@
 
     <!-- 청구 유형 선택 (아래 부서명/작성자/제출일자 그리드와 동일 너비·균등 배치) -->
     <div>
-      <p class="text-lg font-semibold text-purple-700 mb-3">청구 유형</p>
+      <p class="text-sm font-semibold text-gray-700 mb-3">청구 유형</p>
       <div class="grid grid-cols-3 gap-4">
         <label
           v-for="opt in documentTypeOptions"
@@ -67,7 +67,7 @@
 
     <!-- ✅ 청구요청 별칭 입력란 -->
     <div>
-      <label class="block text-lg font-semibold text-gray-700 mb-2">청구요청 별칭</label>
+      <label class="block text-sm font-semibold text-gray-700 mb-1">청구요청 별칭</label>
       <input
         type="text"
         :value="aliasName"

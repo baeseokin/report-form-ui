@@ -62,8 +62,8 @@
           v-for="c in categoriesTree"
           :key="c.id"
           :class="{
-            'bg-gray-100 font-bold': c.level === '관',
-            'bg-purple-50': c.level === '항',
+            'bg-blue-50': c.level === '관',
+            'bg-gray-100': c.level === '항',
             'bg-green-50': c.level === '목',
             'bg-white': c.level === '세목' || c.isEtc
           }"

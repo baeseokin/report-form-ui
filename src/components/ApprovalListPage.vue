@@ -65,7 +65,7 @@
                 @click="openDetail(row)"
                 class="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
               >
-                보기
+                결재
               </button>
             </td>
           </tr>

@@ -48,7 +48,7 @@
           <button
             @click="openDetail(row)"
             class="px-3 py-1 bg-purple-600 text-white rounded text-sm"
-          >보기</button>
+          >결재</button>
         </div>
       </div>
     </div>
