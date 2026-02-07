@@ -2,7 +2,7 @@
   <div
     :class="[
       'w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white shadow-2xl rounded-2xl py-[15px] px-[14px] sm:p-6 md:p-8 border border-gray-200 mx-auto font-nanum',
-      isMobile ? 'pb-24' : ''
+      isMobile ? 'pb-12' : ''
     ]"
   >
       <!-- 📌 PC: 상단 탭 -->
