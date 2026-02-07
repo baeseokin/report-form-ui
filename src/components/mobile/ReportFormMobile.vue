@@ -2,14 +2,19 @@
   <div class="min-h-screen bg-white p-4 font-nanum">
     <!-- 단계 진행 표시 (Stepper) -->
     <div class="flex justify-between items-center mb-6 text-sm">
-      <div
+      <button
         v-for="(tab, idx) in tabs"
         :key="idx"
-        class="flex-1 text-center"
-        :class="activeStep === idx + 1 ? 'font-bold text-purple-600' : 'text-gray-400'"
+        type="button"
+        class="flex-1 text-center py-1 transition"
+        :class="[
+          activeStep === idx + 1 ? 'font-bold text-purple-600' : 'text-gray-400',
+          (idx === 2 || idx === 3) && !hasValidExpense ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+        ]"
+        @click="goToStep(idx + 1)"
       >
         {{ tab }}
-      </div>
+      </button>
     </div>
 
     <!-- 단계별 컴포넌트 -->
@@ -65,6 +70,13 @@
 
     <!-- 미리보기 -->
     <ReportPreview v-if="report" :report="report" @close="closeReport" />
+    <!-- 지출내역 미입력 시 단계 이동 차단 알림 -->
+    <ModalAlert
+      :visible="showNavigationAlert"
+      title="알림"
+      :message="navigationAlertMessage"
+      @close="showNavigationAlert = false"
+    />
   </div>
 </template>
 
@@ -78,6 +90,7 @@ import BasicInfoTabMobile from "./BasicInfoTabMobile.vue";
 import ExpenseTabMobile from "./ExpenseTabMobile.vue";
 import FileAttachTabMobile from "./FileAttachTabMobile.vue";
 import ConfirmTabMobile from "./ConfirmTabMobile.vue";
+import ModalAlert from "../ModalAlert.vue";
 import { defineAsyncComponent } from 'vue';
 const ReportPreview = defineAsyncComponent(() => import ("../ReportPreview.vue"));
 
@@ -220,6 +233,26 @@ onMounted(async () => {
 const totalAmount = computed(() =>
   items.value.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
+
+// ✅ 지출내역 유효: 금액 합계 > 0 이고, 모든 항목에 지출내역(detail)이 입력됨
+const hasValidExpense = computed(() => {
+  if (totalAmount.value === 0) return false;
+  const hasEmptyDetail = items.value.some((item) => !item.detail || String(item.detail).trim() === "");
+  return !hasEmptyDetail;
+});
+
+const showNavigationAlert = ref(false);
+const navigationAlertMessage = ref("");
+
+function goToStep(step) {
+  // 파일첨부(3) 또는 최종 확인(4)으로 이동 시 지출내역 미입력이면 차단
+  if ((step === 3 || step === 4) && !hasValidExpense.value) {
+    navigationAlertMessage.value = "지출내역을 입력한 후 파일첨부·최종 확인 단계로 이동할 수 있습니다.";
+    showNavigationAlert.value = true;
+    return;
+  }
+  activeStep.value = step;
+}
 
 const generateReport = () => {
   // ✅ 미리보기용: 코드 -> 이름 변환

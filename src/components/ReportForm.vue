@@ -9,11 +9,14 @@
           :key="tab"
           @click="handleTabClick(tab)"
           class="flex-1 py-3 text-center font-semibold transition"
-          :class="
+          :class="[
             activeTab === tab
               ? 'border-b-4 border-purple-600 text-purple-700'
-              : 'text-gray-500 hover:text-gray-700'
-          "
+              : 'text-gray-500 hover:text-gray-700',
+            (tab === '파일첨부' || tab === '최종 확인') && !hasValidExpense
+              ? 'opacity-50 cursor-not-allowed'
+              : ''
+          ]"
         >
           {{ tab }}
         </button>
@@ -81,9 +84,14 @@
       <button
         v-for="tab in tabs"
         :key="tab"
-          @click="handleTabClick(tab)"
+        @click="handleTabClick(tab)"
         class="flex-1 py-2 text-center font-semibold transition"
-        :class="activeTab === tab ? 'text-purple-700' : 'text-gray-500'"
+        :class="[
+          activeTab === tab ? 'text-purple-700' : 'text-gray-500',
+          (tab === '파일첨부' || tab === '최종 확인') && !hasValidExpense
+            ? 'opacity-50 cursor-not-allowed'
+            : ''
+        ]"
       >
         {{ tab }}
       </button>
@@ -291,6 +299,13 @@ const totalAmount = computed(() =>
   items.value.reduce((sum, i) => sum + (i.amount || 0), 0)
 );
 
+// ✅ 지출내역 유효: 금액 합계 > 0 이고, 모든 항목에 지출내역(detail)이 입력됨
+const hasValidExpense = computed(() => {
+  if (totalAmount.value === 0) return false;
+  const hasEmptyDetail = items.value.some((item) => !item.detail || String(item.detail).trim() === "");
+  return !hasEmptyDetail;
+});
+
 // ✅ 부서 변경 시: 관/항 선택 초기화 → 지출내역 탭에서 새 부서 계정으로 다시 선택
 watch(selectedDept, () => {
   selectedGwan.value = "";
@@ -328,16 +343,23 @@ const isExpenseTabBlocked = (nextIdx) => {
   return (
     currentIdx === expenseIdx &&
     nextIdx > currentIdx &&
-    totalAmount.value === 0
+    !hasValidExpense.value
   );
 };
 
+// ✅ 파일첨부/최종 확인 탭으로 직접 이동 시도 시 지출내역 미입력이면 차단
+const isFileOrConfirmTab = (tab) => tab === "파일첨부" || tab === "최종 확인";
+
 const notifyExpenseRequired = () => {
-  navigationAlertMessage.value = "지출항목을 입력해야 다음으로 이동할 수 있습니다.";
+  navigationAlertMessage.value = "지출내역을 입력한 후 파일첨부·최종 확인 탭으로 이동할 수 있습니다.";
   showNavigationAlert.value = true;
 };
 
 const handleTabClick = (tab) => {
+  if (isFileOrConfirmTab(tab) && !hasValidExpense.value) {
+    notifyExpenseRequired();
+    return;
+  }
   const targetIdx = tabs.indexOf(tab);
   if (isExpenseTabBlocked(targetIdx)) {
     notifyExpenseRequired();
