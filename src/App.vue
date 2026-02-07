@@ -1,8 +1,7 @@
 <template>
   <div class="flex h-screen font-nanum">
-    <!-- ✅ Sidebar (로그인 페이지에서는 숨김) -->
+    <!-- ✅ Sidebar -->
     <aside
-      v-if="!isLoginPage"
       :class="[
         'bg-gray-800 text-white flex flex-col p-6 fixed top-0 left-0 h-full z-40 transform transition-transform duration-300',
         isOpen ? 'translate-x-0' : '-translate-x-full',
@@ -24,7 +23,7 @@
             ]"
             @click="closeSidebar"
           >
-            {{ m.icon }} {{ m.displayLabel || m.label }}
+            {{ m.icon }} {{ m.label }}
           </router-link>
         </template>
       </nav>
@@ -52,16 +51,15 @@
 
     <!-- ✅ Overlay (Tablet/Mobile 전용) -->
     <div
-      v-if="isOpen && !isLoginPage"
+      v-if="isOpen"
       class="fixed inset-0 bg-black/50 z-30 lg:hidden"
       @click="closeSidebar"
     ></div>
 
-    <!-- ✅ 본문 (ref로 초기 로딩 시 맨 위로 스크롤, 로그인 시 좌측 여백 없음) -->
-    <main ref="mainEl" :class="['flex-1 bg-gray-100 overflow-y-auto relative', isLoginPage ? 'p-4 sm:p-6' : 'p-6 lg:ml-64']">
-      <!-- 햄버거 버튼 (Tablet/Mobile 전용, 로그인 페이지에서는 숨김) -->
+    <!-- ✅ 본문 (ref로 초기 로딩 시 맨 위로 스크롤) -->
+    <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto lg:ml-64 relative">
+      <!-- 햄버거 버튼 (Tablet/Mobile 전용) -->
       <button
-        v-if="!isLoginPage"
         class="lg:hidden mb-4 px-3 py-2 bg-purple-600 text-white rounded"
         @click="toggleSidebar"
       >
@@ -152,9 +150,6 @@ const timeVisible = computed(() => remainingMs.value >= 0);
 
 const user = computed(() => userStore.user);
 
-// ✅ 로그인 페이지 여부 (사이드바·메뉴 버튼 숨김)
-const isLoginPage = computed(() => route.path === "/login");
-
 // ✅ 현재 화면 도움말 (경로별 용도 + 사용 순서)
 const helpContent = computed(() => getHelpForPath(route.path));
 
@@ -169,7 +164,7 @@ const pageTitle = computed(() => {
 
 // ✅ 전체 메뉴 정의
 const allMenus = [
-  { label: "지출결의서 작성", displayLabel: "지출결의서 작성", path: "/reportForm", icon: "📝" },
+  { label: "보고서 작성", path: "/reportForm", icon: "📝" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
