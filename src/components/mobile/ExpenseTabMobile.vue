@@ -10,7 +10,7 @@
           <label class="block text-xs font-semibold mb-1">관</label>
           <select
             v-model="selectedGwan"
-            class="w-full rounded border px-2 py-1 text-sm"
+            class="mobile-form-control mobile-form-control-select"
           >
             <option value="">선택</option>
             <option v-for="g in getGwans" :key="g.category_id" :value="g.category_id">{{ g.category_name }}</option>
@@ -23,7 +23,7 @@
           <select
             v-model="selectedHang"
             :disabled="!selectedGwan"
-            class="w-full rounded border px-2 py-1 text-sm"
+            class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400"
           >
             <option value="">선택</option>
             <option v-for="h in hangsForSelectedGwan" :key="h.category_id" :value="h.category_id">{{ h.category_name }}</option>
@@ -116,7 +116,7 @@
               <select
                 :value="item.mok"
                 @change="onSelect(idx, 'mok', $event.target.value)"
-                class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400"
                 :disabled="!isSelectionReady"
               >
                 <option disabled value="">선택</option>
@@ -142,7 +142,7 @@
               <select
                 :value="item.semok"
                 @change="onSelect(idx, 'semok', $event.target.value)"
-                class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400"
                 :disabled="!item.mok"
               >
                 <option disabled value="">선택</option>

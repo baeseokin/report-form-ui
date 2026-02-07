@@ -39,8 +39,8 @@
       <div>
         <label class="font-bold mb-1 block">청구 시작일자</label>
         <div class="mobile-form-control-date-wrap">
-          <input ref="startDateInputRef" type="date" v-model="filters.startDate" class="mobile-form-control mobile-form-control-date" />
-          <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="startDateInputRef?.click()" @keydown.enter="startDateInputRef?.click()">📅</span>
+          <input type="date" v-model="filters.startDate" class="mobile-form-control mobile-form-control-date" />
+          <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
         </div>
       </div>
 
@@ -48,8 +48,8 @@
       <div>
         <label class="font-bold mb-1 block">청구 종료일자</label>
         <div class="mobile-form-control-date-wrap">
-          <input ref="endDateInputRef" type="date" v-model="filters.endDate" class="mobile-form-control mobile-form-control-date" />
-          <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="endDateInputRef?.click()" @keydown.enter="endDateInputRef?.click()">📅</span>
+          <input type="date" v-model="filters.endDate" class="mobile-form-control mobile-form-control-date" />
+          <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
         </div>
       </div>
 
@@ -145,8 +145,6 @@ const approvals = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const previewReport = ref(null);
-const startDateInputRef = ref(null);
-const endDateInputRef = ref(null);
 
 const today = new Date();
 const year = today.getFullYear();

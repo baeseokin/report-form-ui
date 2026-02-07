@@ -57,13 +57,12 @@
         <label class="block text-sm font-semibold text-gray-600 mb-1">제출일자</label>
         <div class="mobile-form-control-date-wrap">
           <input
-            ref="dateInputRef"
             type="date"
             :value="date"
             @input="$emit('update:date', $event.target.value)"
             class="mobile-form-control mobile-form-control-date"
           />
-          <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="dateInputRef?.click()" @keydown.enter="dateInputRef?.click()">📅</span>
+          <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
         </div>
       </div>
     </div>
@@ -130,7 +129,6 @@ const { user } = storeToRefs(userStore);
 
 // 부서 목록 (기본정보 탭에서 선택용)
 const departments = ref([]);
-const dateInputRef = ref(null);
 // 재정부 또는 관리자 권한일 때만 부서 선택 가능, 그 외는 본인 부서만 표시·비활성
 const canSelectDept = computed(() => {
   const roles = user.value?.roles || [];

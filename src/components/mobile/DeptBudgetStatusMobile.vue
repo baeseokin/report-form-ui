@@ -16,21 +16,20 @@
         </select>
       </div>
 
-      <!-- 기준일자 / 회계연도 -->
-      <div class="grid grid-cols-2 gap-3">
-        <div>
+      <!-- 기준일자 / 회계연도 (기준일자에 더 넓은 폭, 회계연도는 좁게) -->
+      <div class="flex gap-3 items-end">
+        <div class="flex-1 min-w-0">
           <label class="block text-xs font-semibold text-gray-700 mb-1">기준일자</label>
           <div class="mobile-form-control-date-wrap">
             <input
-              ref="baseDateInputRef"
               type="date"
               v-model="baseDate"
               class="mobile-form-control mobile-form-control-date"
             />
-            <span class="mobile-form-control-date-icon" aria-hidden="true" role="button" tabindex="0" @click="baseDateInputRef?.click()" @keydown.enter="baseDateInputRef?.click()">📅</span>
+            <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
           </div>
         </div>
-        <div>
+        <div class="w-24 shrink-0">
           <label class="block text-xs font-semibold text-gray-700 mb-1">회계연도</label>
           <input
             type="number"
@@ -128,7 +127,6 @@ const selectedDeptId = ref(null);
 const categories = ref([]);
 const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
-const baseDateInputRef = ref(null);
 const budgets = ref({});
 const expenses = ref([]); // approval_items raw data
 

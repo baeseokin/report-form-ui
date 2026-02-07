@@ -31,11 +31,19 @@ input.mobile-form-control {
   background-size: 18px;
 }
 
-/* date: 달력 아이콘 감싸는 영역 (Android 기본 화살표는 overflow로 숨김) */
+/* date: 달력 아이콘 감싸는 영역 (Android 기본 화살표는 overflow로 숨김, 우측선 항상 표시) */
 .mobile-form-control-date-wrap {
   position: relative;
   display: block;
   overflow: hidden;
+  height: 44px;
+  min-height: 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  box-sizing: border-box;
+  /* 우측선이 레이아웃/overflow로 잘리지 않도록 inset 그림자로 보강 */
+  box-shadow: inset -1px 0 0 0 #d1d5db;
 }
 .mobile-form-control-date {
   display: block;
@@ -46,11 +54,14 @@ input.mobile-form-control {
   width: calc(100% + 50px);
   margin-right: -50px;
   padding-right: 54px;
+  border: none;
+  background-color: transparent;
 }
 .mobile-form-control-date-wrap .mobile-form-control-date::-webkit-date-and-time-value {
   line-height: 42px;
   padding: 0;
 }
+/* 아이콘은 터치를 input으로 통과시켜 iOS에서 캘린더가 열리도록 함 (pointer-events: none) */
 .mobile-form-control-date-icon {
   position: absolute;
   right: 12px;
@@ -58,8 +69,7 @@ input.mobile-form-control {
   transform: translateY(-50%);
   font-size: 1.25rem;
   line-height: 1;
-  cursor: pointer;
-  pointer-events: auto;
+  pointer-events: none;
 }
 /* date input 기본 오른쪽 화살표 제거 (Android 포함) */
 .mobile-form-control-date::-webkit-calendar-picker-indicator {
