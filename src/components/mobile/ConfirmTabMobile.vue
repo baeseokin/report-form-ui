@@ -48,15 +48,13 @@
         </p>
       </div>
 
-      <!-- 서명 -->
+      <!-- 서명 (추가의견란과 동일 가로폭, 정사각형) -->
       <div>
         <h2 class="text-base font-bold text-gray-800">✍️ 서명</h2>
-        <div class="relative inline-block">
+        <div ref="canvasWrap" class="relative w-full aspect-square">
           <canvas
             ref="canvas"
-            width="200"
-            height="200"
-            class="border rounded w-[200px] h-[200px] touch-none bg-white max-[480px]:w-[180px] max-[480px]:h-[180px]"
+            class="absolute inset-0 w-full h-full border rounded-lg touch-none bg-white"
           ></canvas>
           <button
             @click="clearCanvas(false)"
@@ -103,7 +101,7 @@
 
 <script setup>
 import axios from "axios";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, nextTick } from "vue";
 import { useUserStore } from "@/store/userStore";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
@@ -178,7 +176,20 @@ const generatePreview = () => {
    ✍️ 서명 캔버스 & 기본서명
    ========================= */
 const canvas = ref(null);
+const canvasWrap = ref(null);
 let ctx;
+
+function resizeCanvas() {
+  const wrap = canvasWrap.value;
+  const el = canvas.value;
+  if (!wrap || !el) return;
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  if (w > 0 && h > 0) {
+    el.width = w;
+    el.height = h;
+  }
+}
 let drawing = false;
 const wasCleared = ref(false);          // ✕ 눌러 지웠는지
 const hasNotified = ref(false);         // 재서명 안내 1회만 표시
@@ -239,6 +250,8 @@ async function saveDefaultSignature() {
 
 /* ===== 드로잉 이벤트 바인딩 ===== */
 onMounted(async () => {
+  await nextTick();
+  resizeCanvas();
   ctx = canvas.value.getContext("2d");
   ctx.strokeStyle = "black";
   ctx.lineWidth = 2;
