@@ -1,12 +1,13 @@
 <template>
   <div
     v-if="content"
+    ref="rootRef"
     class="inline-block relative"
   >
     <div
       class="relative"
-      @mouseenter="showBubble = true"
-      @mouseleave="showBubble = false"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
     >
       <!-- HELP 버튼 -->
       <button
@@ -15,6 +16,7 @@
         class="px-2 py-1 rounded text-xs font-medium uppercase tracking-wide shadow transition-all duration-200 select-none"
         :class="buttonClass"
         aria-label="화면 사용법 도움말"
+        @click="onButtonClick"
       >
         HELP
       </button>
@@ -63,8 +65,10 @@ const props = defineProps({
 
 const showBubble = ref(false);
 const buttonRef = ref(null);
+const rootRef = ref(null);
 const bubbleTopPx = ref(0);
 const isMobile = ref(false);
+let outsideListener = null;
 
 const MOBILE_MAX = 1023;
 
@@ -82,8 +86,51 @@ function updateBubbleTop() {
   });
 }
 
+function onMouseEnter() {
+  if (!isMobile.value) showBubble.value = true;
+}
+
+function onMouseLeave() {
+  if (!isMobile.value) showBubble.value = false;
+}
+
+function onButtonClick() {
+  if (isMobile.value) {
+    showBubble.value = !showBubble.value;
+  }
+}
+
+function closeOnClickOutside(e) {
+  const root = rootRef.value;
+  if (root && !root.contains(e.target)) {
+    showBubble.value = false;
+    removeOutsideListener();
+  }
+}
+
+function addOutsideListener() {
+  removeOutsideListener();
+  outsideListener = (e) => closeOnClickOutside(e);
+  setTimeout(() => {
+    document.addEventListener("touchend", outsideListener, { passive: true });
+    document.addEventListener("click", outsideListener);
+  }, 0);
+}
+
+function removeOutsideListener() {
+  if (outsideListener) {
+    document.removeEventListener("touchend", outsideListener);
+    document.removeEventListener("click", outsideListener);
+    outsideListener = null;
+  }
+}
+
 watch(showBubble, (v) => {
   if (v) updateBubbleTop();
+  if (isMobile.value) {
+    if (v) addOutsideListener();
+    else removeOutsideListener();
+  }
 });
 
 const bubbleTopStyle = computed(() => {
@@ -104,6 +151,7 @@ onMounted(() => {
 });
 onUnmounted(() => {
   window.removeEventListener("resize", checkMobile);
+  removeOutsideListener();
 });
 </script>
 
