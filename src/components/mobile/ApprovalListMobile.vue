@@ -24,7 +24,7 @@
           <span class="font-semibold text-gray-700">검색조건 접기</span>
           <span class="text-gray-400">▲</span>
         </button>
-        <div class="p-3 pt-0 space-y-3">
+        <div class="p-3 pt-4 space-y-3">
           <!-- 부서명 -->
           <div>
             <label class="block text-sm mb-1">부서명</label>
