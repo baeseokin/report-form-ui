@@ -27,6 +27,10 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
       <!-- 좌측: 조직 트리 -->
       <section class="bg-white rounded-xl shadow p-4 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold">부서 목록</h2>
+          <span class="text-sm text-gray-500">총 {{ departments.length }}개</span>
+        </div>
         <div class="flex items-center gap-2 mb-3">
           <div class="relative flex-1">
             <span class="absolute left-3 top-2.5 text-gray-400">🔎</span>
@@ -66,7 +70,6 @@
           <h2 class="text-xl font-semibold text-gray-800">
             {{ editable.isNew ? '🆕 새 부서 등록' : '📋 부서 상세' }}
           </h2>
-          <p class="text-sm text-gray-500">총 {{ departments.length }}개 부서</p>
         </div>
 
         <div class="space-y-4">
