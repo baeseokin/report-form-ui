@@ -138,14 +138,41 @@ const { start, stop, reset, remainingMs, isExcluded } = useAutoLogout({
   debug: false,
 });
 
-onMounted(() => {
+// ✅ 관리자일 때만 Eruda(톱니바퀴 디버그) 로드 (한 번만)
+let erudaLoaded = false;
+function loadEruda() {
+  if (erudaLoaded) return;
+  erudaLoaded = true;
+  if (typeof window === "undefined") return;
+  if (window.eruda) {
+    window.eruda.init();
+    return;
+  }
+  const script = document.createElement("script");
+  script.src = "//cdn.jsdelivr.net/npm/eruda";
+  script.onload = () => {
+    if (window.eruda) window.eruda.init();
+  };
+  document.body.appendChild(script);
+}
+
+watch(
+  () => userStore.user?.roles,
+  (roles) => {
+    const isAdmin = roles?.some((r) => r.role_name === "관리자");
+    if (isAdmin) loadEruda();
+  },
+  { immediate: true }
+);
+
+onMounted(async () => {
   start();
   router.afterEach(() => {
     start();   // ✅ 멱등. stop된 상태면 재등록, 이미 시작이면 noop
     reset();   // ✅ 경로에 따라 무장/해제
   });
 
-  userStore.loadSession();
+  await userStore.loadSession();
   menuTabTopPx.value = defaultMenuTabTop();
 });
 onBeforeUnmount(() => stop());
