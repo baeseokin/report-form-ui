@@ -4,7 +4,7 @@
 
     <!-- 기본 정보 -->
     <div class="p-4 bg-gray-50 rounded-lg shadow space-y-2 text-sm">
-      <p><strong>문서 종류:</strong> {{ documentType }}</p>
+      <p><strong>청구 유형:</strong> {{ documentType }}</p>
       <p><strong>부서명:</strong> {{ userDept }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>

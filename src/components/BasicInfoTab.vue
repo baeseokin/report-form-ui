@@ -2,9 +2,9 @@
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">📌 기본 정보 입력</h2>
 
-    <!-- 문서 종류 선택 (아래 부서명/작성자/제출일자 그리드와 동일 너비·균등 배치) -->
+    <!-- 청구 유형 선택 (아래 부서명/작성자/제출일자 그리드와 동일 너비·균등 배치) -->
     <div>
-      <p class="text-lg font-semibold text-purple-700 mb-3">문서 종류</p>
+      <p class="text-lg font-semibold text-purple-700 mb-3">청구 유형</p>
       <div class="grid grid-cols-3 gap-4">
         <label
           v-for="opt in documentTypeOptions"
@@ -114,7 +114,7 @@ const emits = defineEmits([
   "next",
 ]);
 
-// 문서 종류 리스트 (value: 저장/API용, label: 버튼 표시용)
+// 청구 유형 리스트 (value: 저장/API용, label: 버튼 표시용)
 const documentTypeOptions = [
   { value: "청구지출결의서", label: "청구지출" },
   { value: "정산지출결의서", label: "정산지출" },

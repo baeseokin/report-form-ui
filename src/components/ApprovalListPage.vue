@@ -46,7 +46,7 @@
         <thead>
           <tr class="bg-purple-100 text-gray-700">
             <th class="border p-3 text-center">부서</th>
-            <th class="border p-3 text-center">문서종류</th>
+            <th class="border p-3 text-center">청구 유형</th>
             <th class="border p-3 text-center">작성자</th>
             <th class="border p-3 text-center">요청일</th>
             <th class="border p-3 text-center">금액</th>

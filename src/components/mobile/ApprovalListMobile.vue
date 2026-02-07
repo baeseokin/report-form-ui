@@ -14,9 +14,9 @@
         />
       </div>
 
-      <!-- 문서종류 -->
+      <!-- 청구 유형 -->
       <div>
-        <label class="font-bold mb-1 block">문서종류</label>
+        <label class="font-bold mb-1 block">청구 유형</label>
         <select v-model="filters.documentType" class="border rounded p-2 w-full">
           <option value="">전체</option>
           <option value="청구지출결의서">청구지출결의서</option>

@@ -14,9 +14,9 @@
         />
       </div>
 
-      <!-- 문서종류 -->
+      <!-- 청구 유형 -->
       <div class="flex flex-col w-36">
-        <label class="font-semibold text-gray-600 mb-1 text-sm">문서종류</label>
+        <label class="font-semibold text-gray-600 mb-1 text-sm">청구 유형</label>
         <select v-model="filters.documentType" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
           <option value="">전체</option>
           <option value="청구지출결의서">청구지출결의서</option>
@@ -65,7 +65,7 @@
       <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="bg-purple-100 text-gray-700">
-            <th class="border p-3 text-center">문서종류</th>
+            <th class="border p-3 text-center">청구 유형</th>
             <th class="border p-3 text-center">부서명</th>
             <th class="border p-3 text-center">작성자</th>
             <th class="border p-3 text-center">청구요청 별칭</th>
