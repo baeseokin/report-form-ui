@@ -27,7 +27,7 @@
         <div class="p-3 pt-0 space-y-3">
           <!-- 부서명 -->
           <div>
-            <label class="font-bold mb-1 block">부서명</label>
+            <label class="block text-sm mb-1">부서명</label>
             <input
               type="text"
               v-model="filters.deptName"
@@ -39,7 +39,7 @@
 
           <!-- 청구 유형 -->
           <div>
-            <label class="font-bold mb-1 block">청구 유형</label>
+            <label class="block text-sm mb-1">청구 유형</label>
             <select v-model="filters.documentType" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-select w-full">
               <option value="">전체</option>
               <option value="청구지출결의서">청구지출결의서</option>
@@ -50,7 +50,7 @@
 
           <!-- 진행상태 -->
           <div>
-            <label class="font-bold mb-1 block">진행상태</label>
+            <label class="block text-sm mb-1">진행상태</label>
             <select v-model="filters.status" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-select w-full">
               <option value="">전체</option>
               <option value="결재진행중">결재진행중</option>
@@ -62,7 +62,7 @@
 
           <!-- 청구 시작일자 -->
           <div>
-            <label class="font-bold mb-1 block">청구 시작일자</label>
+            <label class="block text-sm mb-1">청구 시작일자</label>
             <div class="mobile-form-control-date-wrap">
               <input type="date" v-model="filters.startDate" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-date" />
               <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
@@ -71,7 +71,7 @@
 
           <!-- 청구 종료일자 -->
           <div>
-            <label class="font-bold mb-1 block">청구 종료일자</label>
+            <label class="block text-sm mb-1">청구 종료일자</label>
             <div class="mobile-form-control-date-wrap">
               <input type="date" v-model="filters.endDate" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-date" />
               <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>

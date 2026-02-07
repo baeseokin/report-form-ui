@@ -39,7 +39,7 @@
 
           <!-- 요청기간 -->
           <div>
-            <label class="font-bold mb-1 block text-gray-700">요청기간</label>
+            <label class="block text-sm mb-1">요청기간</label>
             <select
               v-model="search.months"
               @change="onMonthsChange"

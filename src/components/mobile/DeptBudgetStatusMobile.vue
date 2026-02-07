@@ -27,7 +27,7 @@
         <div class="p-3 pt-0 space-y-3">
           <!-- 부서 선택 -->
           <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-1">부서 선택</label>
+            <label class="block text-sm mb-1">부서 선택</label>
             <select
               v-model="selectedDeptId"
               class="mobile-form-control mobile-form-control-select w-full disabled:bg-gray-100 disabled:text-gray-500"
@@ -42,7 +42,7 @@
           <!-- 기준일자 / 회계연도 -->
           <div class="flex gap-3 items-end">
             <div class="flex-1 min-w-0">
-              <label class="block text-xs font-semibold text-gray-700 mb-1">기준일자</label>
+              <label class="block text-sm mb-1">기준일자</label>
               <div class="mobile-form-control-date-wrap">
                 <input
                   type="date"
@@ -53,7 +53,7 @@
               </div>
             </div>
             <div class="w-24 shrink-0">
-              <label class="block text-xs font-semibold text-gray-700 mb-1">회계연도</label>
+              <label class="block text-sm mb-1">회계연도</label>
               <input
                 type="number"
                 v-model="year"
