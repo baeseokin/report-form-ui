@@ -1,30 +1,5 @@
 <template>
   <div class="font-nanum text-gray-800 space-y-6">
-    <!-- Header -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-      <div class="flex flex-wrap gap-2">
-        <button
-          class="px-3 py-2 text-sm bg-white border text-purple-700 rounded-lg shadow-sm hover:bg-purple-50 disabled:opacity-50"
-          :disabled="!selectedDept"
-          @click="prepareNewLine('existing')"
-        >
-          ＋ 최상위 부서
-        </button>
-        <button
-          class="px-3 py-2 text-sm bg-white border text-purple-700 rounded-lg shadow-sm hover:bg-purple-50"
-          @click="prepareNewLine('new')"
-        >
-          ＋ 하위 부서
-        </button>
-        <button
-          class="px-3 py-2 text-sm bg-white border border-purple-200 text-purple-700 rounded-lg shadow-sm hover:bg-purple-50"
-          @click="fetchLines"
-        >
-          새로고침
-        </button>
-      </div>
-    </div>
-
     <div
       v-if="loading"
       class="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 border border-purple-100 rounded-lg px-4 py-3"
@@ -79,6 +54,12 @@
               {{ selectedDept ? `${selectedDept} 결재선` : '부서를 먼저 선택하세요' }}
             </h2>
           </div>
+          <button
+            class="px-3 py-2 text-sm bg-white border text-purple-700 rounded-lg shadow-sm hover:bg-purple-50 shrink-0"
+            @click="prepareNewLine('new')"
+          >
+            신규 부서
+          </button>
         </div>
         <div
           v-if="newDeptMode"
@@ -158,13 +139,13 @@
               :disabled="!isValid"
               @click="saveLine"
             >
-              {{ editable.id ? '결재선 수정' : '결재선 등록' }}
+              저장
             </button>
             <button
               class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
               @click="resetForm"
             >
-              폼 초기화
+              초기화
             </button>
             <span v-if="saving" class="text-sm text-gray-500 flex items-center gap-1">⏳ 저장 중...</span>
             <span v-if="error" class="text-sm text-rose-600">{{ error }}</span>
