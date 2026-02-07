@@ -1,65 +1,91 @@
 <template>
   <div class="p-4 font-nanum bg-gray-50 min-h-screen">
-    <!-- ✅ 검색조건 (input/select/date 동일 세로 높이, Android/iOS 통일) -->
-    <div class="space-y-3 mb-6">
-      <!-- 부서명 -->
-      <div>
-        <label class="font-bold mb-1 block">부서명</label>
-        <input
-          type="text"
-          v-model="filters.deptName"
-          placeholder="부서명 입력"
-          class="mobile-form-control"
-          :readonly="!canEditDept"
-        />
-      </div>
-
-      <!-- 청구 유형 -->
-      <div>
-        <label class="font-bold mb-1 block">청구 유형</label>
-        <select v-model="filters.documentType" class="mobile-form-control mobile-form-control-select">
-          <option value="">전체</option>
-          <option value="청구지출결의서">청구지출결의서</option>
-          <option value="정산지출결의서">정산지출결의서</option>
-          <option value="가불지출결의서">가불지출결의서</option>
-        </select>
-      </div>
-     <!-- 진행상태 -->
-      <div>
-        <label class="font-bold mb-1 block">진행상태</label>
-        <select v-model="filters.status" class="mobile-form-control mobile-form-control-select">
-          <option value="">전체</option>
-          <option value="결재진행중">결재진행중</option>
-          <option value="결재완료">결재완료</option>
-          <option value="결재반려">결재반려</option>
-          <option value="재정부이관완료">재정부이관완료</option>
-        </select>
-      </div>
-      <!-- 청구 시작일자 -->
-      <div>
-        <label class="font-bold mb-1 block">청구 시작일자</label>
-        <div class="mobile-form-control-date-wrap">
-          <input type="date" v-model="filters.startDate" class="mobile-form-control mobile-form-control-date" />
-          <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
-        </div>
-      </div>
-
-      <!-- 청구 종료일자 -->
-      <div>
-        <label class="font-bold mb-1 block">청구 종료일자</label>
-        <div class="mobile-form-control-date-wrap">
-          <input type="date" v-model="filters.endDate" class="mobile-form-control mobile-form-control-date" />
-          <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
-        </div>
-      </div>
-
-      <!-- 조회 버튼 -->
+    <!-- ✅ 검색조건 접기/펼치기 -->
+    <div class="mb-6 bg-purple-100 rounded-lg border border-purple-200 shadow-sm overflow-hidden">
+      <!-- 접힌 상태: 터치하면 펼침 -->
       <button
-        @click="fetchApprovals(1)"
-        class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mt-2"
+        type="button"
+        @click="searchExpanded = true"
+        class="w-full flex items-center justify-between p-3 text-left hover:bg-purple-200 active:bg-purple-300 transition"
+        :class="{ 'hidden': searchExpanded }"
       >
-        조회
+        <span class="font-semibold text-gray-700">검색조건</span>
+        <span class="text-sm text-gray-500 truncate flex-1 mx-2">{{ searchConditionSummary }}</span>
+        <span class="text-gray-400 shrink-0">▼</span>
       </button>
+
+      <!-- 펼친 상태: 조건 영역 -->
+      <div v-show="searchExpanded" class="border-t border-purple-200">
+        <button
+          type="button"
+          @click="searchExpanded = false"
+          class="w-full flex items-center justify-between p-3 text-left bg-purple-200 hover:bg-purple-300 active:bg-purple-400 transition"
+        >
+          <span class="font-semibold text-gray-700">검색조건 접기</span>
+          <span class="text-gray-400">▲</span>
+        </button>
+        <div class="p-3 pt-0 space-y-3">
+          <!-- 부서명 -->
+          <div>
+            <label class="font-bold mb-1 block">부서명</label>
+            <input
+              type="text"
+              v-model="filters.deptName"
+              placeholder="부서명 입력"
+              class="mobile-form-control"
+              :readonly="!canEditDept"
+            />
+          </div>
+
+          <!-- 청구 유형 -->
+          <div>
+            <label class="font-bold mb-1 block">청구 유형</label>
+            <select v-model="filters.documentType" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-select w-full">
+              <option value="">전체</option>
+              <option value="청구지출결의서">청구지출결의서</option>
+              <option value="정산지출결의서">정산지출결의서</option>
+              <option value="가불지출결의서">가불지출결의서</option>
+            </select>
+          </div>
+
+          <!-- 진행상태 -->
+          <div>
+            <label class="font-bold mb-1 block">진행상태</label>
+            <select v-model="filters.status" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-select w-full">
+              <option value="">전체</option>
+              <option value="결재진행중">결재진행중</option>
+              <option value="결재완료">결재완료</option>
+              <option value="결재반려">결재반려</option>
+              <option value="재정부이관완료">재정부이관완료</option>
+            </select>
+          </div>
+
+          <!-- 청구 시작일자 -->
+          <div>
+            <label class="font-bold mb-1 block">청구 시작일자</label>
+            <div class="mobile-form-control-date-wrap">
+              <input type="date" v-model="filters.startDate" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-date" />
+              <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+            </div>
+          </div>
+
+          <!-- 청구 종료일자 -->
+          <div>
+            <label class="font-bold mb-1 block">청구 종료일자</label>
+            <div class="mobile-form-control-date-wrap">
+              <input type="date" v-model="filters.endDate" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-date" />
+              <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+            </div>
+          </div>
+
+          <button
+            @click="fetchApprovals(1)"
+            class="w-full py-2 bg-purple-600 text-white rounded hover:bg-purple-700 active:bg-purple-800"
+          >
+            조회
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ✅ 카드 리스트 -->
@@ -164,6 +190,22 @@ const filters = ref({
   startDate: formatDateValue(startOfYear),
   endDate: formatDateValue(today),
   status: "",
+});
+
+// ✅ 검색조건 펼침/접힘 (기본: 접힌 상태)
+const searchExpanded = ref(false);
+
+// 접힌 상태에서 보여줄 요약 문구
+const searchConditionSummary = computed(() => {
+  const f = filters.value;
+  const parts = [];
+  if (f.deptName) parts.push(f.deptName);
+  parts.push(f.documentType || "유형전체");
+  parts.push(f.status || "상태전체");
+  const start = f.startDate ? f.startDate.replace(/-/g, ".") : "";
+  const end = f.endDate ? f.endDate.replace(/-/g, ".") : "";
+  if (start && end) parts.push(`${start}~${end}`);
+  return parts.length ? parts.join(" · ") : "조건 선택";
 });
 
 // ✅ 권한 체크: 재정부 or 관리자

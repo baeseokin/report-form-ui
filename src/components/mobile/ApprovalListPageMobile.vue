@@ -1,37 +1,63 @@
 <template>
   <div class="p-4 font-nanum bg-gray-50 min-h-screen">
-    <!-- ✅ [재정부 전용] 조회범위 선택 -->
-    <div v-if="userDeptName === '재정부'" class="flex justify-center mb-3 space-x-4 bg-white p-2 rounded border shadow-sm">
-      <label class="flex items-center space-x-1">
-        <input type="radio" v-model="financeScope" value="finance" @change="updateFinanceScope" class="text-purple-600 focus:ring-purple-500" />
-        <span class="text-sm font-medium text-gray-700">재정부 청구</span>
-      </label>
-      <label class="flex items-center space-x-1">
-        <input type="radio" v-model="financeScope" value="others" @change="updateFinanceScope" class="text-purple-600 focus:ring-purple-500" />
-        <span class="text-sm font-medium text-gray-700">타부서 청구</span>
-      </label>
-    </div>
-
-    <!-- ✅ 요청기간 선택 + 조회 버튼 (ApprovalListMobile과 동일하게 조회 버튼 아래로) -->
-    <div class="space-y-3 mb-6">
-      <div>
-        <label class="font-bold mb-1 block">요청기간</label>
-        <select
-          v-model="search.months"
-          @change="updateDateRange"
-          class="mobile-form-control mobile-form-control-select"
-        >
-          <option v-for="m in [1,3,6,12]" :key="m" :value="m">
-            {{ m }}개월
-          </option>
-        </select>
-      </div>
+    <!-- ✅ 검색조건 접기/펼치기 -->
+    <div class="mb-6 bg-purple-100 rounded-lg border border-purple-200 shadow-sm overflow-hidden">
+      <!-- 접힌 상태: 터치하면 펼침 -->
       <button
-        @click="page=1; searchList()"
-        class="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+        type="button"
+        @click="searchExpanded = true"
+        class="w-full flex items-center justify-between p-3 text-left hover:bg-purple-200 active:bg-purple-300 transition"
+        :class="{ 'hidden': searchExpanded }"
       >
-        조회
+        <span class="font-semibold text-gray-700">검색조건</span>
+        <span class="text-sm text-gray-500">{{ searchConditionSummary }}</span>
+        <span class="text-gray-400 ml-2">▼</span>
       </button>
+
+      <!-- 펼친 상태: 조건 영역 -->
+      <div v-show="searchExpanded" class="border-t border-purple-200">
+        <button
+          type="button"
+          @click="searchExpanded = false"
+          class="w-full flex items-center justify-between p-3 text-left bg-purple-200 hover:bg-purple-300 active:bg-purple-400 transition"
+        >
+          <span class="font-semibold text-gray-700">검색조건 접기</span>
+          <span class="text-gray-400">▲</span>
+        </button>
+        <div class="p-3 pt-0 space-y-3">
+          <!-- ✅ [재정부 전용] 조회범위 선택 -->
+          <div v-if="userDeptName === '재정부'" class="flex justify-center space-x-4 p-2 rounded bg-purple-200/70">
+            <label class="flex items-center space-x-1">
+              <input type="radio" v-model="financeScope" value="finance" @change="updateFinanceScope" class="text-purple-600 focus:ring-purple-500" />
+              <span class="text-sm font-medium text-gray-700">재정부 청구</span>
+            </label>
+            <label class="flex items-center space-x-1">
+              <input type="radio" v-model="financeScope" value="others" @change="updateFinanceScope" class="text-purple-600 focus:ring-purple-500" />
+              <span class="text-sm font-medium text-gray-700">타부서 청구</span>
+            </label>
+          </div>
+
+          <!-- 요청기간 -->
+          <div>
+            <label class="font-bold mb-1 block text-gray-700">요청기간</label>
+            <select
+              v-model="search.months"
+              @change="onMonthsChange"
+              class="mobile-form-control mobile-form-control-select w-full"
+            >
+              <option v-for="m in [1,3,6,12]" :key="m" :value="m">
+                {{ m }}개월
+              </option>
+            </select>
+          </div>
+          <button
+            @click="page=1; searchList()"
+            class="w-full py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 active:bg-purple-800"
+          >
+            조회
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- ✅ 카드형 목록 -->
@@ -85,7 +111,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 //import ReportPreview from "@/components/ReportPreview.vue";
 import { defineAsyncComponent } from 'vue';
 const ReportPreview = defineAsyncComponent(() => import ("@/components/ReportPreview.vue"));
@@ -105,6 +131,19 @@ const search = reactive({
   approverUserId: userStore.user?.userId || "",
   startDate: "",
   endDate: "",
+});
+
+// ✅ 검색조건 펼침/접힘 (기본: 접힌 상태)
+const searchExpanded = ref(false);
+
+// 접힌 상태에서 보여줄 요약 문구
+const searchConditionSummary = computed(() => {
+  const parts = [];
+  if (userDeptName === "재정부") {
+    parts.push(financeScope.value === "finance" ? "재정부 청구" : "타부서 청구");
+  }
+  parts.push(`요청기간 ${search.months}개월`);
+  return parts.join(" · ");
 });
 
 // ✅ 재정부 조회범위 상태
@@ -129,6 +168,12 @@ const updateDateRange = () => {
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   search.startDate = start.toISOString().split("T")[0];
   search.endDate = end.toISOString().split("T")[0];
+};
+
+const onMonthsChange = () => {
+  updateDateRange();
+  page.value = 1;
+  searchList();
 };
 
 const searchList = async () => {

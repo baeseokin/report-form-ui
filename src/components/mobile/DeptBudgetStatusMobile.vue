@@ -1,55 +1,77 @@
 <template>
   <div class="p-4 font-nanum space-y-4">
-    <!-- 검색 영역 -->
-    <div class="space-y-3 bg-white rounded-xl shadow p-3">
-      <!-- 부서 선택 -->
-      <div>
-        <label class="block text-xs font-semibold text-gray-700 mb-1">부서 선택</label>
-        <select
-          v-model="selectedDeptId"
-          class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-500"
-          :disabled="!canChangeDept"
-        >
-          <option v-for="d in departments" :key="d.id" :value="d.id">
-            {{ d.dept_name }}
-          </option>
-        </select>
-      </div>
+    <!-- 검색조건 접기/펼치기 -->
+    <div class="mb-4 bg-purple-100 rounded-lg border border-purple-200 shadow-sm overflow-hidden">
+      <!-- 접힌 상태: 터치하면 펼침 -->
+      <button
+        type="button"
+        @click="searchExpanded = true"
+        class="w-full flex items-center justify-between p-3 text-left hover:bg-purple-200 active:bg-purple-300 transition"
+        :class="{ 'hidden': searchExpanded }"
+      >
+        <span class="font-semibold text-gray-700">검색조건</span>
+        <span class="text-sm text-gray-500 truncate flex-1 mx-2">{{ searchConditionSummary }}</span>
+        <span class="text-gray-400 shrink-0">▼</span>
+      </button>
 
-      <!-- 기준일자 / 회계연도 (기준일자에 더 넓은 폭, 회계연도는 좁게) -->
-      <div class="flex gap-3 items-end">
-        <div class="flex-1 min-w-0">
-          <label class="block text-xs font-semibold text-gray-700 mb-1">기준일자</label>
-          <div class="mobile-form-control-date-wrap">
-            <input
-              type="date"
-              v-model="baseDate"
-              class="mobile-form-control mobile-form-control-date"
-            />
-            <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
-          </div>
-        </div>
-        <div class="w-24 shrink-0">
-          <label class="block text-xs font-semibold text-gray-700 mb-1">회계연도</label>
-          <input
-            type="number"
-            v-model="year"
-            min="2000"
-            max="2100"
-            class="mobile-form-control"
-          />
-        </div>
-      </div>
-
-      <!-- 조회 버튼 -->
-      <div>
+      <!-- 펼친 상태: 조건 영역 -->
+      <div v-show="searchExpanded" class="border-t border-purple-200">
         <button
           type="button"
-          @click="fetchData"
-          class="w-full py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-purple-700 transition"
+          @click="searchExpanded = false"
+          class="w-full flex items-center justify-between p-3 text-left bg-purple-200 hover:bg-purple-300 active:bg-purple-400 transition"
         >
-          조회
+          <span class="font-semibold text-gray-700">검색조건 접기</span>
+          <span class="text-gray-400">▲</span>
         </button>
+        <div class="p-3 pt-0 space-y-3">
+          <!-- 부서 선택 -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">부서 선택</label>
+            <select
+              v-model="selectedDeptId"
+              class="mobile-form-control mobile-form-control-select w-full disabled:bg-gray-100 disabled:text-gray-500"
+              :disabled="!canChangeDept"
+            >
+              <option v-for="d in departments" :key="d.id" :value="d.id">
+                {{ d.dept_name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- 기준일자 / 회계연도 -->
+          <div class="flex gap-3 items-end">
+            <div class="flex-1 min-w-0">
+              <label class="block text-xs font-semibold text-gray-700 mb-1">기준일자</label>
+              <div class="mobile-form-control-date-wrap">
+                <input
+                  type="date"
+                  v-model="baseDate"
+                  class="mobile-form-control mobile-form-control-date"
+                />
+                <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+              </div>
+            </div>
+            <div class="w-24 shrink-0">
+              <label class="block text-xs font-semibold text-gray-700 mb-1">회계연도</label>
+              <input
+                type="number"
+                v-model="year"
+                min="2000"
+                max="2100"
+                class="mobile-form-control"
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            @click="fetchData"
+            class="w-full py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-purple-700 active:bg-purple-800 transition"
+          >
+            조회
+          </button>
+        </div>
       </div>
     </div>
 
@@ -60,7 +82,7 @@
       </div>
 
       <div
-        v-for="c in categoriesTree"
+        v-for="c in visibleTree"
         :key="c.id"
         class="rounded-lg border bg-white px-3 py-2 text-xs"
         :class="{
@@ -71,10 +93,21 @@
       >
         <!-- 1줄: 계정명 + 집행률 -->
         <div class="flex items-center justify-between gap-2">
-          <div class="min-w-0">
-            <p class="font-semibold text-gray-900 truncate">
+          <div class="min-w-0 flex items-center">
+            <!-- 접기/펼치기 버튼 (자식이 있을 때만) -->
+            <button
+              v-if="c.children && c.children.length > 0"
+              type="button"
+              @click="toggleCollapsed(c.id)"
+              class="shrink-0 w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-200 rounded touch-manipulation"
+              :aria-expanded="!collapsedIds.has(c.id)"
+            >
+              <span class="text-[10px] leading-none">{{ collapsedIds.has(c.id) ? '▶' : '▼' }}</span>
+            </button>
+            <span v-else class="w-6 shrink-0 block" aria-hidden="true"></span>
+            <p class="font-semibold text-gray-900 truncate min-w-0">
               <span class="inline-block" :style="{ paddingLeft: getIndent(c.level) }">
-                {{ c.category_name }}
+                <span v-if="getLevelSymbol(c.level)" class="mr-1 text-gray-400 shrink-0" aria-hidden="true">{{ getLevelSymbol(c.level) }}</span>{{ c.category_name }}
               </span>
               <span v-if="c.isEtc" class="ml-1 text-[10px] px-1 py-0.5 rounded bg-red-100 text-red-700 align-middle">
                 ETC
@@ -130,6 +163,17 @@ const year = ref(new Date().getFullYear());
 const budgets = ref({});
 const expenses = ref([]); // approval_items raw data
 
+// ✅ 검색조건 펼침/접힘 (기본: 접힌 상태)
+const searchExpanded = ref(false);
+
+// 접힌 상태에서 보여줄 요약 문구
+const searchConditionSummary = computed(() => {
+  const dept = departments.value.find((d) => d.id === selectedDeptId.value);
+  const deptName = dept ? dept.dept_name : "-";
+  const dateStr = baseDate.value ? baseDate.value.replace(/-/g, ".") : "-";
+  return `${deptName} · ${dateStr} · ${year.value}년`;
+});
+
 // ✅ 부서 선택 권한 (관리자 or 재정부)
 const canChangeDept = computed(() => {
   if (!user.value) return false;
@@ -155,6 +199,39 @@ const categoriesTree = computed(() => {
   };
 
   return buildTree(categories.value);
+});
+
+// ✅ 트리 접기: 접힌 노드 id 집합 (접힌 노드의 자식은 숨김)
+const collapsedIds = ref(new Set());
+
+const toggleCollapsed = (id) => {
+  const next = new Set(collapsedIds.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  collapsedIds.value = next;
+};
+
+/** 접기 반영한 표시용 트리 (조상이 접혀 있으면 제외) */
+const visibleTree = computed(() => {
+  const collapsed = collapsedIds.value;
+  const tree = categoriesTree.value;
+  const visible = [];
+  const stack = []; // { id, depth } — 자식이 있는 노드는 접힌 경우에도 넣어서, 자식이 부모 접힘을 알 수 있게 함
+
+  for (const node of tree) {
+    while (stack.length > 0 && stack[stack.length - 1].depth >= node.depth) {
+      stack.pop();
+    }
+    if (stack.length > 0 && collapsed.has(stack[stack.length - 1].id)) {
+      continue;
+    }
+    visible.push(node);
+    const hasChildren = node.children && node.children.length > 0;
+    if (hasChildren) {
+      stack.push({ id: node.id, depth: node.depth });
+    }
+  }
+  return visible;
 });
 
 onMounted(async () => {
@@ -266,6 +343,15 @@ const fetchData = async () => {
     });
 
     categories.value = finalCategories;
+    // 기본: 관·항·목은 펼침, 세목은 접음 → 자식이 있는 '목' 노드만 접힌 상태로
+    const initialCollapsed = new Set();
+    finalCategories.forEach((c) => {
+      if (c.level === "목") {
+        const hasChild = finalCategories.some((other) => other.parent_id === c.id);
+        if (hasChild) initialCollapsed.add(c.id);
+      }
+    });
+    collapsedIds.value = initialCollapsed;
 
     // 예산 매핑
     budgets.value = {};
@@ -346,18 +432,32 @@ const calculateRate = (budget, expense) => {
   return ((expense / budget) * 100).toFixed(1);
 };
 
+/** 들여쓰기: 관/항/목/세목 기호 시작 위치 통일 */
 const getIndent = (level) => {
   switch (level) {
     case "관":
-      return "4px";
     case "항":
-      return "16px";
     case "목":
-      return "28px";
     case "세목":
-      return "40px";
+      return "5px";
     default:
-      return "4px";
+      return "5px";
+  }
+};
+
+/** depth 구분용 트리 문자: 관 없음, 항 → └, 목 → └└, 세목 → └└└ */
+const getLevelSymbol = (level) => {
+  switch (level) {
+    case "관":
+      return "";
+    case "항":
+      return "└";
+    case "목":
+      return "└└";
+    case "세목":
+      return "└└└";
+    default:
+      return "";
   }
 };
 </script>
