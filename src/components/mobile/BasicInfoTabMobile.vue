@@ -117,10 +117,12 @@ const emits = defineEmits([
 ]);
 
 // 청구 유형 리스트 (value: 저장/API용, label: 버튼 표시용)
+// 모바일에서 줄바꿈 시 "지출" 앞에서 끊기도록 ZWSP(제로너비공백) 삽입
+const ZWSP = "\u200B";
 const documentTypeOptions = [
-  { value: "청구지출결의서", label: "청구지출" },
-  { value: "정산지출결의서", label: "정산지출" },
-  { value: "가불지출결의서", label: "가불지출" },
+  { value: "청구지출결의서", label: `청구${ZWSP}지출` },
+  { value: "정산지출결의서", label: `정산${ZWSP}지출` },
+  { value: "가불지출결의서", label: `가불${ZWSP}지출` },
 ];
 
 // 로그인 사용자
