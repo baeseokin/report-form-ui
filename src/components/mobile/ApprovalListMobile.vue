@@ -25,16 +25,19 @@
           <span class="text-gray-400">▲</span>
         </button>
         <div class="p-3 pt-4 space-y-3 bg-white">
-          <!-- 부서명 -->
+          <!-- 부서명 (관리자/재정부만 변경 가능, 그 외는 본인 부서 고정) -->
           <div>
             <label class="block text-sm mb-1">부서명</label>
-            <input
-              type="text"
+            <select
               v-model="filters.deptName"
-              placeholder="부서명 입력"
-              class="mobile-form-control"
-              :readonly="!canEditDept"
-            />
+              :disabled="!canEditDept"
+              class="mobile-form-control mobile-form-control-select w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
+            >
+              <option v-if="canEditDept" value="">전체</option>
+              <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
+                {{ d.dept_name }}
+              </option>
+            </select>
           </div>
 
           <!-- 청구 유형 -->
@@ -171,6 +174,7 @@ const approvals = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const previewReport = ref(null);
+const departments = ref([]);
 
 const today = new Date();
 const year = today.getFullYear();
@@ -208,7 +212,7 @@ const searchConditionSummary = computed(() => {
   return parts.length ? parts.join(" · ") : "조건 선택";
 });
 
-// ✅ 권한 체크: 재정부 or 관리자
+// ✅ 권한 체크: 재정부 or 관리자만 부서 변경 가능
 const canEditDept = computed(() => {
   if (!user.value?.roles) return false;
   return user.value.roles.some(
@@ -216,11 +220,27 @@ const canEditDept = computed(() => {
   );
 });
 
-onMounted(() => {
+// ✅ 부서 옵션: 관리자/재정부는 전체 목록, 그 외는 본인 부서만
+const departmentOptions = computed(() => {
+  const list = (departments.value || []).slice().sort((a, b) => (a.dept_name || "").localeCompare(b.dept_name || ""));
+  if (canEditDept.value) return list;
+  const deptName = user.value?.deptName;
+  if (!deptName) return list;
+  const mine = list.find((d) => d.dept_name === deptName);
+  return mine ? [mine] : [{ id: null, dept_name: deptName }];
+});
+
+onMounted(async () => {
+  try {
+    const res = await axios.get("/api/departments");
+    departments.value = res.data || [];
+  } catch (e) {
+    console.error("부서 목록 로드 실패", e);
+  }
   if (user.value?.deptName) {
     filters.value.deptName = user.value.deptName;
-    fetchApprovals(1);
   }
+  fetchApprovals(1);
 });
 
 const fetchApprovals = async (page = 1) => {
