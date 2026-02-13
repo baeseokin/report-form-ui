@@ -7,17 +7,44 @@
     >
       ✕
     </button>
+    <!-- 확대/축소 (드래그하여 위치 이동 가능) -->
     <div
-      class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen p-0 relative overflow-y-auto border-t-8 border-purple-500
-            transform sm:scale-100 origin-top"
+      ref="zoomBarEl"
+      class="fixed z-50 flex items-center gap-1 bg-white/95 rounded-lg shadow-lg border border-gray-200 px-2 py-1.5 no-print select-none touch-none cursor-grab active:cursor-grabbing"
+      :style="{ top: zoomBarPos.top + 'px', left: zoomBarPos.left + 'px' }"
+      @pointerdown="onZoomBarPointerDown"
     >
-      <!-- 보고서 -->
-      <div
-        v-if="report"
-        class="page report-content break-before-page"
-        ref="reportContent"
-        :style="pageStyle"
-      >
+      <button
+        type="button"
+        aria-label="축소"
+        @click="zoomOut"
+        class="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg leading-none pointer-events-auto"
+      >−</button>
+      <span class="text-xs font-medium text-gray-600 min-w-[3rem] text-center">{{ Math.round(scaleValue * 100) }}%</span>
+      <button
+        type="button"
+        aria-label="확대"
+        @click="zoomIn"
+        class="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg leading-none pointer-events-auto"
+      >+</button>
+      <button
+        type="button"
+        aria-label="가로 맞춤"
+        @click="fitToWidth"
+        class="ml-1 px-2 py-1 text-xs font-medium rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 pointer-events-auto"
+      >맞춤</button>
+    </div>
+    <div
+      class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen p-0 relative overflow-y-auto overflow-x-hidden border-t-8 border-purple-500 flex justify-center"
+    >
+      <!-- 보고서: 가로 중앙 배치 -->
+      <div class="flex justify-center items-start min-h-full w-full">
+        <div
+          v-if="report"
+          class="page report-content break-before-page shrink-0"
+          ref="reportContent"
+          :style="pageStyle"
+        >
         <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
         <!-- ✅ 결재 서명란 (조회 전용) -->
@@ -202,6 +229,7 @@
           </div>
         </div>
       </template>
+      </div>
     </div>
 
 <!-- ✅ 하단 고정 Float Bar (기본 숨김, 활동 시 표시) -->
@@ -329,7 +357,12 @@ const gwanHangLabel = computed(() => {
   return [gName, hName].filter(Boolean).join(" / ");
 });
 
-// ✅ 모바일 scale 비율 동적 계산
+// ✅ 모바일/PC 확대·축소 (가로 맞춤 + 사용자 조절)
+const PAGE_WIDTH_PX = 794; // 210mm ≈ 794px
+const SCALE_MIN = 0.25;
+const SCALE_MAX = 2;
+const SCALE_STEP = 0.15;
+
 const scaleValue = ref(1);
 const pageStyle = computed(() => ({
   transform: `scale(${scaleValue.value})`,
@@ -338,15 +371,98 @@ const pageStyle = computed(() => ({
   minHeight: "297mm"
 }));
 
+function getFitToWidthScale() {
+  const screenWidth = window.innerWidth;
+  const padding = 24;
+  const w = Math.max(screenWidth - padding, 200);
+  return Math.min(1, w / PAGE_WIDTH_PX);
+}
+
+function fitToWidth() {
+  scaleValue.value = Math.max(SCALE_MIN, Math.min(SCALE_MAX, getFitToWidthScale()));
+}
+
+function zoomIn() {
+  scaleValue.value = Math.min(SCALE_MAX, scaleValue.value + SCALE_STEP);
+}
+
+function zoomOut() {
+  scaleValue.value = Math.max(SCALE_MIN, scaleValue.value - SCALE_STEP);
+}
+
+// ✅ 확대/축소 바 드래그로 위치 이동
+const ZOOM_BAR_STORAGE_KEY = "report-preview:zoomBarPos";
+const zoomBarEl = ref(null);
+const zoomBarPos = ref(
+  (() => {
+    try {
+      const s = localStorage.getItem(ZOOM_BAR_STORAGE_KEY);
+      if (s) {
+        const p = JSON.parse(s);
+        if (typeof p?.top === "number" && typeof p?.left === "number") return p;
+      }
+    } catch (_) {}
+    return { top: 16, left: 16 };
+  })()
+);
+const zoomBarDrag = ref({ active: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 });
+
+function clampZoomBarPosition(pos) {
+  const el = zoomBarEl.value;
+  const w = el ? el.offsetWidth : 200;
+  const h = el ? el.offsetHeight : 56;
+  return {
+    top: Math.max(0, Math.min(window.innerHeight - h, pos.top)),
+    left: Math.max(0, Math.min(window.innerWidth - w, pos.left)),
+  };
+}
+
+function onZoomBarPointerDown(e) {
+  if (e.target.closest("button")) return;
+  e.preventDefault();
+  zoomBarDrag.value = {
+    active: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    startLeft: zoomBarPos.value.left,
+    startTop: zoomBarPos.value.top,
+  };
+  if (zoomBarEl.value?.setPointerCapture) zoomBarEl.value.setPointerCapture(e.pointerId);
+  window.addEventListener("pointermove", onZoomBarPointerMove, { passive: false });
+  window.addEventListener("pointerup", onZoomBarPointerUp);
+  window.addEventListener("pointercancel", onZoomBarPointerUp);
+}
+
+function onZoomBarPointerMove(e) {
+  if (!zoomBarDrag.value.active) return;
+  e.preventDefault();
+  const dx = e.clientX - zoomBarDrag.value.startX;
+  const dy = e.clientY - zoomBarDrag.value.startY;
+  zoomBarPos.value = clampZoomBarPosition({
+    top: zoomBarDrag.value.startTop + dy,
+    left: zoomBarDrag.value.startLeft + dx,
+  });
+}
+
+function onZoomBarPointerUp() {
+  if (zoomBarDrag.value.active) {
+    try {
+      localStorage.setItem(ZOOM_BAR_STORAGE_KEY, JSON.stringify(zoomBarPos.value));
+    } catch (_) {}
+  }
+  zoomBarDrag.value = { active: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
+  window.removeEventListener("pointermove", onZoomBarPointerMove);
+  window.removeEventListener("pointerup", onZoomBarPointerUp);
+  window.removeEventListener("pointercancel", onZoomBarPointerUp);
+}
 
 onMounted(async () => {
   await fetchCategories();
-  const pageWidth = 794; // 210mm ≈ 794px
   const screenWidth = window.innerWidth;
   if (screenWidth < 768) {
-    scaleValue.value = 1;
+    scaleValue.value = Math.max(SCALE_MIN, Math.min(1, getFitToWidthScale()));
   } else {
-    scaleValue.value = screenWidth < pageWidth ? screenWidth / pageWidth : 1;
+    scaleValue.value = screenWidth < PAGE_WIDTH_PX ? screenWidth / PAGE_WIDTH_PX : 1;
   }
   refreshApprovalData();
 
@@ -367,6 +483,11 @@ onBeforeUnmount(() => {
     window.removeEventListener("touchstart", activityHandler.value);
   }
   if (hideTimerId.value) clearTimeout(hideTimerId.value);
+  if (zoomBarDrag.value.active) {
+    window.removeEventListener("pointermove", onZoomBarPointerMove);
+    window.removeEventListener("pointerup", onZoomBarPointerUp);
+    window.removeEventListener("pointercancel", onZoomBarPointerUp);
+  }
 });
 
 // (승인/반려 로직)
