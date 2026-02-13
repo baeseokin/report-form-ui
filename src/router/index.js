@@ -31,7 +31,10 @@ const ApprovalListPage = () =>
 // 사용자/권한/그리드/현황 등도 전부 동적 import
 const UserManagement = () => import("../components/UserManagement.vue");
 const RoleAccess = () => import("../components/RoleAccess.vue");
-const AccountCategoriesGrid = () => import("../components/AccountCategoriesGrid.vue");
+const AccountCategoriesGrid = () =>
+  isMobile()
+    ? import("../components/mobile/AccountCategoriesGridMobile.vue")
+    : import("../components/AccountCategoriesGrid.vue");
 const BudgetsGrid = () => import("../components/BudgetsGrid.vue");
 const BudgetStatus = () => import("../components/BudgetStatus.vue");
 const DeptBudgetStatus = () =>
