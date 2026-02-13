@@ -29,7 +29,10 @@ const ApprovalListPage = () =>
     : import("../components/ApprovalListPage.vue");
 
 // 사용자/권한/그리드/현황 등도 전부 동적 import
-const UserManagement = () => import("../components/UserManagement.vue");
+const UserManagement = () =>
+  isMobile()
+    ? import("../components/mobile/UserManagementMobile.vue")
+    : import("../components/UserManagement.vue");
 const RoleAccess = () => import("../components/RoleAccess.vue");
 const AccountCategoriesGrid = () =>
   isMobile()
