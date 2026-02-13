@@ -37,13 +37,17 @@
     <div
       class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen p-0 relative overflow-y-auto overflow-x-hidden border-t-8 border-purple-500 flex justify-center"
     >
-      <!-- 보고서: 가로 중앙 배치 -->
-      <div class="flex justify-center items-start min-h-full w-full">
+      <!-- 보고서: 한 번에 scale → 페이지 간격이 확대/축소에 따라 변하지 않음 -->
+      <div class="flex flex-col items-center min-h-full w-full">
+        <div
+          :style="scaleWrapperStyle"
+          class="flex flex-col items-center"
+        >
         <div
           v-if="report"
           class="page report-content break-before-page shrink-0"
           ref="reportContent"
-          :style="pageStyle"
+          :style="pageContentStyle"
         >
         <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
 
@@ -203,9 +207,12 @@
         </div>
       </div>
 
+        <!-- 페이지 사이 고정 간격 (scale과 함께 줄어들어 비율 유지) -->
+        <div v-if="report && chunkedFiles.length" class="report-page-gap shrink-0" aria-hidden="true" />
+
       <!-- ✅ 첨부파일 -->
       <template v-for="(page, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
-        <div class="page report-content mt-10 break-before-page" :style="pageStyle">
+        <div class="page report-content break-before-page shrink-0" :style="pageContentStyle">
           <h2 class="title-lg text-center mb-6 text-gray-800">
             📎 첨부파일 ({{ pageIdx + 1 }} / {{ chunkedFiles.length }})
           </h2>
@@ -228,7 +235,10 @@
             </div>
           </div>
         </div>
+        <!-- 다음 페이지와의 간격 -->
+        <div v-if="pageIdx < chunkedFiles.length - 1" class="report-page-gap shrink-0" aria-hidden="true" />
       </template>
+        </div>
       </div>
     </div>
 
@@ -364,12 +374,11 @@ const SCALE_MAX = 2;
 const SCALE_STEP = 0.15;
 
 const scaleValue = ref(1);
-const pageStyle = computed(() => ({
+const scaleWrapperStyle = computed(() => ({
   transform: `scale(${scaleValue.value})`,
   transformOrigin: "top center",
-  width: "210mm",
-  minHeight: "297mm"
 }));
+const pageContentStyle = { width: "210mm", minHeight: "297mm" };
 
 function getFitToWidthScale() {
   const screenWidth = window.innerWidth;
@@ -917,11 +926,22 @@ body {
   box-sizing: border-box;
   transform-origin: top center;
 }
+/* 페이지 사이 고정 간격 (scale 래퍼 안에서 함께 축소되어 비율 유지) */
+.report-page-gap {
+  height: 24px;
+  flex-shrink: 0;
+}
 @media (max-width: 768px) {
   .page { margin-top: 1rem !important; }
 }
 @media print {
   .no-print { display: none !important; }
+  .report-page-gap { height: 0; }
+  .page,
+  .report-content,
+  .report-content * {
+    font-family: "Nanum Barun Gothic", "Malgun Gothic", "Apple SD Gothic Neo", "AppleGothic", "Noto Sans KR", sans-serif !important;
+  }
   .page {
     border: none;
     box-shadow: none;
