@@ -342,14 +342,14 @@ const logout = async () => {
   -webkit-overflow-scrolling: touch;
 }
 
-/* 모바일 전용: 좌측 플로팅 책갈피 탭 (기본: 28px 노출, 터치 시 메뉴 열림·상하 드래그로 위치 조정) */
+/* 모바일 전용: 좌측 플로팅 책갈피 탭 (36px 노출, 상하 드래그로 위치 조정) */
 .mobile-menu-tab {
   position: fixed;
   left: 0;
   z-index: 35;
-  transform: translateX(calc(-100% + 28px)); /* 기본: 28px 나오게 (기존 2배) */
+  transform: translateX(calc(-100% + 36px)); /* 36px 노출 */
   transition: transform 0.25s ease-out;
-  touch-action: none; /* 터치 스크롤 방해 없이 탭 드래그만 처리 */
+  touch-action: none;
   overflow: visible;
 }
 
@@ -360,11 +360,11 @@ const logout = async () => {
 .mobile-menu-tab__btn {
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* MENU가 노출 영역(오른쪽)에 오도록 */
+  justify-content: flex-end;
   gap: 0.35rem;
-  min-width: 52px;
-  height: 72px; /* 세로 사이즈 확대 */
-  padding: 0 8px 0 14px;
+  min-width: 60px;
+  height: 72px;
+  padding: 0 10px 0 14px;
   background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
   color: white;
   border: none;
@@ -382,7 +382,7 @@ const logout = async () => {
   transform: scale(0.98);
 }
 
-/* MENU 글씨 세로 배치 + 노출되는 오른쪽 28px 안에 확실히 위치 */
+/* MENU 글씨 세로 배치 */
 .mobile-menu-tab__label {
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -391,6 +391,6 @@ const logout = async () => {
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1.2;
-  padding-right: 2px; /* 노출 영역 쪽으로 밀어서 보이게 */
+  padding-right: 2px;
 }
 </style>
