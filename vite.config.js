@@ -27,14 +27,20 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vue: ["vue", "vue-router", "pinia"],
-          network: ["axios"],
-          pdf: ["jspdf", "html2canvas"], // 👉 PDF 버튼 클릭 시 로드
-          exceljs: ["exceljs"], // 👉 Excel 버튼 클릭 시 로드 (BudgetsGrid)
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("vue") || id.includes("pinia") || id.includes("vue-router")) return "vue";
+            if (id.includes("axios")) return "network";
+            if (id.includes("jspdf") || id.includes("html2canvas")) return "pdf";
+            if (id.includes("exceljs")) return "exceljs";
+          }
         },
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
       },
     },
+    chunkSizeWarningLimit: 600,
   },
   esbuild: {
     drop: ["console", "debugger"], // 👉 운영 빌드에서 제거

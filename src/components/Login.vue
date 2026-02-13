@@ -103,9 +103,7 @@ import { ref, computed, onMounted, nextTick, defineAsyncComponent } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../store/userStore";
-import DeptPickerMobile from "./mobile/DeptPickerMobile.vue";
-import DeptPickerDesktop from "./DeptPickerDesktop.vue";
-// ✅ 동적 로딩용 Async 컴포넌트 (코드 스플리팅)
+// ✅ 동적 로딩만 사용 (모바일/PC 중 해당하는 픽업만 로드되어 번들 절감)
 const DeptPickerMobileAsync = defineAsyncComponent(() =>
   import("./mobile/DeptPickerMobile.vue")
 );

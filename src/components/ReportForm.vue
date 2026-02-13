@@ -123,21 +123,21 @@ import { useRoute } from "vue-router";
 import axios from "axios";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
-import ModalAlert from "./ModalAlert.vue";
+import { defineAsyncComponent } from "vue";
 
-// 📌 PC 전용 컴포넌트
-import BasicInfoTab from "./BasicInfoTab.vue";
-import ExpenseTab from "./ExpenseTab.vue";
-import FileAttachTab from "./FileAttachTab.vue";
-import ConfirmTab from "./ConfirmTab.vue";
-import { defineAsyncComponent } from 'vue';
-const ReportPreview = defineAsyncComponent(() => import ("./ReportPreview.vue"));
+// ✅ 모달/탭 전부 비동기 로드 → 모바일 초기 번들 크기 감소
+const ModalAlert = defineAsyncComponent(() => import("./ModalAlert.vue"));
+const ReportPreview = defineAsyncComponent(() => import("./ReportPreview.vue"));
 
-// 📌 Mobile 전용 컴포넌트
-import BasicInfoTabMobile from "./mobile/BasicInfoTabMobile.vue";
-import ExpenseTabMobile from "./mobile/ExpenseTabMobile.vue";
-import FileAttachTabMobile from "./mobile/FileAttachTabMobile.vue";
-import ConfirmTabMobile from "./mobile/ConfirmTabMobile.vue";
+const BasicInfoTab = defineAsyncComponent(() => import("./BasicInfoTab.vue"));
+const ExpenseTab = defineAsyncComponent(() => import("./ExpenseTab.vue"));
+const FileAttachTab = defineAsyncComponent(() => import("./FileAttachTab.vue"));
+const ConfirmTab = defineAsyncComponent(() => import("./ConfirmTab.vue"));
+
+const BasicInfoTabMobile = defineAsyncComponent(() => import("./mobile/BasicInfoTabMobile.vue"));
+const ExpenseTabMobile = defineAsyncComponent(() => import("./mobile/ExpenseTabMobile.vue"));
+const FileAttachTabMobile = defineAsyncComponent(() => import("./mobile/FileAttachTabMobile.vue"));
+const ConfirmTabMobile = defineAsyncComponent(() => import("./mobile/ConfirmTabMobile.vue"));
 
 // 반응형 감지
 const isMobile = ref(false);
