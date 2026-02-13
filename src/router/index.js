@@ -56,7 +56,9 @@ const DepartmentManagement = () =>
     ? import("../components/mobile/DepartmentManagementMobile.vue")
     : import("../components/DepartmentManagement.vue");
 const ApprovalLineManagement = () =>
-  import("../components/ApprovalLineManagement.vue");
+  isMobile()
+    ? import("../components/mobile/ApprovalLineManagementMobile.vue")
+    : import("../components/ApprovalLineManagement.vue");
 
 const routes = [
   { path: "/", redirect: "/login" },
