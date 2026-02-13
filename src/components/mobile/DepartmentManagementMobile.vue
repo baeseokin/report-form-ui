@@ -1,50 +1,22 @@
 <template>
   <div class="font-nanum text-gray-800">
-    <!-- Header -->
-    <div class="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-      <div class="px-4 py-3 flex items-center justify-end gap-3">
-        <button
-          class="shrink-0 px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
-          @click="resetForm"
-        >
-          새로고침
-        </button>
-      </div>
-
-      <!-- Actions -->
-      <div class="px-4 pb-3 flex gap-2">
-        <button
-          class="flex-1 px-3 py-2 text-sm rounded-lg bg-emerald-500 text-white shadow hover:bg-emerald-600"
-          @click="startCreateRoot"
-        >
-          ＋ 최상위
-        </button>
-        <button
-          class="flex-1 px-3 py-2 text-sm rounded-lg bg-blue-500 text-white shadow hover:bg-blue-600 disabled:opacity-50"
-          :disabled="!selected"
-          @click="startCreateChild"
-        >
-          ＋ 하위
-        </button>
-      </div>
-
-      <!-- Search -->
-      <div class="px-4 pb-4">
-        <div class="flex items-center gap-2">
-          <div class="relative flex-1">
-            <span class="absolute left-3 top-2.5 text-gray-400 text-sm">🔎</span>
-            <input
-              v-model="searchKeyword"
-              type="search"
-              placeholder="부서명·코드 검색"
-              class="mobile-form-control pl-9"
-            />
-          </div>
+    <!-- Header (계정과목 마스터와 동일 스타일) -->
+    <div class="sticky top-0 z-10 bg-purple-50 border-b border-purple-100">
+      <div class="p-3 flex justify-between items-center flex-wrap gap-2">
+        <h3 class="font-bold text-base text-purple-800">📂 부서 관리</h3>
+        <div class="flex items-center gap-1">
           <button
-            class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
-            @click="searchKeyword = ''"
+            @click="startCreateRoot"
+            class="px-3 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-100 active:bg-purple-200 text-sm font-medium touch-manipulation"
           >
-            초기화
+            ＋ 최상위
+          </button>
+          <button
+            @click="startCreateChild"
+            :disabled="!selected"
+            class="px-3 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-100 active:bg-purple-200 text-sm font-medium touch-manipulation disabled:opacity-40 disabled:border-gray-200 disabled:text-gray-500"
+          >
+            ＋ 하위
           </button>
         </div>
       </div>
@@ -58,15 +30,14 @@
           <p class="text-xs text-gray-500">총 {{ departments.length }}개</p>
         </div>
 
-        <p v-if="filteredTree.length === 0" class="text-sm text-gray-500 py-6 text-center">
-          검색 결과가 없습니다.
+        <p v-if="departmentTree.length === 0" class="text-sm text-gray-500 py-6 text-center">
+          등록된 부서가 없습니다.
         </p>
         <ul v-else class="space-y-2">
           <DepartmentNode
-            v-for="node in filteredTree"
+            v-for="node in departmentTree"
             :key="node.id"
             :node="node"
-            :keyword="searchKeyword"
             :selected-id="selected?.id"
             :on-select="selectById"
           />
@@ -170,7 +141,6 @@ import { computed, defineComponent, h, onMounted, ref, watch } from "vue";
 const departments = ref([]);
 const selected = ref(null);
 const editable = ref(createBlank());
-const searchKeyword = ref("");
 
 function createBlank(parentId = null) {
   return {
@@ -227,22 +197,6 @@ function buildTree(list) {
 
 const departmentTree = computed(() => buildTree(departments.value));
 
-const filteredTree = computed(() => {
-  if (!searchKeyword.value.trim()) return departmentTree.value;
-  const keyword = searchKeyword.value.toLowerCase();
-  const filterNode = (node) => {
-    const matched =
-      node.dept_name.toLowerCase().includes(keyword) ||
-      (node.dept_cd && node.dept_cd.toLowerCase().includes(keyword));
-    const children = node.children.map(filterNode).filter(Boolean);
-    if (matched || children.length) {
-      return { ...node, children };
-    }
-    return null;
-  };
-  return departmentTree.value.map(filterNode).filter(Boolean);
-});
-
 const parentOptions = computed(() => {
   const flatten = (nodes, depth = 0) =>
     nodes.flatMap((node) => [
@@ -250,17 +204,6 @@ const parentOptions = computed(() => {
       ...flatten(node.children || [], depth + 1),
     ]);
   return flatten(departmentTree.value);
-});
-
-const filteredList = computed(() => {
-  if (!searchKeyword.value.trim()) return departments.value;
-  const keyword = searchKeyword.value.toLowerCase();
-  return departments.value.filter(
-    (dept) =>
-      dept.dept_name.toLowerCase().includes(keyword) ||
-      (dept.dept_cd && dept.dept_cd.toLowerCase().includes(keyword)) ||
-      (parentName(dept.parent_dept_id) || "").toLowerCase().includes(keyword)
-  );
 });
 
 function parentName(parentId) {
