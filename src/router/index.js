@@ -35,7 +35,10 @@ const AccountCategoriesGrid = () =>
   isMobile()
     ? import("../components/mobile/AccountCategoriesGridMobile.vue")
     : import("../components/AccountCategoriesGrid.vue");
-const BudgetsGrid = () => import("../components/BudgetsGrid.vue");
+const BudgetsGrid = () =>
+  isMobile()
+    ? import("../components/mobile/BudgetsGridMobile.vue")
+    : import("../components/BudgetsGrid.vue");
 const BudgetStatus = () => import("../components/BudgetStatus.vue");
 const DeptBudgetStatus = () =>
   isMobile()
