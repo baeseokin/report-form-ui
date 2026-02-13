@@ -13,8 +13,8 @@
       <!-- Department list -->
       <section class="bg-white rounded-xl shadow p-4 flex flex-col">
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold">부서 목록</h2>
-          <span class="text-sm text-gray-500">총 {{ departments.length }}개</span>
+          <h2 class="text-sm font-semibold text-gray-800">부서 목록</h2>
+          <span class="text-xs text-gray-500">총 {{ departments.length }}개</span>
         </div>
 
         <div class="flex items-center gap-2 mb-3">
@@ -25,7 +25,7 @@
             class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
           <button
-            class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+            class="px-3 py-2 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
             @click="deptKeyword = ''"
           >
             초기화
@@ -36,7 +36,7 @@
           <button
             v-for="dept in filteredDepartments"
             :key="dept"
-            class="w-full text-left px-4 py-3 text-sm hover:bg-purple-50"
+            class="w-full text-left px-4 py-3 text-sm text-gray-800 hover:bg-purple-50"
             :class="selectedDept === dept ? 'bg-purple-100 font-semibold text-purple-700' : ''"
             @click="selectDept(dept)"
           >
