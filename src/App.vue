@@ -290,6 +290,12 @@ function onMenuTabPointerMove(e) {
 function onMenuTabPointerUp() {
   if (menuTabDrag.value.active) {
     try { localStorage.setItem(MENU_TAB_STORAGE_KEY, String(menuTabTopPx.value)); } catch (_) {}
+    // 터치/펜으로 탭만 했을 때(드래그 아님): click이 preventDefault 때문에 안 날 수 있어 직접 토글
+    if (!menuTabDidDrag.value) {
+      toggleSidebar();
+      menuTabClickHandledByPointer.value = true;
+      setTimeout(() => { menuTabClickHandledByPointer.value = false; }, 300);
+    }
   }
   menuTabDrag.value = { active: false, startY: 0, startTop: 0 };
   window.removeEventListener("pointermove", onMenuTabPointerMove);
@@ -298,8 +304,11 @@ function onMenuTabPointerUp() {
   setTimeout(() => { menuTabDidDrag.value = false; }, 0);
 }
 
-function onMenuTabClick() {
+const menuTabClickHandledByPointer = ref(false);
+
+function onMenuTabClick(e) {
   if (menuTabDidDrag.value) return;
+  if (menuTabClickHandledByPointer.value) return; // pointerup에서 이미 토글함 (중복 방지)
   toggleSidebar();
 }
 

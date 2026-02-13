@@ -1,46 +1,54 @@
 <template>
   <div class="p-4 font-nanum min-h-[calc(100vh-4rem)] flex flex-col gap-4">
-    <!-- 부서 선택 (상단 고정) -->
-    <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-3">
-      <label class="block text-sm font-semibold text-gray-700 mb-2">부서 선택</label>
-      <select
-        v-model="selectedDeptId"
-        @change="fetchDeptMapping"
-        class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-base bg-white"
-      >
-        <option :value="null" disabled>부서 선택</option>
-        <option v-for="d in departments" :key="d.id" :value="d.id">
-          {{ d.dept_name }}
-        </option>
-      </select>
-    </section>
-
-    <!-- 계정과목 마스터 -->
-    <section class="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-      <div class="p-3 bg-purple-50 border-b border-purple-100 flex justify-between items-center">
+    <!-- 계정과목 마스터 (타이틀 바로 아래) -->
+    <section class="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden min-h-0">
+      <div class="p-3 bg-purple-50 border-b border-purple-100 flex justify-between items-center flex-wrap gap-2">
         <h3 class="font-bold text-base text-purple-800">📂 계정과목 마스터</h3>
-        <button
-          @click="openModal('add', null)"
-          class="px-3 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-100 active:bg-purple-200 text-sm font-medium touch-manipulation"
-        >
-          + 최상위 추가
-        </button>
+        <div class="flex items-center gap-1">
+          <button
+            @click="openModal('add', null)"
+            class="px-3 py-2 bg-white border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-100 active:bg-purple-200 text-sm font-medium touch-manipulation"
+          >
+            + 최상위 추가
+          </button>
+          <button
+            @click="selectedCategory && openModal('add', selectedCategory)"
+            :disabled="!selectedCategory"
+            class="p-1.5 text-green-600 rounded text-sm leading-none active:bg-green-100 min-w-[28px] min-h-[28px] flex items-center justify-center border border-green-300 disabled:opacity-40 disabled:border-gray-200 touch-manipulation"
+            title="하위 추가"
+          >➕</button>
+          <button
+            @click="selectedCategory && openModal('edit', selectedCategory)"
+            :disabled="!selectedCategory"
+            class="p-1.5 text-blue-600 rounded text-sm leading-none active:bg-blue-100 min-w-[28px] min-h-[28px] flex items-center justify-center border border-blue-300 disabled:opacity-40 disabled:border-gray-200 touch-manipulation"
+            title="수정"
+          >✏️</button>
+          <button
+            @click="selectedCategory && deleteCategory(selectedCategory)"
+            :disabled="!selectedCategory"
+            class="p-1.5 text-red-600 rounded text-sm leading-none active:bg-red-100 min-w-[28px] min-h-[28px] flex items-center justify-center border border-red-300 disabled:opacity-40 disabled:border-gray-200 touch-manipulation"
+            title="삭제"
+          >🗑</button>
+        </div>
       </div>
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto min-h-[200px]">
         <div class="divide-y divide-gray-100">
           <div
             v-for="c in visibleCategories"
             :key="c.id"
-            class="flex items-center gap-2 px-3 py-2.5 touch-manipulation"
+            @click="selectedCategoryId === c.id ? (selectedCategoryId = null) : (selectedCategoryId = c.id)"
+            class="flex items-center gap-2 px-3 py-2.5 touch-manipulation cursor-pointer"
             :class="{
-              'bg-blue-50': c.level === '관',
-              'bg-white': c.level !== '관'
+              'bg-blue-50': c.level === '관' && selectedCategoryId !== c.id,
+              'bg-white': c.level !== '관' && selectedCategoryId !== c.id,
+              'bg-purple-100 ring-1 ring-purple-300': selectedCategoryId === c.id
             }"
           >
             <input
               type="checkbox"
               :value="c.id"
               v-model="leftCheckedIds"
+              @click.stop
               class="w-5 h-5 shrink-0 rounded border-gray-300"
             />
             <button
@@ -59,34 +67,44 @@
                 <span class="text-xs text-gray-400 shrink-0">{{ c.level }}</span>
               </div>
             </div>
-            <div class="flex gap-1 shrink-0">
-              <button @click="openModal('add', c)" class="p-2 text-green-600 rounded-lg active:bg-green-100" title="하위 추가">➕</button>
-              <button @click="openModal('edit', c)" class="p-2 text-blue-600 rounded-lg active:bg-blue-100" title="수정">✏️</button>
-              <button @click="deleteCategory(c)" class="p-2 text-red-600 rounded-lg active:bg-red-100" title="삭제">🗑</button>
-            </div>
           </div>
         </div>
         <p v-if="categoriesTree.length === 0" class="text-center text-gray-500 py-8 text-sm">등록된 계정과목이 없습니다.</p>
       </div>
     </section>
 
-    <!-- 이동 버튼 (세로 배치) -->
-    <div class="grid grid-cols-2 gap-3">
-      <button
-        @click="moveToRight"
-        class="py-3 px-4 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-xl font-medium text-sm shadow-sm active:bg-purple-300 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-        :disabled="!selectedDeptId || leftCheckedIds.length === 0"
-      >
-        ▶ 부서에 추가
-      </button>
-      <button
-        @click="moveToLeft"
-        class="py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium text-sm shadow-sm active:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-        :disabled="!selectedDeptId || rightCheckedIds.length === 0"
-      >
-        ◀ 매핑 해제
-      </button>
-    </div>
+    <!-- 부서 선택 + 이동 버튼 (한 줄) -->
+    <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-3">
+      <label class="block text-sm font-semibold text-gray-700 mb-2">부서 선택</label>
+      <div class="flex items-center gap-2">
+        <select
+          v-model="selectedDeptId"
+          @change="fetchDeptMapping"
+          class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2.5 text-base bg-white"
+        >
+          <option :value="null" disabled>부서 선택</option>
+          <option v-for="d in departments" :key="d.id" :value="d.id">
+            {{ d.dept_name }}
+          </option>
+        </select>
+        <button
+          @click="moveToRight"
+          class="shrink-0 w-10 h-10 flex items-center justify-center bg-purple-200 text-purple-800 font-bold rounded-lg active:bg-purple-400 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation text-xl"
+          :disabled="!selectedDeptId || leftCheckedIds.length === 0"
+          title="부서에 추가"
+        >
+          ⬇
+        </button>
+        <button
+          @click="moveToLeft"
+          class="shrink-0 w-10 h-10 flex items-center justify-center bg-gray-200 text-gray-800 font-bold rounded-lg active:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation text-xl"
+          :disabled="!selectedDeptId || rightCheckedIds.length === 0"
+          title="매핑 해제"
+        >
+          ⬆
+        </button>
+      </div>
+    </section>
 
     <!-- 부서 매핑 목록 -->
     <section class="flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -105,9 +123,8 @@
       </div>
       <div v-else class="flex-1 overflow-y-auto divide-y divide-gray-100 max-h-64">
         <div
-          v-for="c in categoriesTree"
+          v-for="c in visibleMappedCategories"
           :key="c.id"
-          v-show="mappedCategoryIds.includes(c.id)"
           class="flex items-center gap-2 px-3 py-2.5 touch-manipulation"
         >
           <input
@@ -116,6 +133,15 @@
             v-model="rightCheckedIds"
             class="w-5 h-5 shrink-0 rounded border-gray-300"
           />
+          <button
+            v-if="hasMappedChildren(c)"
+            type="button"
+            @click.stop="toggleMappingExpand(c.id)"
+            class="w-7 h-7 shrink-0 flex items-center justify-center text-gray-500 rounded-lg active:bg-gray-200"
+          >
+            {{ mappingExpandedIds.has(c.id) ? '▼' : '▶' }}
+          </button>
+          <span v-else class="w-7 shrink-0 block" />
           <div class="min-w-0 flex-1">
             <div :style="{ paddingLeft: `${(c.depth - 1) * 12}px` }" class="flex items-center gap-1 flex-wrap">
               <span v-if="c.depth > 1" class="text-gray-400 shrink-0">└</span>
@@ -206,6 +232,13 @@ const mappedCategoryIds = ref([]);
 const leftCheckedIds = ref([]);
 const rightCheckedIds = ref([]);
 const expandedIds = ref(new Set());
+const mappingExpandedIds = ref(new Set()); // 부서 매핑 섹션 트리 접기/펼치기 (기본 모두 접힘)
+const selectedCategoryId = ref(null); // 계정과목 마스터에서 선택된 행 (헤더 버튼이 이 행에 적용)
+
+const selectedCategory = computed(() => {
+  if (!selectedCategoryId.value) return null;
+  return categories.value.find(c => c.id === selectedCategoryId.value) || null;
+});
 
 const showModal = ref(false);
 const modalMode = ref("add");
@@ -250,6 +283,39 @@ const toggleExpand = (id) => {
   expandedIds.value = newSet;
 };
 
+// 부서 매핑 목록: 매핑된 노드만 + 접기/펼치기 적용
+const visibleMappedCategories = computed(() => {
+  const mapped = mappedCategoryIds.value;
+  const expanded = mappingExpandedIds.value;
+  const tree = categoriesTree.value;
+  const visibleNodes = [];
+  const visibleIds = new Set();
+  for (const node of tree) {
+    if (!mapped.includes(node.id)) continue;
+    if (!node.parent_id) {
+      visibleIds.add(node.id);
+      visibleNodes.push(node);
+    } else {
+      if (mapped.includes(node.parent_id) && visibleIds.has(node.parent_id) && expanded.has(node.parent_id)) {
+        visibleIds.add(node.id);
+        visibleNodes.push(node);
+      }
+    }
+  }
+  return visibleNodes;
+});
+
+const hasMappedChildren = (c) => {
+  return categoriesTree.value.some(n => n.parent_id === c.id && mappedCategoryIds.value.includes(n.id));
+};
+
+const toggleMappingExpand = (id) => {
+  const newSet = new Set(mappingExpandedIds.value);
+  if (newSet.has(id)) newSet.delete(id);
+  else newSet.add(id);
+  mappingExpandedIds.value = newSet;
+};
+
 onMounted(async () => {
   try {
     const [deptRes, catRes] = await Promise.all([
@@ -258,9 +324,8 @@ onMounted(async () => {
     ]);
     departments.value = deptRes.data.sort((a, b) => a.dept_name.localeCompare(b.dept_name));
     categories.value = Array.isArray(catRes.data.categories) ? catRes.data.categories : [];
-    const initialExpanded = new Set();
-    categories.value.forEach(c => { if (c.level === '관') initialExpanded.add(c.id); });
-    expandedIds.value = initialExpanded;
+    // 기본적으로 모두 접힌 상태 (펼치려면 ▶ 탭)
+    expandedIds.value = new Set();
   } catch (err) {
     console.error("❌ 초기 데이터 로드 실패:", err);
   }
@@ -281,11 +346,13 @@ const fetchDeptMapping = async () => {
     const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`);
     const mappedList = res.data.categories || [];
     mappedCategoryIds.value = mappedList.map(c => c.id);
+    mappingExpandedIds.value = new Set(); // 부서 변경 시 트리 접기 상태 초기화
   } catch (err) {
     console.error("매핑 정보 조회 실패:", err);
     mappedCategoryIds.value = [];
     leftCheckedIds.value = [];
     rightCheckedIds.value = [];
+    mappingExpandedIds.value = new Set();
   }
 };
 
@@ -391,6 +458,7 @@ const deleteCategory = async (row) => {
   if (!confirm(`'${row.category_name}' 계정을 삭제하시겠습니까?`)) return;
   try {
     await axios.delete(`/api/accountCategories/${row.id}`);
+    selectedCategoryId.value = null;
     await fetchAllCategories();
   } catch (e) {
     console.error(e);
