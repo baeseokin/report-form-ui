@@ -5,6 +5,7 @@
       <label class="block font-semibold mb-2">역할 선택</label>
       <select v-model="selectedRole" @change="loadAccess"
               class="border p-2 rounded w-64 focus:ring-2 focus:ring-purple-400">
+        <option value="">선택 안함</option>
         <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.role_name }}</option>
       </select>
     </div>
@@ -47,7 +48,7 @@ import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 
 const roles = ref([]);
-const selectedRole = ref(null);
+const selectedRole = ref("");
 const access = ref([]);
 const localAccess = reactive({}); // ✅ 체크박스 로컬 상태
 
