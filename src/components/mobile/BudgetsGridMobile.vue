@@ -1,70 +1,84 @@
 <template>
   <div class="p-4 font-nanum min-h-[calc(100vh-4rem)] flex flex-col gap-4">
-    <!-- 검색조건 (접기/펼치기) -->
-    <section class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <!-- 검색조건 접기/펼치기 (보라색 스타일) -->
+    <div class="mb-4 bg-purple-100 rounded-lg border border-purple-200 shadow-sm overflow-hidden">
+      <!-- 접힌 상태: 터치하면 펼침 -->
       <button
         type="button"
-        @click="searchExpanded = !searchExpanded"
-        class="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 active:bg-gray-100 transition"
+        @click="searchExpanded = true"
+        class="w-full flex items-center justify-between p-3 text-left hover:bg-purple-200 active:bg-purple-300 transition"
+        :class="{ 'hidden': searchExpanded }"
       >
         <span class="font-semibold text-gray-700">검색조건</span>
         <span class="text-sm text-gray-500 truncate flex-1 mx-2">{{ searchConditionSummary }}</span>
-        <span class="text-gray-400 shrink-0">{{ searchExpanded ? '▲' : '▼' }}</span>
+        <span class="text-gray-400 shrink-0">▼</span>
       </button>
-      <div v-show="searchExpanded" class="border-t border-gray-200 p-3 space-y-3 bg-gray-50">
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">부서 선택</label>
-          <select
-            v-model="selectedDeptId"
-            @change="fetchCategories"
-            class="mobile-form-control mobile-form-control-select w-full"
-          >
-            <option v-for="d in departments" :key="d.id" :value="d.id">
-              {{ d.dept_name }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">기준일자</label>
-          <div class="mobile-form-control-date-wrap">
-            <input
-              type="date"
-              v-model="baseDate"
+
+      <!-- 펼친 상태: 조건 영역 -->
+      <div v-show="searchExpanded" class="border-t border-purple-200">
+        <button
+          type="button"
+          @click="searchExpanded = false"
+          class="w-full flex items-center justify-between p-3 text-left bg-purple-200 hover:bg-purple-300 active:bg-purple-400 transition"
+        >
+          <span class="font-semibold text-gray-700">검색조건 접기</span>
+          <span class="text-gray-400">▲</span>
+        </button>
+        <div class="p-3 pt-4 space-y-3 bg-white">
+          <div>
+            <label class="block text-sm mb-1">부서 선택</label>
+            <select
+              v-model="selectedDeptId"
               @change="fetchCategories"
-              class="mobile-form-control mobile-form-control-date"
+              class="mobile-form-control mobile-form-control-select w-full"
+            >
+              <option v-for="d in departments" :key="d.id" :value="d.id">
+                {{ d.dept_name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm mb-1">기준일자</label>
+            <div class="mobile-form-control-date-wrap">
+              <input
+                type="date"
+                v-model="baseDate"
+                @change="fetchCategories"
+                class="mobile-form-control mobile-form-control-date"
+              />
+              <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm mb-1">회계연도</label>
+            <input
+              type="number"
+              v-model="year"
+              min="2000"
+              max="2100"
+              class="mobile-form-control w-full"
             />
-            <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+          </div>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              @click="fetchCategories"
+              class="flex-1 py-2.5 text-sm font-medium rounded-lg bg-purple-600 text-white shadow-sm hover:bg-purple-700 active:bg-purple-800 transition touch-manipulation"
+            >
+              조회
+            </button>
+            <button
+              type="button"
+              @click="downloadExcel"
+              class="flex-1 py-2.5 text-sm font-medium rounded-lg bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition touch-manipulation"
+              :disabled="categoriesTree.length === 0"
+            >
+              Excel
+            </button>
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">회계연도</label>
-          <input
-            type="number"
-            v-model="year"
-            min="2000"
-            max="2100"
-            class="mobile-form-control w-full"
-          />
-        </div>
-        <div class="flex gap-2">
-          <button
-            type="button"
-            @click="fetchCategories"
-            class="flex-1 py-2.5 text-sm font-medium rounded-lg bg-gray-700 text-white hover:bg-gray-800 active:bg-gray-900 transition touch-manipulation"
-          >
-            조회
-          </button>
-          <button
-            type="button"
-            @click="downloadExcel"
-            class="flex-1 py-2.5 text-sm font-medium rounded-lg bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition touch-manipulation"
-            :disabled="categoriesTree.length === 0"
-          >
-            Excel
-          </button>
-        </div>
       </div>
-    </section>
+    </div>
 
     <!-- 계정 목록 (카드 리스트) -->
     <section class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -166,7 +180,7 @@ const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
 const budgets = ref({});
 
-const searchExpanded = ref(true);
+const searchExpanded = ref(false);
 const collapsedIds = ref(new Set());
 
 const searchConditionSummary = computed(() => {

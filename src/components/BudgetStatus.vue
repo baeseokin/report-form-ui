@@ -124,8 +124,13 @@ const fetchBudgetStatus = async () => {
       remaining_amount: Number(r.total_budget) - r.total_expense,
     }));
     
-    // 정렬 (관 ID -> 항 ID)
-    processedRows.sort((a, b) => a.hang_category_id.localeCompare(b.hang_category_id));
+    // 정렬 (관 ID -> 항 ID). API ORDER BY gwan.category_id, hang.category_id 와 동일하게
+    processedRows.sort((a, b) => {
+      const gwanA = String(a.gwan_category_id ?? a.gwan_name ?? "");
+      const gwanB = String(b.gwan_category_id ?? b.gwan_name ?? "");
+      const gwanCmp = gwanA.localeCompare(gwanB, undefined, { numeric: true });
+      return gwanCmp !== 0 ? gwanCmp : String(a.hang_category_id).localeCompare(String(b.hang_category_id), undefined, { numeric: true });
+    });
 
     // ✅ 관(Gwan) 셀 병합 계산
     if (processedRows.length > 0) {
