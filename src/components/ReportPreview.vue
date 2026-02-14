@@ -86,16 +86,11 @@
                       :src="getSignatureUrl(line.approver_role)"
                       class="signature-img"
                     />
-                    <!-- ✅ 뱃지 + 말풍선을 한 덩어리로 (말풍선이 뱃지 바로 옆에만 붙도록) -->
-                    <div class="relative inline-flex items-center mt-2">
-                      <!-- ✅ 상태 뱃지: 메시지 있음/없음 유형 구분 -->
+                    <!-- ✅ 상태 뱃지 -->
+                    <div class="inline-flex items-center mt-2">
                       <span
                         v-if="getStatus(line.approver_role)"
-                        class="status-badge no-print inline-flex items-center justify-center relative"
-                        :class="{ 'status-badge-has-comment': getComment(line.approver_role) }"
-                        :title="getComment(line.approver_role) ? '코멘트 보기' : undefined"
-                        @mouseenter="getComment(line.approver_role) && (visibleCommentRole = line.approver_role)"
-                        @mouseleave="visibleCommentRole = null"
+                        class="status-badge no-print inline-flex items-center justify-center"
                       >
                         <img
                           v-if="getStatus(line.approver_role) === '기안'"
@@ -115,20 +110,7 @@
                           alt="Rejected"
                           class="h-6 w-auto"
                         />
-                        <!-- 메시지 있는 유형: 우측 상단에 말풍선 표시 -->
-                        <span
-                          v-if="getComment(line.approver_role)"
-                          class="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] leading-none"
-                          aria-hidden="true"
-                        >💬</span>
                       </span>
-                      <!-- 말풍선: 뱃지 바로 오른쪽에만 표시 (같은 wrapper 안에서 absolute) -->
-                      <div
-                        v-if="getComment(line.approver_role) && visibleCommentRole === line.approver_role"
-                        class="no-print absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-white border border-gray-300 shadow-lg rounded p-2 text-xs w-44 z-[100] whitespace-normal pointer-events-none"
-                      >
-                        💬 {{ getComment(line.approver_role) }}
-                      </div>
                     </div>
                     <!-- ✅ 결재 시간 (PDF/프린트 시 숨김) -->
                     <small v-if="getApprovedAt(line.approver_role)" class="no-print text-gray-500 text-[10px] mt-1">
@@ -278,6 +260,12 @@
     >
       🖨️ 프린트
     </button>
+    <button
+      @click="openCommentList"
+      class="px-4 py-2 rounded-lg bg-white/80 text-gray-700 font-semibold shadow hover:bg-gray-100 transition"
+    >
+      💬 결재의견
+    </button>
   </div>
 
   <!-- 모바일 레이아웃 -->
@@ -303,6 +291,12 @@
       >
         📄 PDF
       </button>
+      <button
+        @click="openCommentList"
+        class="flex-1 py-2 rounded-lg bg-white/90 text-gray-800 font-semibold shadow hover:bg-gray-200 active:scale-95"
+      >
+        💬 결재의견
+      </button>
     </div>
   </div>
 </div>
@@ -313,6 +307,54 @@
 
     <!-- ✅ 결재 완료 알림 -->
     <ModalAlert :visible="showModal" title="알림" message="정상적으로 결재되었습니다." @close="handleModalClose" />
+
+    <!-- ✅ 결재의견 목록 팝업 -->
+    <div
+      v-if="showCommentListPopup"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      @click.self="closeCommentList"
+    >
+      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center">
+          <h3 class="text-lg font-bold text-gray-800">💬 결재의견</h3>
+          <button
+            type="button"
+            class="p-2 text-gray-500 hover:text-gray-800 rounded-lg"
+            aria-label="닫기"
+            @click="closeCommentList"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="overflow-y-auto flex-1 p-4">
+          <p v-if="sortedApprovalHistory.length === 0" class="text-gray-500 text-center py-8">결재 이력이 없습니다.</p>
+          <ul v-else class="space-y-3">
+            <li
+              v-for="(h, idx) in sortedApprovalHistory"
+              :key="idx"
+              class="border border-gray-200 rounded-lg p-3 bg-gray-50/50"
+            >
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <span class="font-mono text-gray-600">{{ formatDateTime(h.approved_at) }}</span>
+                <span class="font-semibold text-gray-800">{{ h.approver_role || h.approver_user_name || '-' }}</span>
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-medium"
+                  :class="{
+                    'bg-blue-100 text-blue-800': APPLICANT_ROLES.includes(h.approver_role),
+                    'bg-red-500 text-white': (h.status && String(h.status).toLowerCase()) === 'rejected',
+                    'bg-green-500 text-white': !APPLICANT_ROLES.includes(h.approver_role) && (h.status && String(h.status).toLowerCase()) !== 'approved' && (h.status && String(h.status).toLowerCase()) !== 'rejected'
+                  }"
+                  :style="(h.status && String(h.status).toLowerCase()) === 'approved' && !APPLICANT_ROLES.includes(h.approver_role) ? { backgroundColor: '#22c55e', color: 'white' } : {}"
+                >
+                  {{ APPLICANT_ROLES.includes(h.approver_role) ? '기안' : (h.status && String(h.status).toLowerCase() === 'approved' ? '승인' : (h.status && String(h.status).toLowerCase()) === 'rejected' ? '반려' : (h.status || '-')) }}
+                </span>
+              </div>
+              <p v-if="h.comment" class="mt-2 text-gray-700 text-sm whitespace-pre-wrap border-t border-gray-100 pt-2">{{ h.comment }}</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -549,7 +591,7 @@ const showPopup = ref(false);
 const showModal = ref(false);
 const approvalHistory = ref(props.report?.approvalHistory || []);
 const approvalLines = ref(props.report?.approvalLine || []);
-const visibleCommentRole = ref(null);
+const showCommentListPopup = ref(false);
 const popupMode = ref(null);
 
 const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
@@ -565,6 +607,18 @@ const refreshApprovalData = async () => {
 };
 const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; emit("refreshList"); };
 const handleModalClose = () => { showModal.value = false; emit("close"); };
+
+const openCommentList = () => { showCommentListPopup.value = true; };
+const closeCommentList = () => { showCommentListPopup.value = false; };
+
+const sortedApprovalHistory = computed(() => {
+  const list = [...(approvalHistory.value || [])];
+  return list.sort((a, b) => {
+    const ta = a.approved_at ? new Date(a.approved_at).getTime() : 0;
+    const tb = b.approved_at ? new Date(b.approved_at).getTime() : 0;
+    return ta - tb;
+  });
+});
 
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
 
@@ -1068,12 +1122,7 @@ table td, table th {
   box-sizing: border-box;
 }
 
-/* ✅ 상태 뱃지: 메시지 있는 유형 (코멘트 있으면 호버 시 말풍선) */
-.report-content .status-badge-has-comment {
-  cursor: pointer;
-}
-
-/* ✅ 프린트 시: 서명란에서 상태 뱃지·말풍선·결재시간 숨김, 서명 행 높이 축소 */
+/* ✅ 프린트 시: 서명란에서 상태 뱃지·결재시간 숨김, 서명 행 높이 축소 */
 @media print {
   .report-content .no-print {
     display: none !important;
