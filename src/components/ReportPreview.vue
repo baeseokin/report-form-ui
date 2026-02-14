@@ -336,7 +336,8 @@
             >
               <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 <span class="font-mono text-gray-600">{{ formatDateTime(h.approved_at) }}</span>
-                <span class="font-semibold text-gray-800">{{ h.approver_role || h.approver_user_name || '-' }}</span>
+                <span class="font-semibold text-gray-800">{{ h.approver_role || '-' }}</span>
+                <span v-if="h.approver_user_name || h.approver_user_id" class="text-gray-700">{{ h.approver_user_name }}{{ h.approver_user_id ? `(${h.approver_user_id})` : '' }}</span>
                 <span
                   class="px-2 py-0.5 rounded text-xs font-medium"
                   :class="{
@@ -349,7 +350,7 @@
                   {{ APPLICANT_ROLES.includes(h.approver_role) ? '기안' : (h.status && String(h.status).toLowerCase() === 'approved' ? '승인' : (h.status && String(h.status).toLowerCase()) === 'rejected' ? '반려' : (h.status || '-')) }}
                 </span>
               </div>
-              <p v-if="h.comment" class="mt-2 text-gray-700 text-sm whitespace-pre-wrap border-t border-gray-100 pt-2">{{ h.comment }}</p>
+              <p class="mt-2 text-gray-700 text-sm whitespace-pre-wrap border-t border-gray-100 pt-2">{{ h.comment || '의견 없음' }}</p>
             </li>
           </ul>
         </div>
