@@ -342,12 +342,12 @@
                   class="px-2 py-0.5 rounded text-xs font-medium"
                   :class="{
                     'bg-blue-100 text-blue-800': APPLICANT_ROLES.includes(h.approver_role),
-                    'bg-red-500 text-white': (h.status && String(h.status).toLowerCase()) === 'rejected',
-                    'bg-green-500 text-white': !APPLICANT_ROLES.includes(h.approver_role) && (h.status && String(h.status).toLowerCase()) !== 'approved' && (h.status && String(h.status).toLowerCase()) !== 'rejected'
+                    'bg-green-500 text-white': !APPLICANT_ROLES.includes(h.approver_role) && isApprovedStatus(h.status),
+                    'bg-red-500 text-white': isRejectedStatus(h.status),
+                    'bg-gray-400 text-white': !APPLICANT_ROLES.includes(h.approver_role) && !isApprovedStatus(h.status) && !isRejectedStatus(h.status)
                   }"
-                  :style="(h.status && String(h.status).toLowerCase()) === 'approved' && !APPLICANT_ROLES.includes(h.approver_role) ? { backgroundColor: '#22c55e', color: 'white' } : {}"
                 >
-                  {{ APPLICANT_ROLES.includes(h.approver_role) ? '기안' : (h.status && String(h.status).toLowerCase() === 'approved' ? '승인' : (h.status && String(h.status).toLowerCase()) === 'rejected' ? '반려' : (h.status || '-')) }}
+                  {{ APPLICANT_ROLES.includes(h.approver_role) ? '기안' : (isApprovedStatus(h.status) ? '승인' : isRejectedStatus(h.status) ? '반려' : (h.status || '-')) }}
                 </span>
               </div>
               <p class="mt-2 text-gray-700 text-sm whitespace-pre-wrap border-t border-gray-100 pt-2">{{ h.comment || '의견 없음' }}</p>
@@ -625,6 +625,8 @@ const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleStri
 
 // ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
 const APPLICANT_ROLES = ["재정부", "작성자", "회계"];
+const isApprovedStatus = (s) => s && (String(s).toLowerCase() === "approved" || s === "승인");
+const isRejectedStatus = (s) => s && (String(s).toLowerCase() === "rejected" || s === "반려");
 const getHistoryRecord = (role) => {
   const history = [...approvalHistory.value].reverse();
   const firstLineRole = approvalLines.value[0]?.approver_role;
