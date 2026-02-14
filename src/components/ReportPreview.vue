@@ -40,8 +40,11 @@
       <!-- 보고서: 한 번에 scale → 페이지 간격이 확대/축소에 따라 변하지 않음 -->
       <div class="flex flex-col items-center min-h-full w-full">
         <div
+          ref="reportPanEl"
           :style="scaleWrapperStyle"
-          class="flex flex-col items-center"
+          class="flex flex-col items-center report-pan-wrapper"
+          :class="{ 'report-pan-dragging': reportPanDrag.active }"
+          @pointerdown="onReportPanDown"
         >
         <div
           v-if="report"
@@ -374,11 +377,48 @@ const SCALE_MAX = 2;
 const SCALE_STEP = 0.15;
 
 const scaleValue = ref(1);
+const panX = ref(0);
+const panY = ref(0);
 const scaleWrapperStyle = computed(() => ({
-  transform: `scale(${scaleValue.value})`,
+  transform: `translate(${panX.value}px, ${panY.value}px) scale(${scaleValue.value})`,
   transformOrigin: "top center",
 }));
 const pageContentStyle = { width: "210mm", minHeight: "297mm" };
+
+const reportPanEl = ref(null);
+const reportPanDrag = ref({ active: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
+
+function onReportPanDown(e) {
+  if (e.button !== 0 && e.pointerType === "mouse") return;
+  e.preventDefault();
+  reportPanDrag.value = {
+    active: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    startPanX: panX.value,
+    startPanY: panY.value,
+  };
+  if (reportPanEl.value?.setPointerCapture) reportPanEl.value.setPointerCapture(e.pointerId);
+  window.addEventListener("pointermove", onReportPanMove, { passive: false });
+  window.addEventListener("pointerup", onReportPanUp);
+  window.addEventListener("pointercancel", onReportPanUp);
+}
+
+function onReportPanMove(e) {
+  if (!reportPanDrag.value.active) return;
+  e.preventDefault();
+  const dx = e.clientX - reportPanDrag.value.startX;
+  const dy = e.clientY - reportPanDrag.value.startY;
+  panX.value = reportPanDrag.value.startPanX + dx;
+  panY.value = reportPanDrag.value.startPanY + dy;
+}
+
+function onReportPanUp() {
+  reportPanDrag.value.active = false;
+  window.removeEventListener("pointermove", onReportPanMove);
+  window.removeEventListener("pointerup", onReportPanUp);
+  window.removeEventListener("pointercancel", onReportPanUp);
+}
 
 function getFitToWidthScale() {
   const screenWidth = window.innerWidth;
@@ -496,6 +536,11 @@ onBeforeUnmount(() => {
     window.removeEventListener("pointermove", onZoomBarPointerMove);
     window.removeEventListener("pointerup", onZoomBarPointerUp);
     window.removeEventListener("pointercancel", onZoomBarPointerUp);
+  }
+  if (reportPanDrag.value.active) {
+    window.removeEventListener("pointermove", onReportPanMove);
+    window.removeEventListener("pointerup", onReportPanUp);
+    window.removeEventListener("pointercancel", onReportPanUp);
   }
 });
 
@@ -926,6 +971,16 @@ body {
   box-sizing: border-box;
   transform-origin: top center;
 }
+/* 확대 후 터치/드래그로 좌우·상하 이동(패닝) */
+.report-pan-wrapper {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.report-pan-wrapper.report-pan-dragging {
+  cursor: grabbing;
+}
+
 /* 페이지 사이 고정 간격 (scale 래퍼 안에서 함께 축소되어 비율 유지) */
 .report-page-gap {
   height: 24px;
