@@ -63,7 +63,7 @@
           :key="c.id"
           :class="{
             'bg-blue-50': c.level === '관',
-            'bg-gray-100': c.level === '항',
+            'bg-white': c.level === '항',
             'bg-green-50': c.level === '목',
             'bg-white': c.level === '세목' || c.isEtc
           }"
