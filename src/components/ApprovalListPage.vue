@@ -45,12 +45,12 @@
       <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="bg-purple-100 text-gray-700">
-            <th class="border p-3 text-center">부서</th>
-            <th class="border p-3 text-center">청구 유형</th>
-            <th class="border p-3 text-center">작성자</th>
-            <th class="border p-3 text-center">요청일</th>
-            <th class="border p-3 text-center">금액</th>
-            <th class="border p-3 text-center">상세</th>
+            <th class="border py-1 px-3 text-center h-10">부서</th>
+            <th class="border py-1 px-3 text-center h-10">청구 유형</th>
+            <th class="border py-1 px-3 text-center h-10">작성자</th>
+            <th class="border py-1 px-3 text-center h-10">요청일</th>
+            <th class="border py-1 px-3 text-center h-10">금액</th>
+            <th class="border py-1 px-3 text-center h-10">상세</th>
           </tr>
         </thead>
         <tbody>
@@ -59,7 +59,7 @@
             <td class="border p-3 text-center">{{ row.document_type }}</td>
             <td class="border p-3 text-center">{{ row.author }}</td>
             <td class="border p-3 text-center">{{ formatDate(row.request_date) }}</td>
-            <td class="border p-3 text-right">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
+            <td class="border py-1 px-3 text-right h-[49px]">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
             <td class="border p-3 text-center">
               <button
                 @click="openDetail(row)"
