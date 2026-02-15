@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 테이블 셀 높이 (브라우저 미리보기에서 적용한 값 유지) */
+th.border {
+  height: 40px;
+}
+td.border {
+  height: 49px;
+}
