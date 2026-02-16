@@ -470,8 +470,19 @@ function getFitToWidthScale() {
   return Math.min(1, w / PAGE_WIDTH_PX);
 }
 
+/** 처음 오픈했을 때와 동일한 배율 계산 */
+function getInitialScale() {
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    return Math.max(SCALE_MIN, Math.min(1, getFitToWidthScale()));
+  }
+  return screenWidth < PAGE_WIDTH_PX ? screenWidth / PAGE_WIDTH_PX : 1;
+}
+
 function fitToWidth() {
-  scaleValue.value = Math.max(SCALE_MIN, Math.min(SCALE_MAX, getFitToWidthScale()));
+  scaleValue.value = Math.max(SCALE_MIN, Math.min(SCALE_MAX, getInitialScale()));
+  panX.value = 0;
+  panY.value = 0;
 }
 
 function zoomIn() {
@@ -550,12 +561,7 @@ function onZoomBarPointerUp() {
 
 onMounted(async () => {
   await fetchCategories();
-  const screenWidth = window.innerWidth;
-  if (screenWidth < 768) {
-    scaleValue.value = Math.max(SCALE_MIN, Math.min(1, getFitToWidthScale()));
-  } else {
-    scaleValue.value = screenWidth < PAGE_WIDTH_PX ? screenWidth / PAGE_WIDTH_PX : 1;
-  }
+  scaleValue.value = getInitialScale();
   refreshApprovalData();
 
   // ✅ 사용자 활동(마우스/터치) 시 하단 바 표시
