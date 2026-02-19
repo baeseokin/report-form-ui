@@ -54,7 +54,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.id" class="hover:bg-purple-50 transition">
+          <tr v-for="(row, index) in rows" :key="row.id" class="hover:bg-purple-50 transition">
             <td class="border p-3 text-center">{{ row.dept_name }}</td>
             <td class="border p-3 text-center">{{ row.document_type }}</td>
             <td class="border p-3 text-center">{{ row.author }}</td>
@@ -63,6 +63,7 @@
             <td class="border p-3 text-center">
               <button
                 @click="openDetail(row)"
+                :data-testid="'row-view-btn-' + index"
                 class="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
               >
                 결재

@@ -17,6 +17,7 @@
         <span class="text-gray-700 font-medium block mb-2">서명</span>
         <canvas
           ref="signaturePad"
+          data-testid="signature-canvas-popup"
           class="border rounded-lg w-full h-40 bg-gray-50"
         ></canvas>
         <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
@@ -55,6 +56,7 @@
         </button>
         <button
           @click="submitApproval"
+          data-testid="btn-submit-approval"
           class="px-5 py-2 rounded-lg text-white font-semibold shadow-md transition"
           :class="mode === 'approve'
             ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'

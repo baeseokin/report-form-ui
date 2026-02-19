@@ -14,7 +14,7 @@
           class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
         > 파일선택
         
-      <input ref="fileInput" type="file" multiple @change="onFileChange" class="hidden"/>
+      <input ref="fileInput" type="file" multiple @change="onFileChange" data-testid="file-upload-input" class="hidden"/>
       </label>
       <span class="text-sm text-gray-600">
         {{ modelValue.length ? `선택된 파일 ${modelValue.length}개` : "선택된 파일 없음" }}
@@ -50,6 +50,7 @@
       </button>
       <button
         @click="$emit('next')"
+        data-testid="btn-next"
         class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition"
         :disabled="totalBytes > maxTotalBytes"
         :class="{'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes}"

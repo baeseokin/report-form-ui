@@ -11,6 +11,7 @@
           :key="opt.value"
           class="cursor-pointer border rounded-lg p-4 text-center shadow-sm transition
                  hover:shadow-md"
+          :data-testid="'claim-type-option-' + opt.value"
           :class="documentType === opt.value ? 'bg-purple-100 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-300'"
         >
           <input
@@ -73,6 +74,7 @@
         :value="aliasName"
         @input="$emit('update:aliasName', $event.target.value)"
         maxlength="100"
+        data-testid="alias-input"
         placeholder="청구요청 별칭 입력 (최대 100자)"
         class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 w-full"
       />
@@ -82,6 +84,7 @@
     <div class="flex justify-end mt-6">
       <button
         @click="$emit('next')"
+        data-testid="btn-next"
         class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition"
       >
         다음 →

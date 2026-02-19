@@ -35,6 +35,7 @@
           @input="$emit('update:comment', $event.target.value)"
           rows="6"
           maxlength="500"
+          data-testid="comment-textarea"
           placeholder="여기에 코멘트를 입력하세요..."
           class="w-full h-60 border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-400 resize-y"
         ></textarea>
@@ -51,6 +52,7 @@
             ref="canvas"
             width="240"
             height="240"
+            data-testid="signature-canvas"
             class="border rounded w-[240px] h-[240px] touch-none bg-white"
           ></canvas>
           <button
@@ -82,6 +84,7 @@
           type="button"
           :disabled="isSubmitting"
           @click="sendApprovalRequest"
+          data-testid="btn-submit"
           class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg shadow-md transition disabled:opacity-70 disabled:cursor-not-allowed disabled:pointer-events-none"
         >
           {{ isSubmitting ? "처리 중..." : "📤 결재요청" }}

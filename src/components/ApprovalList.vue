@@ -79,7 +79,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="a in approvals" :key="a.id" class="hover:bg-purple-50 transition text-sm h-10">
+          <tr v-for="(a, index) in approvals" :key="a.id" class="hover:bg-purple-50 transition text-sm h-10">
             <td class="border p-3 text-center">{{ a.document_type }}</td>
             <td class="border p-3 text-center">{{ a.dept_name }}</td>
             <td class="border p-3 text-center">{{ a.author }}</td>
@@ -92,6 +92,7 @@
                 @click="openPreview(a.id)"
                 class="p-2 rounded-lg hover:bg-green-100 transition"
                 title="상세보기"
+                :data-testid="'row-view-btn-' + index"
               >
                 <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
               </button>

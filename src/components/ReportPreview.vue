@@ -237,6 +237,7 @@
     <button
       v-if="isApprovalPage"
       @click="openApproval('approve')"
+      data-testid="btn-approve"
       class="px-4 py-2 rounded-lg bg-white/80 text-green-700 font-semibold shadow hover:bg-green-100 transition"
     >
       ✅ 승인
@@ -262,6 +263,7 @@
     </button>
     <button
       @click="openCommentList"
+      data-testid="btn-comment-list"
       class="px-4 py-2 rounded-lg bg-white/80 text-gray-700 font-semibold shadow hover:bg-gray-100 transition"
     >
       💬 결재의견

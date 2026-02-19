@@ -6,6 +6,7 @@
       <div class="mb-3">
         <button
           type="button"
+          data-testid="login-dept-trigger"
           class="w-full p-2 border rounded flex justify-between items-center"
           :disabled="loading.departments"
           @click="deptModalOpen = true"
@@ -38,6 +39,7 @@
         <label class="block text-sm font-semibold mb-1">역할</label>
         <select
           v-model="selectedRoleId"
+          data-testid="login-role-select"
           class="w-full mb-3 mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           :disabled="!selectedDeptId || loading.roles || roles.length === 0"
           @change="onRoleChanged"
@@ -54,6 +56,7 @@
         <label class="block text-sm font-semibold mb-1">사용자</label>
         <select
           v-model="selectedUserId"
+          data-testid="login-user-select"
           class="w-full mb-3 mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
           :disabled="usersDisabled"
           name="username"
@@ -70,6 +73,7 @@
         <!-- 비밀번호 -->
         <input
           v-model="password"
+          data-testid="login-password-input"
           type="password"
           placeholder="비밀번호"
           class="w-full mb-3 p-2 border rounded"
@@ -79,6 +83,7 @@
 
         <button
           type="submit"
+          data-testid="login-submit-button"
           class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
           :disabled="!canSubmit"
         >

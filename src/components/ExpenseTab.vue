@@ -18,6 +18,7 @@
           <div class="relative">
             <select
               v-model="selectedGwan"
+              data-testid="select-gwan"
               class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
             >
               <option disabled value="">관 선택</option>
@@ -34,6 +35,7 @@
             <select
               v-model="selectedHang"
               :disabled="!selectedGwan"
+              data-testid="select-hang"
               class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:bg-gray-100 disabled:text-gray-400"
             >
               <option disabled value="">항 선택</option>
@@ -87,10 +89,10 @@
             <!-- 목 -->
             <td class="border p-2">
               <template v-if="isMokCustom(item)">
-                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(idx, $event.target.value, item)" placeholder="목 직접 입력" class="w-full p-2 border rounded" />
+                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(idx, $event.target.value, item)" placeholder="목 직접 입력" :data-testid="'row-'+idx+'-mok-input'" class="w-full p-2 border rounded" />
               </template>
               <template v-else>
-                <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
+                <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" :data-testid="'row-'+idx+'-mok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
                   <option disabled value="">선택</option>
                   <option v-for="m in getMoks(item)" :key="m.category_id" :value="m.category_id">{{ m.category_name }}</option>
                   <option value="__custom__">직접입력</option>
@@ -100,10 +102,10 @@
             <!-- 세목 -->
             <td class="border p-2">
               <template v-if="isSemokCustom(item)">
-                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(idx, $event.target.value, item)" placeholder="세목 직접 입력" class="w-full p-2 border rounded" />
+                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(idx, $event.target.value, item)" placeholder="세목 직접 입력" :data-testid="'row-'+idx+'-semok-input'" class="w-full p-2 border rounded" />
               </template>
               <template v-else>
-                <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
+                <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" :data-testid="'row-'+idx+'-semok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
                   <option disabled value="">선택</option>
                   <option v-for="s in getSemoks(item)" :key="s.category_id" :value="s.category_id">{{ s.category_name }}</option>
                   <option value="__custom__">직접입력</option>
@@ -118,12 +120,13 @@
                 :value="item.detail || ''"
                 @input="updateField(idx, 'detail', $event.target.value)"
                 placeholder="지출내역 입력"
+                :data-testid="'row-'+idx+'-detail'"
                 class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400"
               />
             </td>
             <!-- 금액 -->
             <td class="border p-2 text-right">
-              <input :disabled="!isSelectionReady" type="text" :value="amountMinusOnly[idx] ? '-' : formatCurrencyInput(item.amount)" @input="updateAmount($event, idx)" class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400" />
+              <input :disabled="!isSelectionReady" type="text" :value="amountMinusOnly[idx] ? '-' : formatCurrencyInput(item.amount)" @input="updateAmount($event, idx)" :data-testid="'row-'+idx+'-amount'" class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400" />
             </td>
           </tr>
           <!-- 합계 -->
@@ -142,6 +145,7 @@
         <button
           @click="addItem"
           :disabled="!isSelectionReady"
+          data-testid="btn-add-row"
           class="bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-5 py-2 rounded-lg shadow-md transition"
         >＋ 행 추가</button>
         <button
@@ -154,6 +158,7 @@
         <button @click="$emit('prev')" class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md transition">← 이전</button>
         <button
           @click="handleNext"
+          data-testid="btn-next"
           :disabled="!isSelectionReady"
           class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-2 rounded-lg shadow-md transition"
         >다음 →</button>
