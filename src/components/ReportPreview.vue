@@ -345,13 +345,13 @@
                 <span
                   class="px-2 py-0.5 rounded text-xs font-medium"
                   :class="{
-                    'bg-blue-100 text-blue-800': APPLICANT_ROLES.includes(h.approver_role),
-                    'bg-green-500 text-white': !APPLICANT_ROLES.includes(h.approver_role) && isApprovedStatus(h.status),
+                    'bg-blue-100 text-blue-800': isFirstApplicantInHistory(h, idx),
+                    'bg-green-500 text-white': !isFirstApplicantInHistory(h, idx) && isApprovedStatus(h.status),
                     'bg-red-500 text-white': isRejectedStatus(h.status),
-                    'bg-gray-400 text-white': !APPLICANT_ROLES.includes(h.approver_role) && !isApprovedStatus(h.status) && !isRejectedStatus(h.status)
+                    'bg-gray-400 text-white': !isFirstApplicantInHistory(h, idx) && !isApprovedStatus(h.status) && !isRejectedStatus(h.status)
                   }"
                 >
-                  {{ APPLICANT_ROLES.includes(h.approver_role) ? '기안' : (isApprovedStatus(h.status) ? '승인' : isRejectedStatus(h.status) ? '반려' : (h.status || '-')) }}
+                  {{ isFirstApplicantInHistory(h, idx) ? '기안' : (isApprovedStatus(h.status) ? '승인' : isRejectedStatus(h.status) ? '반려' : (h.status || '-')) }}
                 </span>
               </div>
               <p class="mt-2 text-gray-700 text-sm whitespace-pre-wrap border-t border-gray-100 pt-2">{{ h.comment || '의견 없음' }}</p>
@@ -631,6 +631,13 @@ const sortedApprovalHistory = computed(() => {
   });
 });
 
+// ✅ "기안" 뱃지는 시간순 첫 번째 결재(기안자 역할)일 때만 표시
+const firstApplicantIndexInSorted = computed(() =>
+  sortedApprovalHistory.value.findIndex((h) => APPLICANT_ROLES.includes(h.approver_role))
+);
+const isFirstApplicantInHistory = (h, idx) =>
+  APPLICANT_ROLES.includes(h.approver_role) && idx === firstApplicantIndexInSorted.value;
+
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
 
 // ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
@@ -673,8 +680,9 @@ const getStatus = (role) => {
   const record = getHistoryRecord(role);
   if (!record) return null;
 
-  // ✅ 기안자 역할(재정부/작성자/회계) → "기안" 표시
-  if (APPLICANT_ROLES.includes(record.approver_role)) return "기안";
+  // ✅ 기안: 첫 번째 결재 칸이고, 해당 이력의 approver_role이 재정부/작성자/회계일 때만
+  const isFirstLine = approvalLines.value[0]?.approver_role === role;
+  if (isFirstLine && APPLICANT_ROLES.includes(record.approver_role)) return "기안";
 
   return record.status || null;
 };
