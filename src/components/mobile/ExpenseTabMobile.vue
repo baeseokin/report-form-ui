@@ -108,15 +108,18 @@
               <input
                 type="text"
                 :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok"
+                :data-testid="'row-' + idx + '-mok-input'"
                 @input="onMokInput(idx, $event.target.value, item)"
-                placeholder="목 직접 입력"
+                placeholder="목 직접 입력 (Enter로 확정)"
                 class="w-full p-2 border rounded text-sm"
                 :disabled="!isSelectionReady"
+                @keydown.enter="confirmCustomMok(idx, item)"
               />
             </template>
             <template v-else>
               <select
                 :value="item.mok"
+                :data-testid="'row-' + idx + '-mok-select'"
                 @change="onSelect(idx, 'mok', $event.target.value)"
                 class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400"
                 :disabled="!isSelectionReady"
@@ -134,6 +137,7 @@
               <input
                 type="text"
                 :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok"
+                :data-testid="'row-' + idx + '-semok-input'"
                 @input="onSemokInput(idx, $event.target.value, item)"
                 placeholder="세목 직접 입력"
                 class="w-full p-2 border rounded text-sm"
@@ -143,6 +147,7 @@
             <template v-else>
               <select
                 :value="item.semok"
+                :data-testid="'row-' + idx + '-semok-select'"
                 @change="onSelect(idx, 'semok', $event.target.value)"
                 class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400"
                 :disabled="!item.mok"

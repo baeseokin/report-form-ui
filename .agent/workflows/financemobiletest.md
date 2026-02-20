@@ -15,14 +15,20 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
 에러가 발생한 경우에는 디버깅이 가능하도록 에러 메세지를 상세하게 기록해줘.
 
 # URL: localhost:5173
-# 테스트 디바이스 : Mobile, Chrome
+# 테스트 디바이스 
+  You MUST emulate a mobile device properly:
+  1. Window size: 390x844.
+  2. User-Agent: "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko)   Chrome/119.0.0.0 Mobile Safari/537.36" (Chrome-Android Mobile).
+   - Verify this by running `console.log(navigator.userAgent)` and taking a screenshot of the console if possible, or just confirming the value in the output.
+
+
 
 # 테스트 시나리오
   1. 시나리오 ID : 1
     1) 로그인
        - URL 접속
-       - [data-testid="login-dept-trigger"] 클릭 후 목록에서 "원천엔젤스" 선택
-       - [data-testid="login-role-select"] 에서 "회계" 선택
+       - [data-testid="login-dept-trigger"] 클릭 후 목록에서 "원천엔젤스" 선택 후 역할 selectbox 로딩 대기.
+       - [data-testid="login-role-select"] 에서 "회계" 선택 후 사용자 selectbox 로딩 대기.
        - [data-testid="login-user-select"] 에서 "ang001" 선택
        - [data-testid="login-password-input"] 에 "0000" 입력
        - [data-testid="login-submit-button"] 클릭 및 화면 로딩 대기
@@ -34,11 +40,10 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
        - [data-testid="btn-next"] 클릭
        - [data-testid="tab-expense"] 화면 전환 확인
        
-       - [data-testid="select-gwan"] 에서 "사례비" 또는 "행사비" 선택
-       - [data-testid="select-hang"] 에서 "지휘자" 또는 "연주행사" 선택 (관 선택 후 활성화 대기)
-       
+       - [data-testid="row-0-mok-select"] 에서 "사례비인건비" 선택 ("세목" selectbox 로딩 대기).
+       - [data-testid="row-0-semok-select"] 에서 "지휘자" 선택     
        - [data-testid="row-0-detail"] 에 "임의 지출내역" 입력
-       - [data-testid="row-0-amount"] 에 100000 이하의 금액 입력 (예: 50000)
+       - [data-testid="row-0-amount"] 에 100000 이하의 500 단위의 금액 입력 (예: 50500)
        - [data-testid="btn-next"] 클릭
        
        - [data-testid="tab-file"] 화면 전환 확인
@@ -47,7 +52,7 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
        
        - [data-testid="tab-confirm"] 화면 전환 확인
        - [data-testid="comment-textarea"] 에 "테스트 청구합니다" 입력
-       - [data-testid="signature-canvas"] 에 마우스 드래그로 서명 그리기
+       - [data-testid="signature-canvas"] 에 마우스 드래그로 'V' 서명 그리기
        - [data-testid="btn-submit"] 클릭
        
     3) 청구목록 조회
@@ -72,7 +77,7 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
        - [data-testid="row-view-btn-0"] 클릭 (첫번째 항목이 방금 작성한 건이라고 가정)
        - 오픈된 리포트에서 데이터 일치 여부 확인
        - [data-testid="btn-approve"] 클릭
-       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 서명
+       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 마우스 드래그로 'V' 서명 그리기
        - [data-testid="btn-submit-approval"] 클릭
        - 목록에서 해당 건이 사라졌는지 확인
 
@@ -91,7 +96,7 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
        - [data-testid="row-view-btn-0"] 클릭 (첫번째 항목이 방금 작성한 건이라고 가정)
        - 오픈된 리포트에서 데이터 일치 여부 확인
        - [data-testid="btn-approve"] 클릭
-       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 서명
+       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 마우스 드래그로 'V' 서명 그리기
        - [data-testid="btn-submit-approval"] 클릭
        - 목록에서 해당 건이 사라졌는지 확인
 
@@ -110,6 +115,6 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
        - [data-testid="row-view-btn-0"] 클릭 (첫번째 항목이 방금 작성한 건이라고 가정)
        - 오픈된 리포트에서 데이터 일치 여부 확인
        - [data-testid="btn-approve"] 클릭
-       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 서명
+       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 마우스 드래그로 'V' 서명 그리기
        - [data-testid="btn-submit-approval"] 클릭
        - 목록에서 해당 건이 사라졌는지 확인
