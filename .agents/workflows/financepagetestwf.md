@@ -71,3 +71,41 @@ Live View Mode 로 실행해서 브라우저화면에 테스트 진행상황을 
        - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 서명
        - [data-testid="btn-submit-approval"] 클릭
        - 목록에서 해당 건이 사라졌는지 확인
+
+  3. 시나리오 ID : 3
+    1) 로그인
+       - URL 접속 (로그아웃 후 재접속)
+       - [data-testid="login-dept-trigger"] 클릭 후 "음악부" 선택
+       - [data-testid="login-role-select"] 에서 "위원장" 선택
+       - [data-testid="login-user-select"] 에서 "mus003" 선택
+       - [data-testid="login-password-input"] 에 "0000" 입력
+       - [data-testid="login-submit-button"] 클릭
+
+    2) 결재 처리
+       - "내결재목록 조회" 메뉴 클릭
+       - 목록에서 시나리오 1에서 작성한 건 확인
+       - [data-testid="row-view-btn-0"] 클릭 (첫번째 항목이 방금 작성한 건이라고 가정)
+       - 오픈된 리포트에서 데이터 일치 여부 확인
+       - [data-testid="btn-approve"] 클릭
+       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 서명
+       - [data-testid="btn-submit-approval"] 클릭
+       - 목록에서 해당 건이 사라졌는지 확인
+
+  4. 시나리오 ID : 4
+    1) 로그인
+       - URL 접속 (로그아웃 후 재접속)
+       - [data-testid="login-dept-trigger"] 클릭 후 "재정부" 선택
+       - [data-testid="login-role-select"] 에서 "재정부" 선택
+       - [data-testid="login-user-select"] 에서 "fin001" 선택
+       - [data-testid="login-password-input"] 에 "0000" 입력
+       - [data-testid="login-submit-button"] 클릭
+
+    2) 결재 처리
+       - "내결재목록 조회" 메뉴 클릭
+       - 목록에서 시나리오 1에서 작성한 건 확인
+       - [data-testid="row-view-btn-0"] 클릭 (첫번째 항목이 방금 작성한 건이라고 가정)
+       - 오픈된 리포트에서 데이터 일치 여부 확인
+       - [data-testid="btn-approve"] 클릭
+       - 서명이 없을 경우 [data-testid="signature-canvas-popup"] 에 서명
+       - [data-testid="btn-submit-approval"] 클릭
+       - 목록에서 해당 건이 사라졌는지 확인
