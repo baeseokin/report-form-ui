@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 font-nanum px-3">
+  <div class="space-y-6 font-nanum px-3" data-testid="tab-confirm">
     <h2 class="text-lg font-bold text-gray-800">📄 최종 확인</h2>
 
     <!-- 기본 정보 -->
@@ -37,6 +37,7 @@
         <h2 class="text-base font-bold text-gray-800">📌 추가 의견</h2>
         <textarea
           :value="comment"
+          data-testid="comment-textarea"
           @input="$emit('update:comment', $event.target.value)"
           rows="5"
           maxlength="500"
@@ -54,6 +55,7 @@
         <div ref="canvasWrap" class="relative w-full aspect-square">
           <canvas
             ref="canvas"
+            data-testid="signature-canvas"
             class="absolute inset-0 w-full h-full border rounded-lg touch-none bg-white"
           ></canvas>
           <button
@@ -83,6 +85,7 @@
         type="button"
         :disabled="isSubmitting"
         @click="sendApprovalRequest"
+        data-testid="btn-submit"
         class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed"
       >
         {{ isSubmitting ? "처리 중..." : "결재요청" }}

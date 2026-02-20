@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 font-nanum">
+  <div class="space-y-4 font-nanum" data-testid="tab-file">
     <h2 class="text-lg font-bold text-gray-800">📎 파일 첨부</h2>
 
     <!-- ✅ 안내 문구 -->
@@ -21,6 +21,7 @@
           <input
             ref="fileInput"
             type="file"
+            data-testid="file-upload-input"
             class="hidden"
             multiple
             @change="onFileChange"
@@ -79,6 +80,7 @@
       </button>
       <button
         @click="$emit('next')"
+        data-testid="btn-next"
         class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700"
         :disabled="totalBytes > maxTotalBytes"
         :class="{ 'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes }"

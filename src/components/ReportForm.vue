@@ -89,6 +89,7 @@
         v-for="tab in tabs"
         :key="tab"
         @click="handleTabClick(tab)"
+        :data-testid="'tab-' + (tab === '최종 확인' ? 'confirm' : (tab === '파일첨부' ? 'file' : (tab === '지출내역' ? 'expense' : 'basic')))"
         class="flex-1 py-2 text-center font-semibold transition"
         :class="[
           activeTab === tab ? 'text-purple-700' : 'text-gray-500',

@@ -94,7 +94,7 @@
     <!-- ✅ 카드 리스트 -->
     <div class="space-y-4">
       <div
-        v-for="a in approvals"
+        v-for="(a, index) in approvals"
         :key="a.id"
         class="bg-white rounded-lg shadow-md p-4 border"
       >
@@ -113,6 +113,7 @@
         <div class="flex justify-end space-x-3 mt-3">
           <button
             @click="openPreview(a.id)"
+            :data-testid="'row-view-btn-' + index"
             class="p-2 rounded hover:bg-green-100"
             title="상세보기"
           >

@@ -36,6 +36,7 @@
                   <button
                     v-for="d in favoriteDepts"
                     :key="'fav-'+d.id"
+                    :data-testid="'dept-item-' + d.dept_name"
                     class="px-3 py-2 rounded-full bg-yellow-50 border border-yellow-200 text-sm active:bg-yellow-100"
                     @click="select(d)"
                   >
@@ -50,6 +51,7 @@
                   <button
                     v-for="d in recentDepts"
                     :key="'recent-'+d.id"
+                    :data-testid="'dept-item-' + d.dept_name"
                     class="px-3 py-2 rounded-full bg-gray-50 border text-sm active:bg-gray-100"
                     @click="select(d)"
                   >
@@ -74,6 +76,7 @@
               <div
                 v-for="d in group.items"
                 :key="d.id"
+                :data-testid="'dept-item-' + d.dept_name"
                 class="px-1 py-3 flex items-center justify-between active:bg-purple-50"
                 @click="select(d)"
               >

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4 font-nanum px-2">
+  <div class="space-y-4 font-nanum px-2" data-testid="tab-expense">
     <h2 class="text-lg font-bold text-gray-800">💸 지출내역 입력</h2>
 
     <!-- ✅ 관/항 선택 (타이틀 바로 아래) -->
@@ -10,6 +10,7 @@
           <label class="block text-xs font-semibold mb-1">관</label>
           <select
             v-model="selectedGwan"
+            data-testid="select-gwan"
             class="mobile-form-control mobile-form-control-select"
           >
             <option value="">선택</option>
@@ -22,6 +23,7 @@
           <label class="block text-xs font-semibold mb-1">항</label>
           <select
             v-model="selectedHang"
+            data-testid="select-hang"
             :disabled="!selectedGwan"
             class="mobile-form-control mobile-form-control-select disabled:bg-gray-100 disabled:text-gray-400"
           >
@@ -158,6 +160,7 @@
             <input
               type="text"
               :value="item.detail"
+              :data-testid="'row-' + idx + '-detail'"
               @input="updateField(idx, 'detail', $event.target.value)"
               class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
               :disabled="!isSelectionReady"
@@ -173,6 +176,7 @@
                 type="text"
                 inputmode="decimal"
                 autocomplete="off"
+                :data-testid="'row-' + idx + '-amount'"
                 class="flex-1 min-w-0 p-2 border rounded text-sm text-right disabled:bg-gray-100 disabled:text-gray-400"
                 :disabled="!isSelectionReady"
                 :value="item.amountFocused
@@ -216,7 +220,7 @@
       <button class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200" @click="emits('prev')">
         이전
       </button>
-      <button class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300" :disabled="!isSelectionReady" @click="handleNext">
+      <button class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300" :disabled="!isSelectionReady" @click="handleNext" data-testid="btn-next">
         다음
       </button>
     </div>

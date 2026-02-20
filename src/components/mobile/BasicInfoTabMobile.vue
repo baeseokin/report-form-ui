@@ -9,6 +9,7 @@
         <label
           v-for="opt in documentTypeOptions"
           :key="opt.value"
+          :data-testid="'claim-type-option-' + opt.value"
           class="cursor-pointer border rounded-lg px-4 py-3 text-center shadow-sm transition hover:shadow-md"
           :class="documentType === opt.value ? 'bg-purple-100 border-purple-500 text-purple-700 font-bold' : 'bg-white border-gray-300'"
         >
@@ -73,6 +74,7 @@
       <input
         type="text"
         :value="aliasName"
+        data-testid="alias-input"
         @input="$emit('update:aliasName', $event.target.value)"
         maxlength="100"
         placeholder="청구요청 별칭 입력"
@@ -84,6 +86,7 @@
     <div class="flex justify-center mt-4">
       <button
         @click="$emit('next')"
+        data-testid="btn-next"
         class="bg-blue-500 hover:bg-blue-600 text-white w-full py-3 rounded-lg shadow-md transition text-base font-semibold"
       >
         다음 →

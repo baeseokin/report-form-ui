@@ -63,7 +63,7 @@
     <!-- ✅ 카드형 목록 -->
     <div v-if="rows.length > 0" class="space-y-3">
       <div
-        v-for="row in rows"
+        v-for="(row, index) in rows"
         :key="row.id"
         class="border rounded-lg shadow p-3 bg-white"
       >
@@ -78,6 +78,7 @@
         <div class="flex justify-end mt-2">
           <button
             @click="openDetail(row)"
+            :data-testid="'row-view-btn-' + index"
             class="px-3 py-1 bg-purple-600 text-white rounded text-sm"
           >결재</button>
         </div>

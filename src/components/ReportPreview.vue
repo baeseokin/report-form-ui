@@ -275,6 +275,7 @@
     <div class="flex justify-around gap-4" v-if="isApprovalPage">
       <button
         @click="openApproval('approve')"
+        data-testid="btn-approve"
         class="flex-1 py-3 rounded-xl bg-green-500 text-white font-bold shadow hover:bg-green-600 active:scale-95 transition"
       >
         ✅ 승인
@@ -295,6 +296,7 @@
       </button>
       <button
         @click="openCommentList"
+        data-testid="btn-comment-list"
         class="flex-1 py-2 rounded-lg bg-white/90 text-gray-800 font-semibold shadow hover:bg-gray-200 active:scale-95"
       >
         💬 결재의견
