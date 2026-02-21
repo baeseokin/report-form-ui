@@ -90,7 +90,10 @@
                     <div class="inline-flex items-center mt-2">
                       <span
                         v-if="getStatus(line.approver_role)"
-                        class="status-badge no-print inline-flex items-center justify-center"
+                        :class="[
+                          'status-badge no-print inline-flex items-center justify-center',
+                          getStatus(line.approver_role) === '이관' ? 'status-badge-transfer' : ''
+                        ]"
                       >
                         <img
                           v-if="getStatus(line.approver_role) === '기안'"
@@ -98,6 +101,10 @@
                           alt="Draft"
                           class="h-6 w-auto"
                         />
+                        <span
+                          v-else-if="getStatus(line.approver_role) === '이관'"
+                          class="inline-flex items-center justify-center text-xs font-semibold leading-none"
+                        >이관</span>
                         <img
                           v-else-if="getStatus(line.approver_role) === '승인'"
                           src="/icons/approved.svg"
@@ -172,7 +179,14 @@
             <tr v-for="(item, idx) in paddedItems" :key="idx">
               <td class="border">{{ item.mok }}</td>
               <td class="border">{{ item.semok }}</td>
-              <td class="border text-left expense-col-detail">{{ item.detail }}</td>
+              <td
+                class="border text-left expense-col-detail cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
+                @pointerdown.stop
+                @click.stop="(e) => copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim())"
+                @pointerup.stop="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim()); }"
+              >
+                {{ item.detail }}
+              </td>
               <td class="border text-right">
                 <span v-if="item.amount">{{ formatAmount(item.amount) }} 원</span>
               </td>
@@ -360,6 +374,17 @@
         </div>
       </div>
     </div>
+    <!-- 클립보드 복사 말풍선 (body에 렌더링해 항상 맨 위에 표시) -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div
+          v-if="copyToastShow"
+          class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium shadow-lg whitespace-nowrap"
+        >
+          클립보드에 복사되었습니다.
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -605,6 +630,47 @@ const approvalLines = ref(props.report?.approvalLine || []);
 const showCommentListPopup = ref(false);
 const popupMode = ref(null);
 
+const copyToastShow = ref(false);
+let copyToastTimer = null;
+const showCopyToast = () => {
+  copyToastShow.value = true;
+  if (copyToastTimer) clearTimeout(copyToastTimer);
+  copyToastTimer = setTimeout(() => {
+    copyToastShow.value = false;
+    copyToastTimer = null;
+  }, 1000);
+};
+const copyDetailToClipboard = async (text) => {
+  const str = text != null ? String(text).trim() : "";
+  if (!str) return;
+  let copied = false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(str);
+      copied = true;
+    }
+  } catch (e) {
+    console.warn("클립보드 API 실패:", e);
+  }
+  if (!copied) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = str;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, str.length);
+      copied = document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e2) {
+      console.warn("execCommand 복사 실패:", e2);
+    }
+  }
+  if (copied) showCopyToast();
+};
+
 const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
 const closePopup = () => { showPopup.value = false; };
 
@@ -657,11 +723,24 @@ const isRejectedStatus = (s) => s && (String(s).toLowerCase() === "rejected" || 
 const getHistoryRecord = (role) => {
   const history = [...approvalHistory.value].reverse();
   const firstLineRole = approvalLines.value[0]?.approver_role;
-  return history.find((h) => {
+  const result = history.find((h) => {
     if (h.approver_role === role) return true;
     if (firstLineRole === role && APPLICANT_ROLES.includes(h.approver_role)) return true;
     return false;
   }) || null;
+  // ✅ 재정부 열에는 첫 번째 결재 데이터(기안)를 표시하지 않음
+  if (role === "재정부" && result) {
+    const firstIdx = firstApplicantIndexInSorted.value;
+    if (firstIdx >= 0) {
+      const firstApplicant = sortedApprovalHistory.value[firstIdx];
+      const isSameRecord =
+        firstApplicant &&
+        firstApplicant.approved_at === result.approved_at &&
+        firstApplicant.approver_user_id === result.approver_user_id;
+      if (isSameRecord) return null;
+    }
+  }
+  return result;
 };
 const getSignature = (role) => getHistoryRecord(role)?.signature_path || null;
 const getComment = (role) => getHistoryRecord(role)?.comment || null;
@@ -693,6 +772,9 @@ const getStatus = (role) => {
   // ✅ 기안: 첫 번째 결재 칸이고, 해당 이력의 approver_role이 재정부/작성자/회계일 때만
   const isFirstLine = approvalLines.value[0]?.approver_role === role;
   if (isFirstLine && APPLICANT_ROLES.includes(record.approver_role)) return "기안";
+
+  // ✅ 재정부 열에서 승인인 경우 → "이관"으로 표시
+  if (role === "재정부" && isApprovedStatus(record.status)) return "이관";
 
   return record.status || null;
 };
@@ -1140,6 +1222,20 @@ table td, table th {
   width: auto;
 }
 
+/* ✅ 재정부 열 '이관' 뱃지: 기안 뱃지와 동일한 모양(높이 h-6, 둥근 pill), blue 계열 */
+.report-content .status-badge-transfer {
+  background-color: #3b82f6;
+  color: #fff;
+  border-radius: 9999px;
+  height: 1.5rem;
+  min-width: 3.5rem;
+  padding: 0 0.5rem;
+}
+.report-content .status-badge-transfer span {
+  background: transparent;
+  color: inherit;
+}
+
 /* ✅ 좌측 결재란: 열 개수에 따라 테이블 너비 = N×11%, 각 td = 11% of container */
 .report-content table.approval-table-left {
   width: calc(var(--left-col-count, 4) * 11%);
@@ -1163,6 +1259,16 @@ table td, table th {
     height: 100px !important;
     min-height: 100px !important;
   }
+}
+
+/* 클립보드 복사 말풍선 전환 */
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.2s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
 }
 
 </style>
