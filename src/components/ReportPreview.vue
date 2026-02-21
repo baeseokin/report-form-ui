@@ -59,12 +59,12 @@
           <!-- 좌측 결재란: 결재선 개수만큼 td, 각 td 폭(11% of container) -->
           <table
             class="border text-center table-fixed approval-table approval-table-left"
-            :style="{ '--left-col-count': approvalLines.length || 4 }"
+            :style="{ '--left-col-count': leftTableColumns.length || 4 }"
           >
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th
-                  v-for="line in approvalLines"
+                  v-for="line in leftTableColumns"
                   :key="`h-${line.id || line.approver_role}`"
                   class="border"
                 >
@@ -75,7 +75,7 @@
             <tbody>
               <tr class="sign-row">
                 <td
-                  v-for="line in approvalLines"
+                  v-for="line in leftTableColumns"
                   :key="`c-${line.id || line.approver_role}`"
                   class="border relative"
                 >
@@ -639,6 +639,16 @@ const isFirstApplicantInHistory = (h, idx) =>
   APPLICANT_ROLES.includes(h.approver_role) && idx === firstApplicantIndexInSorted.value;
 
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
+
+// ✅ 좌측 결재 테이블 컬럼: 재정부 이력이 있으면 결재선 맨 마지막에 "재정부" 컬럼 추가
+const leftTableColumns = computed(() => {
+  const lines = approvalLines.value || [];
+  const history = approvalHistory.value || [];
+  const hasRevenueInHistory = history.some((h) => h.approver_role === "재정부");
+  const alreadyHasRevenue = lines.some((l) => l.approver_role === "재정부");
+  if (!hasRevenueInHistory || alreadyHasRevenue) return lines;
+  return [...lines, { approver_role: "재정부", id: "revenue-dept" }];
+});
 
 // ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
 const APPLICANT_ROLES = ["재정부", "작성자", "회계"];
