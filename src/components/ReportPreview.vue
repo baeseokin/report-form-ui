@@ -187,7 +187,12 @@
               >
                 {{ item.detail }}
               </td>
-              <td class="border text-right">
+              <td
+                class="border text-right cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
+                @pointerdown.stop
+                @click.stop="() => copyAmountToClipboard(item.amount)"
+                @pointerup.stop="(e) => { if (e.pointerType !== 'mouse') copyAmountToClipboard(item.amount); }"
+              >
                 <span v-if="item.amount">{{ formatAmount(item.amount) }} 원</span>
               </td>
             </tr>
@@ -669,6 +674,19 @@ const copyDetailToClipboard = async (text) => {
     }
   }
   if (copied) showCopyToast();
+};
+
+/** 금액 복사: 쉼표·"원" 제외한 숫자만 (예: 50,500 원 → 50500) */
+const amountForClipboard = (amount) => {
+  if (amount == null || amount === "") return "";
+  const num = Number(String(amount).replace(/,/g, ""));
+  if (Number.isNaN(num)) return "";
+  return String(num);
+};
+const copyAmountToClipboard = async (amount) => {
+  const str = amountForClipboard(amount);
+  if (!str) return;
+  await copyDetailToClipboard(str);
 };
 
 const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
