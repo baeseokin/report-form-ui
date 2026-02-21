@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount, provide } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
@@ -105,6 +105,22 @@ const userStore = useUserStore();
 const mainEl = ref(null);
 
 const isLoginPage = computed(() => route.path === "/login");
+
+// ✅ Sidebar 상태 (모바일/테블릿용) — watch보다 먼저 정의 필요
+const isOpen = ref(false);
+const toggleSidebar = () => { isOpen.value = !isOpen.value; };
+const closeSidebar = () => { isOpen.value = false; };
+provide("closeSidebar", closeSidebar);
+
+const isMobileViewport = () => typeof window !== "undefined" && window.innerWidth < 1024;
+watch(
+  () => route.path,
+  (path) => {
+    if (path === "/login") closeSidebar();
+    else if (isMobileViewport()) closeSidebar();
+  },
+  { immediate: true, flush: "sync" }
+);
 
 // ✅ 화면 전환 시 본문(main) 스크롤 맨 위로 (모바일 메뉴 버튼이 위에 있어 바로 보이도록)
 watch(
@@ -168,9 +184,14 @@ watch(
 
 onMounted(async () => {
   start();
-  router.afterEach(() => {
+  router.afterEach((to) => {
     start();   // ✅ 멱등. stop된 상태면 재등록, 이미 시작이면 noop
     reset();   // ✅ 경로에 따라 무장/해제
+    // ✅ 로그인 페이지 진입 시·모바일에서 비로그인 페이지 진입 시 left menu 접기 (네비게이션 완료 후 적용)
+    nextTick(() => {
+      if (to.path === "/login") closeSidebar();
+      else if (isMobileViewport()) closeSidebar();
+    });
   });
 
   await userStore.loadSession();
@@ -242,11 +263,6 @@ const allowedMenus = computed(() => {
   return filtered;
 });
 
-
-// ✅ Sidebar 상태 (모바일/테블릿용)
-const isOpen = ref(false);
-const toggleSidebar = () => { isOpen.value = !isOpen.value; };
-const closeSidebar = () => { isOpen.value = false; };
 
 // ✅ 모바일 메뉴 탭 상하 위치 (드래그로 조정, localStorage 저장)
 const MENU_TAB_STORAGE_KEY = "report-form-ui:menuTabTop";

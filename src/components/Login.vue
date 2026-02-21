@@ -104,10 +104,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, defineAsyncComponent } from "vue";
+import { ref, computed, onMounted, nextTick, defineAsyncComponent, inject } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../store/userStore";
+
+const closeSidebar = inject("closeSidebar", null);
 // ✅ 동적 로딩만 사용 (모바일/PC 중 해당하는 픽업만 로드되어 번들 절감)
 const DeptPickerMobileAsync = defineAsyncComponent(() =>
   import("./mobile/DeptPickerMobile.vue")
@@ -308,6 +310,7 @@ const login = async () => {
     );
     
     if (res.data?.success) {
+      closeSidebar?.(); // 로그인 후 left menu 접힌 상태로 보이도록 (모바일)
       await userStore.loadSession(); // 세션 로드
       const rolesFromSession = userStore.roles.map((r) => r.role_name || r);
 
