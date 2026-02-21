@@ -58,23 +58,25 @@
 
     <!-- ✅ 본문 (로그인 시 여백 없음) -->
     <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto relative" :class="{ 'lg:ml-64': !isLoginPage }">
-      <!-- 플로팅 책갈피 메뉴: 좌측 고정, 28px만 살짝 노출, 터치 시 슬라이드·상하 드래그 가능 (로그인 시 숨김) -->
-      <div
-        v-if="!isLoginPage"
-        class="mobile-menu-tab lg:hidden"
-        :class="{ 'mobile-menu-tab--open': isOpen }"
-        :style="{ top: menuTabTopPx + 'px' }"
-        @pointerdown.prevent="onMenuTabPointerDown"
-      >
-        <button
-          type="button"
-          class="mobile-menu-tab__btn"
-          aria-label="메뉴 열기"
-          @click="onMenuTabClick"
+      <!-- 플로팅 책갈피 메뉴: body로 텔레포트하여 최상위 배치, 좌측 고정, 28px 노출 (로그인 시 숨김) -->
+      <Teleport to="body">
+        <div
+          v-if="!isLoginPage"
+          class="mobile-menu-tab lg:hidden"
+          :class="{ 'mobile-menu-tab--open': isOpen }"
+          :style="{ top: menuTabTopPx + 'px' }"
+          @pointerdown.prevent="onMenuTabPointerDown"
         >
-          <span class="mobile-menu-tab__label">MENU</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            class="mobile-menu-tab__btn"
+            aria-label="메뉴 열기"
+            @click="onMenuTabClick"
+          >
+            <span class="mobile-menu-tab__label">MENU</span>
+          </button>
+        </div>
+      </Teleport>
 
       <!-- 화면 제목 + HELP 버튼 -->
       <div v-if="helpContent" class="flex items-center gap-3 mb-4">
@@ -343,28 +345,31 @@ const logout = async () => {
 }
 
 /* 모바일 전용: 좌측 플로팅 책갈피 탭 (36px 노출, 상하 드래그로 위치 조정) */
+/* 닫힐 때: left 0에서 36px만 노출. 열릴 때: left 256px(사이드바 w-64)에 붙어 함께 슬라이드 */
 .mobile-menu-tab {
   position: fixed;
   left: 0;
   z-index: 35;
-  transform: translateX(calc(-100% + 36px)); /* 36px 노출 */
-  transition: transform 0.25s ease-out;
+  transform: translateX(calc(-100% + 28px)); /* 28px 노출 */
+  transition: transform 0.3s ease-out, left 0.3s ease-out;
   touch-action: none;
   overflow: visible;
 }
 
 .mobile-menu-tab--open {
-  transform: translateX(0); /* 메뉴 열렸을 때 탭 전체 노출 */
+  left: 16rem; /* 256px, 사이드바(w-64) 오른쪽에 붙음 */
+  transform: translateX(0);
 }
 
 .mobile-menu-tab__btn {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.35rem;
-  min-width: 60px;
+  gap: 0.25rem;
+  width: 40px;
+  min-width: 40px;
   height: 72px;
-  padding: 0 10px 0 14px;
+  padding: 0 6px 0 10px;
   background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
   color: white;
   border: none;
