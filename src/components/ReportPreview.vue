@@ -465,6 +465,7 @@ const reportPanDrag = ref({ active: false, startX: 0, startY: 0, startPanX: 0, s
 const pointerCache = ref([]);
 const initialPinchDist = ref(0);
 const initialScale = ref(1);
+const lastPinchCenter = ref({ x: 0, y: 0 });
 const preventCopy = ref(false);
 
 function getPinchDist(p1, p2) {
@@ -508,6 +509,10 @@ function onReportPanDown(e) {
     // 핀치 줌 시작 시점의 거리와 배율 기록
     initialPinchDist.value = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
     initialScale.value = scaleValue.value;
+    lastPinchCenter.value = {
+      x: (pointerCache.value[0].clientX + pointerCache.value[1].clientX) / 2,
+      y: (pointerCache.value[0].clientY + pointerCache.value[1].clientY) / 2
+    };
   }
 }
 
@@ -526,7 +531,29 @@ function onReportPanMove(e) {
     if (initialPinchDist.value > 0) {
       const zoomFactor = currentDist / initialPinchDist.value;
       const newScale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, initialScale.value * zoomFactor));
+      
+      const currentCenter = {
+        x: (pointerCache.value[0].clientX + pointerCache.value[1].clientX) / 2,
+        y: (pointerCache.value[0].clientY + pointerCache.value[1].clientY) / 2
+      };
+      
+      if (reportPanEl.value) {
+        const rect = reportPanEl.value.getBoundingClientRect();
+        const oldScale = scaleValue.value;
+        const oldPanX = panX.value;
+        const oldPanY = panY.value;
+        
+        // Transform origin in screen coordinates (invariant point under scale)
+        const O_x = rect.left + rect.width / 2 - oldPanX;
+        const O_y = rect.top - oldPanY;
+        
+        // Calculate new pan to keep the point under the fingers stationary
+        panX.value = currentCenter.x - O_x - (lastPinchCenter.value.x - O_x - oldPanX) * (newScale / oldScale);
+        panY.value = currentCenter.y - O_y - (lastPinchCenter.value.y - O_y - oldPanY) * (newScale / oldScale);
+      }
+      
       scaleValue.value = newScale;
+      lastPinchCenter.value = currentCenter;
     }
   } else if (pointerCache.value.length === 1 && reportPanDrag.value.active) {
     // 단일 포인터 패닝 로직
@@ -568,6 +595,13 @@ function onReportPanUp(e) {
       startPanY: panY.value,
     };
     initialPinchDist.value = 0;
+  } else if (pointerCache.value.length === 2) {
+    initialPinchDist.value = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
+    initialScale.value = scaleValue.value;
+    lastPinchCenter.value = {
+      x: (pointerCache.value[0].clientX + pointerCache.value[1].clientX) / 2,
+      y: (pointerCache.value[0].clientY + pointerCache.value[1].clientY) / 2
+    };
   }
 }
 
@@ -676,7 +710,7 @@ onMounted(async () => {
   const handler = () => {
     if (hideTimerId.value) clearTimeout(hideTimerId.value);
     showActionBar.value = true;
-    hideTimerId.value = setTimeout(() => { showActionBar.value = false; }, 1000);
+    hideTimerId.value = setTimeout(() => { showActionBar.value = false; }, 3000);
   };
   activityHandler.value = handler;
   window.addEventListener("mousemove", handler, { passive: true });
@@ -983,35 +1017,38 @@ const getImageWrapperStyle = (rowLength) =>
 // ReportPreview.vue
 const generatePDF = async () => {
   const { default: jsPDF } = await import("jspdf");
-  const { default: html2canvas } = await import("html2canvas");
+  const { default: html2canvas } = await import("html2canvas-pro");
 
+  // Wait for all fonts to make sure styling isn't broken
   try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
 
-  const ROW_PX = 45; // 원하는 행 높이(px): 52~60 사이로 조정해 보세요.
-  const SIGN_ROW_PX = 160; // ✅ 서명행 화면용 높이
-  const SIGN_ROW_PX_PDF = 100; // ✅ PDF/프린트 시 상태뱃지·말풍선 제외하여 세로 축소
+  const ROW_PX = 45;
+  const SIGN_ROW_PX = 160;
+  const SIGN_ROW_PX_PDF = 100;
 
-  // ✅ 복제 DOM(캡처본)에만 적용될 PDF 전용 CSS
+  // CSS injects to style the PDF clone.
   const pdfOnlyCSS = `
-    /* ✅ PDF 시 상태 뱃지·말풍선·결재시간 숨김 → 서명 이미지만 표시 */
+    .report-content * {
+      font-family: "Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
+      letter-spacing: normal !important;
+      -webkit-font-smoothing: antialiased !important;
+    }
+
     .report-content .no-print { display: none !important; }
     .report-content table { table-layout: fixed; border-collapse: collapse; }
     .report-content table th, .report-content table td {
-      /* 테이블 자체 레이아웃 유지 */
-      padding: 0;                  /* 셀 패딩은 제거하고 */
-      height: ${ROW_PX}px;         /* 행 높이 통일 */
+      padding: 0;
+      height: ${ROW_PX}px;
       min-height: ${ROW_PX}px;
       box-sizing: border-box;
       text-align: center;
-      vertical-align: middle;      /* 백업용 */
+      vertical-align: middle;
     }
-    /* ✅ 서명란 테이블: PDF 시 세로 축소(서명 이미지만) */
     .report-content table.approval-table tbody tr.sign-row th,
     .report-content table.approval-table tbody tr.sign-row td {
       height: ${SIGN_ROW_PX_PDF}px !important;
       min-height: ${SIGN_ROW_PX_PDF}px !important;
     }
-    /* ✅ 좌측 결재란: 열 개수에 따라 td 폭 = 우측과 동일 */
     .report-content table.approval-table-left {
       width: calc(var(--left-col-count, 4) * 11%);
       min-width: calc(var(--left-col-count, 4) * 11%);
@@ -1023,93 +1060,83 @@ const generatePDF = async () => {
       max-width: calc(100% / var(--left-col-count, 4));
       box-sizing: border-box;
     }
-
-    /* 1단 래퍼: 셀과 동일 높이로 고정 */
+    
     .report-content .vc {
       display: block;
       height: ${ROW_PX}px;
       min-height: ${ROW_PX}px;
       width: 100%;
       box-sizing: border-box;
-      padding: 0 10px;             /* 좌우 여백은 여기서 */
+      padding: 0 10px;
       overflow: hidden;
     }
-    /* 2단 래퍼: flex 100% 높이로 정확 중앙 */
     .report-content .vc-i {
       display: flex;
-      align-items: center;         /* 세로 중앙 */
-      justify-content: center;     /* 가로 중앙(필요 시 flex-start로 변경) */
+      align-items: center;
+      justify-content: center;
       height: 100%;
       width: 100%;
-      line-height: 1.3;            /* 폰트 메트릭 차이 완충 */
+      line-height: 1.3;
       white-space: nowrap;
       text-overflow: ellipsis;
       overflow: hidden;
-      transform: translateY(-7px); /* ✅ 시각적 세로 중앙 보정 */
     }
-    /* 여러 줄이 필요한 셀: 템플릿에서 td에 class="cell-multiline" */
     .report-content .vc.multiline .vc-i {
-      white-space: normal;         /* 줄바꿈 허용 */
-      justify-content: flex-start; /* 왼쪽 정렬 권장 */
+      white-space: normal;
+      justify-content: flex-start;
       text-align: left;
       line-height: 1.4;
       padding-top: 6px;
       padding-bottom: 6px;
     }
-    /* 숫자/금액 우측 정렬: 템플릿에서 td에 class="cell-right" */
     .report-content .vc.right .vc-i {
       justify-content: flex-end;
       text-align: right;
       white-space: nowrap;
     }
-    /* ✅ 상태 뱃지 텍스트 보정 (PDF 전용) */
-    .report-content .status-badge{
-      display: inline-flex !important;      /* 라인박스 영향 제거 */
-      align-items: center !important;       /* 수직 중앙 */
-      justify-content: center !important;   /* 수평 중앙 */
-      line-height: 1 !important;            /* 폰트 메트릭 차이 제거 */
-      transform: translateY(1px) !important; /* 요청한 보정값 */
+    .report-content .vc.left .vc-i {
+      justify-content: flex-start;
+      text-align: left;
     }
-    /* 서명행에서 vc-i의 transform을 끘 경우에도 균일 보정 */
+    
+    .report-content .status-badge{
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 1 !important;
+    }
     .report-content tr.sign-row .status-badge{
-      transform: translateY(1px) !important;
+      /* no transform applied here */
     }      
-    /* =======================
-       ✅ 서명행 전용 보정 (PDF: no-print 제외 후 낮은 높이)
-       ======================= */
     .report-content tr.sign-row .vc,
     .report-content tr.sign-row .vc-i {
       height: ${SIGN_ROW_PX_PDF}px !important;
       min-height: ${SIGN_ROW_PX_PDF}px !important;
       overflow: visible !important;
-      transform: none !important;
       white-space: normal;
     }
     .report-content tr.sign-row img {
       max-height: ${SIGN_ROW_PX_PDF - 20}px !important;
-      max-width: 80% !important;                   /* ✅ 폭 제한 (전체 셀의 80%) */
+      max-width: 80% !important;
       height: auto !important;
-      width: auto !important;                      /* tailwind w-20 무력화 */
+      width: auto !important;
       object-fit: contain !important;
       display: block !important;
       margin: 0 auto !important;
-      padding: 0 !important;                       /* ✅ 내부 여백 제거 */
-      transform: translateY(-4px);                 /* ✅ 세로 균형 약간 올림 */
+      padding: 0 !important;
     }      
-    /* ✅ vc 래퍼 좌우 여백 제거 (PDF용 전용) */
     .report-content tr.sign-row .vc {
       padding-left: 0 !important;
       padding-right: 0 !important;
     }      
     .signature-img {
-      height: 80px;               /* ✅ 고정 높이 */
-      width: auto;                /* 비율에 맞게 자동 조정 */
-      object-fit: contain;        /* 이미지 비율 유지 */
+      height: 80px;
+      width: auto;
+      object-fit: contain;
       display: block;
       margin: 0 auto;
       border-radius: 8px;
     }
-    /* ✅ 맨 끝에 두어 .status-badge(display:inline-flex)보다 우선 적용 → 상태 뱃지/말풍선/결재시간 완전 숨김 */
     .report-content tr.sign-row .status-badge.no-print,
     .report-content tr.sign-row small.no-print,
     .report-content .no-print { display: none !important; }
@@ -1122,20 +1149,22 @@ const generatePDF = async () => {
     const canvas = await html2canvas(pages[i], {
       scale: 2,
       useCORS: true,
-      backgroundColor: "#fff",
+      allowTaint: false,
+      backgroundColor: "#ffffff",
       onclone: (doc) => {
-        // 1) 스타일 주입
-        const style = doc.createElement("style");
-        style.textContent = pdfOnlyCSS;
-        doc.head.appendChild(style);
+        const styleNode = doc.createElement("style");
+        styleNode.textContent = pdfOnlyCSS;
+        doc.head.appendChild(styleNode);
 
-        // 2) 모든 셀 내용을 2단 래퍼(.vc > .vc-i)로 감싸기
+        // ✅ 모바일 폰트 깨짐 보정: 시스템 기본 폰트로 강제 적용 (웹폰트 다운로드 버그 원천 차단)
+        Array.from(doc.querySelectorAll('.report-content *')).forEach(el => {
+          el.style.fontFamily = '"Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR", sans-serif';
+        });
+
         const cells = doc.querySelectorAll(".report-content table th, .report-content table td");
         cells.forEach((cell) => {
-          // 이미 감싼 경우 스킵
           const first = cell.firstElementChild;
           if (first && first.classList?.contains("vc")) {
-            // 높이만 최신화
             first.style.height = `${ROW_PX}px`;
             first.style.minHeight = `${ROW_PX}px`;
             const inner = first.firstElementChild;
@@ -1145,14 +1174,13 @@ const generatePDF = async () => {
 
           const vc = doc.createElement("div");
           vc.className = "vc";
-          // 힌트 클래스 승계: 여러 줄, 우측정렬
           if (cell.classList?.contains("cell-multiline")) vc.classList.add("multiline");
-          if (cell.classList?.contains("cell-right")) vc.classList.add("right");
+          if (cell.classList?.contains("cell-right") || cell.classList?.contains("text-right")) vc.classList.add("right");
+          if (cell.classList?.contains("cell-left") || cell.classList?.contains("text-left")) vc.classList.add("left");
 
           const vci = doc.createElement("div");
           vci.className = "vc-i";
 
-          // 기존 노드들을 vci로 이동
           while (cell.firstChild) vci.appendChild(cell.firstChild);
           vc.appendChild(vci);
           cell.appendChild(vc);
@@ -1160,12 +1188,12 @@ const generatePDF = async () => {
       },
     });
 
-    const img = canvas.toDataURL("image/png");
+    const img = canvas.toDataURL("image/jpeg", 0.98);
     const pdfW = pdf.internal.pageSize.getWidth();
     const imgH = (canvas.height * pdfW) / canvas.width;
 
     if (i > 0) pdf.addPage();
-    pdf.addImage(img, "PNG", 0, 0, pdfW, imgH);
+    pdf.addImage(img, "JPEG", 0, 0, pdfW, imgH);
   }
 
   return pdf;
@@ -1176,7 +1204,8 @@ const generatePDF = async () => {
 
 const downloadPDF = async () => {
   const pdf = await generatePDF();
-  pdf.save(`${props.report.documentType}_${userDept.value}_${props.report.date}.pdf`);
+  const safeName = `${props.report?.documentType || 'Report'}_${userDept.value}_${props.report?.date || Date.now()}`.replace(/[\/\?<>\\:\*\|":]/g, '-');
+  pdf.save(`${safeName}.pdf`);
 };
 
 const printReport = async () => {
