@@ -181,17 +181,15 @@
               <td class="border">{{ item.semok }}</td>
               <td
                 class="border text-left expense-col-detail cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
-                @pointerdown.stop
                 @click.stop="(e) => copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim())"
-                @pointerup.stop="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim()); }"
+                @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim()); }"
               >
                 {{ item.detail }}
               </td>
               <td
                 class="border text-right cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
-                @pointerdown.stop
                 @click.stop="() => copyAmountToClipboard(item.amount)"
-                @pointerup.stop="(e) => { if (e.pointerType !== 'mouse') copyAmountToClipboard(item.amount); }"
+                @pointerup="(e) => { if (e.pointerType !== 'mouse') copyAmountToClipboard(item.amount); }"
               >
                 <span v-if="item.amount">{{ formatAmount(item.amount) }} 원</span>
               </td>
@@ -464,37 +462,113 @@ const pageContentStyle = { width: "210mm", minHeight: "297mm" };
 
 const reportPanEl = ref(null);
 const reportPanDrag = ref({ active: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
+const pointerCache = ref([]);
+const initialPinchDist = ref(0);
+const initialScale = ref(1);
+const preventCopy = ref(false);
+
+function getPinchDist(p1, p2) {
+  const dx = p1.clientX - p2.clientX;
+  const dy = p1.clientY - p2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
 
 function onReportPanDown(e) {
   if (e.button !== 0 && e.pointerType === "mouse") return;
-  e.preventDefault();
-  reportPanDrag.value = {
-    active: true,
-    startX: e.clientX,
-    startY: e.clientY,
-    startPanX: panX.value,
-    startPanY: panY.value,
-  };
-  if (reportPanEl.value?.setPointerCapture) reportPanEl.value.setPointerCapture(e.pointerId);
-  window.addEventListener("pointermove", onReportPanMove, { passive: false });
-  window.addEventListener("pointerup", onReportPanUp);
-  window.addEventListener("pointercancel", onReportPanUp);
+  
+  // 마우스인 경우 캐시를 강제로 정리하여 꼬임 방지 (모바일은 멀티터치 가능성 때문에 유지)
+  if (e.pointerType === "mouse") {
+    pointerCache.value = [];
+  }
+
+  // 포인터 캐시에 추가 (중복 방지)
+  if (pointerCache.value.findIndex(p => p.pointerId === e.pointerId) === -1) {
+    pointerCache.value.push(e);
+  }
+  
+  if (pointerCache.value.length === 1) {
+    if (e.pointerType !== "mouse") {
+      e.preventDefault();
+    }
+    preventCopy.value = false;
+    reportPanDrag.value = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      startPanX: panX.value,
+      startPanY: panY.value,
+    };
+    if (e.pointerType !== "mouse" && reportPanEl.value?.setPointerCapture) {
+      reportPanEl.value.setPointerCapture(e.pointerId);
+    }
+    window.addEventListener("pointermove", onReportPanMove, { passive: false });
+    window.addEventListener("pointerup", onReportPanUp);
+    window.addEventListener("pointercancel", onReportPanUp);
+  } else if (pointerCache.value.length === 2) {
+    // 핀치 줌 시작 시점의 거리와 배율 기록
+    initialPinchDist.value = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
+    initialScale.value = scaleValue.value;
+  }
 }
 
 function onReportPanMove(e) {
-  if (!reportPanDrag.value.active) return;
-  e.preventDefault();
-  const dx = e.clientX - reportPanDrag.value.startX;
-  const dy = e.clientY - reportPanDrag.value.startY;
-  panX.value = reportPanDrag.value.startPanX + dx;
-  panY.value = reportPanDrag.value.startPanY + dy;
+  // 포인터 정보 업데이트
+  const idx = pointerCache.value.findIndex(p => p.pointerId === e.pointerId);
+  if (idx >= 0) {
+    pointerCache.value[idx] = e;
+  }
+
+  if (pointerCache.value.length === 2) {
+    // 핀치 줌 로직
+    e.preventDefault();
+    preventCopy.value = true;
+    const currentDist = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
+    if (initialPinchDist.value > 0) {
+      const zoomFactor = currentDist / initialPinchDist.value;
+      const newScale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, initialScale.value * zoomFactor));
+      scaleValue.value = newScale;
+    }
+  } else if (pointerCache.value.length === 1 && reportPanDrag.value.active) {
+    // 단일 포인터 패닝 로직
+    if (e.pointerType !== "mouse") {
+      e.preventDefault();
+    }
+    const p = pointerCache.value[0];
+    const dx = p.clientX - reportPanDrag.value.startX;
+    const dy = p.clientY - reportPanDrag.value.startY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      preventCopy.value = true;
+    }
+    panX.value = reportPanDrag.value.startPanX + dx;
+    panY.value = reportPanDrag.value.startPanY + dy;
+  }
 }
 
-function onReportPanUp() {
-  reportPanDrag.value.active = false;
-  window.removeEventListener("pointermove", onReportPanMove);
-  window.removeEventListener("pointerup", onReportPanUp);
-  window.removeEventListener("pointercancel", onReportPanUp);
+function onReportPanUp(e) {
+  // 포인터 캐시에서 제거
+  const idx = pointerCache.value.findIndex(p => p.pointerId === e.pointerId);
+  if (idx >= 0) {
+    pointerCache.value.splice(idx, 1);
+  }
+
+  if (pointerCache.value.length === 0) {
+    // 모든 손가락을 뗌
+    reportPanDrag.value.active = false;
+    window.removeEventListener("pointermove", onReportPanMove);
+    window.removeEventListener("pointerup", onReportPanUp);
+    window.removeEventListener("pointercancel", onReportPanUp);
+  } else if (pointerCache.value.length === 1) {
+    // 한 손가락만 남은 경우: 해당 위치에서 다시 패닝이 시작되도록 상태 초기화
+    const remainingPointer = pointerCache.value[0];
+    reportPanDrag.value = {
+      active: true,
+      startX: remainingPointer.clientX,
+      startY: remainingPointer.clientY,
+      startPanX: panX.value,
+      startPanY: panY.value,
+    };
+    initialPinchDist.value = 0;
+  }
 }
 
 function getFitToWidthScale() {
@@ -646,6 +720,7 @@ const showCopyToast = () => {
   }, 1000);
 };
 const copyDetailToClipboard = async (text) => {
+  if (preventCopy.value) return;
   const str = text != null ? String(text).trim() : "";
   if (!str) return;
   let copied = false;
