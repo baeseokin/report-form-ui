@@ -1029,116 +1029,72 @@ const generatePDF = async () => {
   // CSS injects to style the PDF clone.
   const pdfOnlyCSS = `
     .report-content * {
-      font-family: "Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR", sans-serif !important;
-      letter-spacing: normal !important;
-      -webkit-font-smoothing: antialiased !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans KR", "Malgun Gothic", sans-serif !important;
+      letter-spacing: 0 !important;
+      word-spacing: 0 !important;
+      -webkit-font-smoothing: grayscale !important; /* Ghosting 방지 핵심 */
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: auto !important;
+      text-shadow: none !important;
+      box-shadow: none !important;
+      transition: none !important;
+      animation: none !important;
     }
-
-    .report-content .no-print { display: none !important; }
-    .report-content table { table-layout: fixed; border-collapse: collapse; }
-    .report-content table th, .report-content table td {
-      padding: 0;
-      height: ${ROW_PX}px;
-      min-height: ${ROW_PX}px;
-      box-sizing: border-box;
-      text-align: center;
-      vertical-align: middle;
+    .report-content { 
+      width: 794px !important; 
+      padding: 40px !important; 
+      background: white !important;
+      box-sizing: border-box !important;
     }
+    .report-content table { 
+      table-layout: fixed !important; 
+      border-collapse: collapse !important; 
+    }
+    /* 지출 내역 및 부서명 테이블은 100% */
+    .report-content table:not(.approval-table) { 
+      width: 100% !important; 
+    }
+    
+    /* 결재란 양 끝 정렬 강제 */
+    .approval-container {
+      display: block !important;
+      width: 100% !important;
+      margin-bottom: 20px !important;
+      overflow: hidden !important; /* clear-fix */
+    }
+    .approval-table-left { 
+      float: left !important; 
+      width: calc(var(--left-col-count, 4) * 11%) !important; 
+      min-width: calc(var(--left-col-count, 4) * 11%) !important;
+    }
+    .approval-table-right { 
+      float: right !important; 
+      width: 40% !important; 
+    }
+    
     .report-content table.approval-table tbody tr.sign-row th,
     .report-content table.approval-table tbody tr.sign-row td {
       height: ${SIGN_ROW_PX_PDF}px !important;
-      min-height: ${SIGN_ROW_PX_PDF}px !important;
-    }
-    .report-content table.approval-table-left {
-      width: calc(var(--left-col-count, 4) * 11%);
-      min-width: calc(var(--left-col-count, 4) * 11%);
-    }
-    .report-content table.approval-table-left th,
-    .report-content table.approval-table-left td {
-      width: calc(100% / var(--left-col-count, 4));
-      min-width: calc(100% / var(--left-col-count, 4));
-      max-width: calc(100% / var(--left-col-count, 4));
-      box-sizing: border-box;
     }
     
-    .report-content .vc {
-      display: block;
-      height: ${ROW_PX}px;
-      min-height: ${ROW_PX}px;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 0 10px;
-      overflow: hidden;
+    .report-content table th, .report-content table td {
+      height: ${ROW_PX}px !important;
+      box-sizing: border-box !important;
+      vertical-align: middle !important;
+      text-align: center !important;
+      padding: 0 5px !important;
     }
-    .report-content .vc-i {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      width: 100%;
-      line-height: 1.3;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      overflow: hidden;
+
+    /* 지출내역 상세(좌측정렬), 금액(우측정렬) 보정 */
+    .report-content table.expense-table td.expense-col-detail {
+      text-align: left !important;
+      padding-left: 12px !important;
     }
-    .report-content .vc.multiline .vc-i {
-      white-space: normal;
-      justify-content: flex-start;
-      text-align: left;
-      line-height: 1.4;
-      padding-top: 6px;
-      padding-bottom: 6px;
+    .report-content table.expense-table td.text-right {
+      text-align: right !important;
+      padding-right: 12px !important;
     }
-    .report-content .vc.right .vc-i {
-      justify-content: flex-end;
-      text-align: right;
-      white-space: nowrap;
-    }
-    .report-content .vc.left .vc-i {
-      justify-content: flex-start;
-      text-align: left;
-    }
-    
-    .report-content .status-badge{
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      line-height: 1 !important;
-    }
-    .report-content tr.sign-row .status-badge{
-      /* no transform applied here */
-    }      
-    .report-content tr.sign-row .vc,
-    .report-content tr.sign-row .vc-i {
-      height: ${SIGN_ROW_PX_PDF}px !important;
-      min-height: ${SIGN_ROW_PX_PDF}px !important;
-      overflow: visible !important;
-      white-space: normal;
-    }
-    .report-content tr.sign-row img {
-      max-height: ${SIGN_ROW_PX_PDF - 20}px !important;
-      max-width: 80% !important;
-      height: auto !important;
-      width: auto !important;
-      object-fit: contain !important;
-      display: block !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-    }      
-    .report-content tr.sign-row .vc {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-    }      
-    .signature-img {
-      height: 80px;
-      width: auto;
-      object-fit: contain;
-      display: block;
-      margin: 0 auto;
-      border-radius: 8px;
-    }
-    .report-content tr.sign-row .status-badge.no-print,
-    .report-content tr.sign-row small.no-print,
+
     .report-content .no-print { display: none !important; }
   `;
 
@@ -1151,40 +1107,56 @@ const generatePDF = async () => {
       useCORS: true,
       allowTaint: false,
       backgroundColor: "#ffffff",
+      windowWidth: 1200,
       onclone: (doc) => {
+        // Step 1: Normalize the document environment
+        doc.documentElement.style.width = '1200px';
+        doc.body.style.width = '1200px';
+        doc.body.style.margin = '0';
+        doc.body.style.padding = '0';
+
         const styleNode = doc.createElement("style");
         styleNode.textContent = pdfOnlyCSS;
         doc.head.appendChild(styleNode);
 
-        // ✅ 모바일 폰트 깨짐 보정: 시스템 기본 폰트로 강제 적용 (웹폰트 다운로드 버그 원천 차단)
-        Array.from(doc.querySelectorAll('.report-content *')).forEach(el => {
-          el.style.fontFamily = '"Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic", "Noto Sans KR", sans-serif';
-        });
-
-        const cells = doc.querySelectorAll(".report-content table th, .report-content table td");
-        cells.forEach((cell) => {
-          const first = cell.firstElementChild;
-          if (first && first.classList?.contains("vc")) {
-            first.style.height = `${ROW_PX}px`;
-            first.style.minHeight = `${ROW_PX}px`;
-            const inner = first.firstElementChild;
-            if (inner && inner.classList?.contains("vc-i")) inner.style.height = "100%";
-            return;
+        const clonedPage = doc.querySelectorAll('.page')[i];
+        if (clonedPage) {
+          // Step 2: Fix approval tables alignment (brute force with float)
+          const leftTable = clonedPage.querySelector('.approval-table-left');
+          const rightTable = clonedPage.querySelector('.approval-table-right');
+          if (leftTable && rightTable) {
+             const wrapper = doc.createElement('div');
+             wrapper.className = 'approval-container';
+             leftTable.parentNode.insertBefore(wrapper, leftTable);
+             wrapper.appendChild(leftTable);
+             wrapper.appendChild(rightTable);
+             
+             // Extra safety: clear float after
+             const clear = doc.createElement('div');
+             clear.style.clear = 'both';
+             wrapper.appendChild(clear);
           }
 
-          const vc = doc.createElement("div");
-          vc.className = "vc";
-          if (cell.classList?.contains("cell-multiline")) vc.classList.add("multiline");
-          if (cell.classList?.contains("cell-right") || cell.classList?.contains("text-right")) vc.classList.add("right");
-          if (cell.classList?.contains("cell-left") || cell.classList?.contains("text-left")) vc.classList.add("left");
+          // Step 3: Remove all coordinate interference
+          let curr = clonedPage;
+          while (curr && curr !== doc.body) {
+            curr.style.transform = 'none';
+            curr.style.position = 'static';
+            curr.style.margin = '0';
+            curr.style.padding = '0';
+            curr = curr.parentElement;
+          }
 
-          const vci = doc.createElement("div");
-          vci.className = "vc-i";
-
-          while (cell.firstChild) vci.appendChild(cell.firstChild);
-          vc.appendChild(vci);
-          cell.appendChild(vc);
-        });
+          clonedPage.style.display = 'block';
+          clonedPage.style.width = '794px';
+          clonedPage.style.margin = '0 auto';
+          clonedPage.style.boxShadow = 'none';
+          
+          // Step 4: Cleanup body - KEEP ONLY THE TARGET PAGE
+          Array.from(doc.body.children).forEach(child => {
+            if (!child.contains(clonedPage)) child.remove();
+          });
+        }
       },
     });
 
@@ -1195,7 +1167,6 @@ const generatePDF = async () => {
     if (i > 0) pdf.addPage();
     pdf.addImage(img, "JPEG", 0, 0, pdfW, imgH);
   }
-
   return pdf;
 };
 
