@@ -274,9 +274,10 @@ const defaultMenuTabTop = () => {
     const n = parseInt(saved, 10);
     if (!Number.isNaN(n) && n >= 0) return Math.min(n, window.innerHeight - MENU_TAB_HEIGHT);
   }
-  return 16;
+  // 기본 위치: 화면 중앙
+  return Math.max(0, (window.innerHeight / 2) - (MENU_TAB_HEIGHT / 2));
 };
-const menuTabTopPx = ref(16);
+const menuTabTopPx = ref(defaultMenuTabTop());
 
 const menuTabDrag = ref({ active: false, startY: 0, startTop: 0 });
 const menuTabDidDrag = ref(false);
