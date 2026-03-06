@@ -18,7 +18,7 @@
         <canvas
           ref="signaturePad"
           data-testid="signature-canvas-popup"
-          class="border rounded-lg w-full h-40 bg-gray-50"
+          :class="['border rounded-lg w-full h-40 bg-gray-50', { 'cursor-not-allowed': isImageLoaded }]"
         ></canvas>
         <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
           <p class="pr-4">
@@ -88,6 +88,7 @@ let drawing = false;
 const wasCleared = ref(false);          // '지우기' 버튼을 눌렀는지
 const hasNotified = ref(false);         // 재서명 시작 안내 1회만
 const didRedrawAfterClear = ref(false); // 지운 후 실제로 다시 그렸는지(저장 조건)
+const isImageLoaded = ref(false);       // 이미지가 로드된 상태인지 (기본 서명 로드 시 true)
 
 
 /** 기본서명 로드 (서버 URL → 캔버스에 드로우) */
@@ -120,6 +121,7 @@ function drawImageToCanvas(src) {
       // ctx는 ratio로 scale되어 있으므로 CSS 크기로 그리면 맞음
       ctx.clearRect(0, 0, cssW, cssH);
       ctx.drawImage(img, 0, 0, cssW, cssH);
+      isImageLoaded.value = true;
       resolve();
     };
     img.onerror = reject;
@@ -162,6 +164,8 @@ function getPos(e) {
 
 /** 드로잉 핸들러 */
 const startDraw = (e) => {
+  if (isImageLoaded.value) return; // 이미지가 로드된 경우 드로잉 방지
+
   e.preventDefault?.();
   // 재서명 안내: 지운 뒤 처음 그릴 때 1회
   if (wasCleared.value && !hasNotified.value) {
@@ -198,6 +202,7 @@ const clearSignature = (skipMark = false) => {
     hasNotified.value = false;
     didRedrawAfterClear.value = false;
   }
+  isImageLoaded.value = false;
 };
 
 onMounted(async () => {
