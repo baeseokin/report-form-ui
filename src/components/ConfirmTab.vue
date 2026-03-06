@@ -53,7 +53,7 @@
             width="240"
             height="240"
             data-testid="signature-canvas"
-            class="border rounded w-[240px] h-[240px] touch-none bg-white"
+            :class="['border rounded w-[240px] h-[240px] touch-none bg-white', { 'cursor-not-allowed': isImageLoaded }]"
           ></canvas>
           <button
             @click="clearCanvas(false)"
@@ -182,6 +182,7 @@ let drawing = false;
 const wasCleared = ref(false);   // ✕ 눌러 지웠는지
 const hasNotified = ref(false);  // 재서명 안내 1회만 표시
 const didRedrawAfterClear = ref(false); // ✕ 이후 실제로 다시 그렸는지 (저장 트리거)
+const isImageLoaded = ref(false); // 이미지가 로드된 상태인지 (기본 서명 로드 시 true)
 
 // 기본서명 불러오기 (서버 → 없으면 패스)
 async function loadDefaultSignature() {
@@ -208,6 +209,7 @@ function drawImageToCanvas(src) {
     img.onload = () => {
       ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
       ctx.drawImage(img, 0, 0, canvas.value.width, canvas.value.height);
+      isImageLoaded.value = true;
       resolve();
     };
     img.onerror = reject;
@@ -262,6 +264,8 @@ onMounted(async () => {
 
 // 🖱 마우스 이벤트
 const startDraw = (e) => {
+  if (isImageLoaded.value) return; // 이미지가 로드된 경우 드로잉 방지
+
   // 재서명 안내 (✕ 후 첫 드로잉 시작 시 1회)
   if (wasCleared.value && !hasNotified.value) {
     //alert("변경된 서명이 기본서명에 저장됩니다.");
@@ -286,6 +290,8 @@ const stopDraw = () => {
 
 // 📱 터치 이벤트
 const startDrawTouch = (e) => {
+  if (isImageLoaded.value) return; // 이미지가 로드된 경우 드로잉 방지
+
   e.preventDefault(); // 스크롤 방지
   if (wasCleared.value && !hasNotified.value) {
     //alert("변경된 서명이 기본서명에 저장됩니다.");
@@ -310,7 +316,11 @@ const drawTouch = (e) => {
 };
 
 const clearCanvas = (skipMark = false) => {
-  ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+  if (canvas.value && ctx) {
+    ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
+  }
+  isImageLoaded.value = false;
+  
   if (!skipMark) {
     wasCleared.value = true;
     hasNotified.value = false;
