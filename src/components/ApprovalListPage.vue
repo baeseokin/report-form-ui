@@ -119,7 +119,7 @@ const userDeptName = userStore.user?.deptName || "";
 const search = reactive({
   months: 1,
   deptName: userDeptName,
-  status: userDeptName === "재정부" ? "결재완료" : "결재진행중",
+  status: userDeptName === "재정부" ? "" : "결재진행중",
   approverUserId: userStore.user?.userId || "",
   startDate: "",
   endDate: "",
@@ -130,11 +130,14 @@ const financeScope = ref("finance"); // 'finance' | 'others'
 
 const updateFinanceScope = () => {
   if (financeScope.value === "finance") {
-    search.status = "결재완료";
-    search.deptName = userDeptName;
+    search.status = "";
+    search.deptName = userStore.user?.deptName || "";
+    search.approverUserId = userStore.user?.userId || "";
   } else {
+    // 타부서 청구 조회 시 결재자 ID 필터를 제거하여 모든 미결재 내역 모니터링
     search.status = "결재진행중";
     search.deptName = "";
+    search.approverUserId = "";
   }
   page.value = 1;
   searchList();
@@ -162,7 +165,22 @@ const searchList = async () => {
   });
   const data = await res.json();
   if (data.success) {
-    rows.value = data.rows;
+    // 필터링 규칙 적용
+    rows.value = data.rows.filter(row => {
+      if (row.status === '재정부이관완료') return false;
+      
+      // 재정부 사용자가 '재정부 청구' 조회 시의 특수 필터
+      if (userStore.user?.deptName === '재정부' && financeScope.value === 'finance') {
+        if (row.dept_name !== '재정부') {
+          // 타 부서 건은 '결재완료' 상태만 (이미 각 부서 승인 후 재정부에 넘어온 건)
+          return row.status === '결재완료';
+        } else {
+          // 재정부 본인 건은 '결재진행중', '결재완료' 모두 노출
+          return row.status === '결재완료' || row.status === '결재진행중';
+        }
+      }
+      return true;
+    });
     totalPages.value = data.totalPages;
   }
 };
@@ -191,6 +209,11 @@ const openDetail = async (row) => {
 const formatDate = (d) => new Date(d).toLocaleDateString("ko-KR");
 
 onMounted(() => {
+  // 초기 조건 설정 (재정부면 전체, 아니면 본인 결재건)
+  search.deptName = userStore.user?.deptName || "";
+  search.status = userStore.user?.deptName === "재정부" ? "" : "결재진행중";
+  search.approverUserId = userStore.user?.userId || "";
+
   updateDateRange();
   searchList();
 });

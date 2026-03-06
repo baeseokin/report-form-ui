@@ -145,7 +145,7 @@ const departmentOptions = computed(() => {
 });
 
 onMounted(async () => {
-  if (!props.author && user.value?.userName) {
+  if (user.value?.userName) {
     emits("update:author", user.value.userName);
   }
   try {

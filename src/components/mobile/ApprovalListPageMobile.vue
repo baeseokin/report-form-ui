@@ -128,7 +128,7 @@ const userDeptName = userStore.user?.deptName || "";
 const search = reactive({
   months: 1,
   deptName: userDeptName,
-  status: userDeptName === "재정부" ? "결재완료" : "결재진행중",
+  status: userDeptName === "재정부" ? "" : "결재진행중",
   approverUserId: userStore.user?.userId || "",
   startDate: "",
   endDate: "",
@@ -152,11 +152,13 @@ const financeScope = ref("finance"); // 'finance' | 'others'
 
 const updateFinanceScope = () => {
   if (financeScope.value === "finance") {
-    search.status = "결재완료";
+    search.status = "";
     search.deptName = userDeptName;
+    search.approverUserId = userStore.user?.userId || "";
   } else {
     search.status = "결재진행중";
     search.deptName = "";
+    search.approverUserId = "";
   }
   page.value = 1;
   searchList();
@@ -190,7 +192,20 @@ const searchList = async () => {
   });
   const data = await res.json();
   if (data.success) {
-    rows.value = data.rows;
+    // 필터링 규칙 적용
+    rows.value = data.rows.filter(row => {
+      if (row.status === '재정부이관완료') return false;
+      
+      // 재정부 사용자가 '재정부 청구' 조회 시의 특수 필터
+      if (userStore.user?.deptName === '재정부' && financeScope.value === 'finance') {
+        if (row.dept_name !== '재정부') {
+          return row.status === '결재완료';
+        } else {
+          return row.status === '결재완료' || row.status === '결재진행중';
+        }
+      }
+      return true;
+    });
     totalPages.value = data.totalPages;
   }
 };
@@ -219,6 +234,11 @@ const openDetail = async (row) => {
 const formatDate = (d) => new Date(d).toLocaleDateString("ko-KR");
 
 onMounted(() => {
+  // 초기 조건 설정 
+  search.deptName = userStore.user?.deptName || "";
+  search.status = userStore.user?.deptName === "재정부" ? "" : "결재진행중";
+  search.approverUserId = userStore.user?.userId || "";
+
   updateDateRange();
   searchList();
 });

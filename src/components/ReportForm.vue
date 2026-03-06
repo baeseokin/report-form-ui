@@ -179,6 +179,9 @@ onMounted(async () => {
   if (!route.params.id && !selectedDept.value && user.value?.deptName) {
     selectedDept.value = user.value.deptName;
   }
+  if (!author.value && user.value?.userName) {
+    author.value = user.value.userName;
+  }
   try {
     const deptRes = await axios.get("/api/departments");
     const depts = deptRes.data;
@@ -284,7 +287,8 @@ onMounted(async () => {
 
       documentType.value = data.document_type;
       selectedDept.value = data.dept_name;
-      author.value = data.author;
+      // ✅ 작성자는 원본 작성자가 아닌 현재 로그인 사용자로 채움
+      author.value = user.value?.userName || data.author;
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
       selectedGwan.value = data.selectedGwan;
