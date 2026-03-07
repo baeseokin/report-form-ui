@@ -20,7 +20,10 @@
             @change="$emit('update:documentType', opt.value)"
             class="hidden"
           />
-          {{ opt.label }}
+          <div class="flex flex-col sm:flex-row items-center justify-center leading-tight">
+            <span>{{ opt.p1 }}</span>
+            <span>{{ opt.p2 }}</span>
+          </div>
         </label>
       </div>
     </div>
@@ -120,12 +123,11 @@ const emits = defineEmits([
 ]);
 
 // 청구 유형 리스트 (value: 저장/API용, label: 버튼 표시용)
-// 모바일에서 줄바꿈 시 "지출" 앞에서 끊기도록 ZWSP(제로너비공백) 삽입
-const ZWSP = "\u200B";
+// 모바일에서 줄바꿈 시 "지출" 앞에서 끊기도록 개별 span으로 처리 (ZWSP보다 신뢰도 높음)
 const documentTypeOptions = [
-  { value: "청구지출결의서", label: `청구${ZWSP}지출` },
-  { value: "정산지출결의서", label: `정산${ZWSP}지출` },
-  { value: "가불지출결의서", label: `가불${ZWSP}지출` },
+  { value: "청구지출결의서", p1: "청구", p2: "지출" },
+  { value: "정산지출결의서", p1: "정산", p2: "지출" },
+  { value: "가불지출결의서", p1: "가불", p2: "지출" },
 ];
 
 // 로그인 사용자
