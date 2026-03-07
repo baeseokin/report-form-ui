@@ -1,6 +1,40 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-start pt-[12vh] sm:pt-24 bg-gray-100 px-4 sm:px-0">
-    <div class="bg-white p-8 shadow rounded-lg w-full max-w-full sm:w-96">
+  <div class="min-h-screen flex flex-col md:flex-row bg-gray-100 font-nanum overflow-hidden relative">
+    
+    <!-- 왼쪽: 수채화 이미지 영역 (PC/태블릿) -->
+    <div class="hidden md:flex flex-[1.4] items-center justify-center p-16 relative bg-gray-100">
+      <div 
+        class="w-full h-full max-w-3xl bg-contain bg-center bg-no-repeat relative"
+        style="background-image: url('/images/login_bg.png');"
+      >
+        <!-- 수채화 특유의 부드러운 경계 처리 (bg-gray-100 색상 #F3F4F6 적용) -->
+        <div class="absolute inset-0 shadow-[inset_0_0_100px_80px_rgba(243,244,246,1)] pointer-events-none"></div>
+      </div>
+    </div>
+
+    <!-- 모바일 전용: 상단에 작게 배치되는 이미지 (옵션) -->
+    <div class="md:hidden absolute top-8 left-0 right-0 h-40 opacity-20 pointer-events-none">
+      <div 
+        class="w-full h-full bg-contain bg-center bg-no-repeat"
+        style="background-image: url('/images/login_bg.png');"
+      ></div>
+    </div>
+
+    <!-- 오른쪽: 로그인 폼 영역 -->
+    <div class="flex-1 flex flex-col items-center justify-center p-6 md:p-12 z-10 bg-transparent">
+      
+      <!-- 초기 화면 전용 메시지 타이틀 -->
+      <div class="mb-10 text-center animate-fadeIn drop-shadow-sm select-none font-gowun">
+        <h1 class="text-2xl md:text-5xl font-bold text-gray-800 tracking-tight leading-tight">
+          원천교회<br class="md:hidden" />
+          <span class="text-indigo-600 block md:inline md:ml-3">지출청구 시스템</span>
+        </h1>
+        <p class="mt-4 text-gray-500 font-medium tracking-widest text-sm md:text-lg hidden md:block opacity-70 font-nanum">
+          WONCHEON FINANCIAL REQUEST SYSTEM
+        </p>
+      </div>
+
+      <div class="relative w-full max-w-[420px] bg-white p-8 sm:p-10 shadow-[20px_40px_80px_rgba(0,0,0,0.1)] rounded-[2.5rem] border border-gray-100/50 backdrop-blur-sm animate-slideUp">
       <h2 class="text-2xl font-bold mb-6 text-center">🔐 로그인</h2>
 
       <div class="mb-3">
@@ -11,6 +45,7 @@
           :disabled="loading.departments"
           @click="deptModalOpen = true"
         >
+          
           <span>{{ selectedDeptLabel || "부서를 선택하세요" }}</span>
           <span class="text-gray-400">⌵</span>
         </button>
@@ -101,6 +136,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup>
@@ -332,3 +368,19 @@ const login = async () => {
   }
 };
 </script>
+
+<style scoped>
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideUp {
+  animation: slideUp 0.6s ease-out;
+}
+</style>

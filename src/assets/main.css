@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap');
+
+.font-gowun {
+  font-family: 'Gowun Batang', serif;
+}
+
 /* 글로벌 폰트 적용 */
 body {
   font-family: 'Nanum Barun Gothic', sans-serif;

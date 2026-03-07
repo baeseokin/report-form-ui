@@ -78,8 +78,8 @@
         </div>
       </Teleport>
 
-      <!-- 화면 제목 + HELP 버튼 -->
-      <div v-if="helpContent" class="flex items-center gap-3 mb-4">
+      <!-- 화면 제목 + HELP 버튼 (로그인 페이지 제외) -->
+      <div v-if="helpContent && !isLoginPage" class="flex items-center gap-3 mb-4">
         <h1 class="text-2xl font-bold text-gray-800">{{ pageTitle }}</h1>
         <HelpButton :content="helpContent" variant="amber" />
       </div>
@@ -219,7 +219,7 @@ const helpContent = computed(() => getHelpForPath(route.path));
 const pageTitle = computed(() => {
   const meta = route.meta?.menuName;
   if (meta) return meta;
-  if (route.path === "/login") return "로그인";
+  if (route.path === "/login") return "원천교회 지출청구 시스템";
   if (route.path === "/email-test") return "이메일 테스트";
   return "";
 });
