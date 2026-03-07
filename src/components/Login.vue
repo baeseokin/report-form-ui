@@ -34,7 +34,7 @@
         </p>
       </div>
 
-      <div class="relative w-full max-w-[420px] bg-white p-8 sm:p-10 shadow-[20px_40px_80px_rgba(0,0,0,0.1)] rounded-[2.5rem] border border-gray-100/50 backdrop-blur-sm animate-slideUp">
+      <div class="relative w-full max-w-[420px] bg-white px-8 py-12 sm:px-10 sm:py-16 shadow-[20px_40px_80px_rgba(0,0,0,0.1)] rounded-[2.5rem] border border-gray-100/50 backdrop-blur-sm animate-slideUp">
       <h2 class="text-2xl font-bold mb-6 text-center">🔐 로그인</h2>
 
       <div class="mb-3">
@@ -49,25 +49,9 @@
           <span>{{ selectedDeptLabel || "부서를 선택하세요" }}</span>
           <span class="text-gray-400">⌵</span>
         </button>
-
-        <!-- 디바이스 유형별 모달을 동적 로딩 -->
-        <Suspense v-if="deptModalOpen">
-          <component
-            :is="isMobile ? DeptPickerMobileAsync : DeptPickerDesktopAsync"
-            :departments="departments"
-            :favorites="favorites"
-            :recent="recent"
-            @close="deptModalOpen = false"
-            @select="onSelectDeptMobile"
-            @update:favorites="updateFavorites"
-          />
-          <template #fallback>
-            <div class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
-              <div class="bg-white rounded-xl shadow p-6 text-sm">부서 선택 UI 불러오는 중…</div>
-            </div>
-          </template>
-        </Suspense>
       </div>
+
+
 
       <form @submit.prevent="login" autocomplete="off">
         <!-- 역할 선택 -->
@@ -134,9 +118,27 @@
         <div v-if="loading.roles">· 역할 목록 불러오는 중…</div>
         <div v-if="loading.users">· 사용자 목록 불러오는 중…</div>
       </div>
+      </div>
+
+      <!-- 디바이스 유형별 모달을 동적 로딩 (애니메이션 컨테이너 외부로 이동하여 모바일에서 공간 제약 해소) -->
+      <Suspense v-if="deptModalOpen">
+        <component
+          :is="isMobile ? DeptPickerMobileAsync : DeptPickerDesktopAsync"
+          :departments="departments"
+          :favorites="favorites"
+          :recent="recent"
+          @close="deptModalOpen = false"
+          @select="onSelectDeptMobile"
+          @update:favorites="updateFavorites"
+        />
+        <template #fallback>
+          <div class="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
+            <div class="bg-white rounded-xl shadow p-6 text-sm">부서 선택 UI 불러오는 중…</div>
+          </div>
+        </template>
+      </Suspense>
     </div>
   </div>
-</div>
 </template>
 
 <script setup>

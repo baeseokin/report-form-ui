@@ -1,43 +1,49 @@
 <template>
-  <div class="fixed inset-0 bg-black/50 z-50 flex">
-    <div class="bg-white w-full h-full p-4 pt-3 relative overflow-hidden">
+  <div class="fixed inset-0 bg-black/50 z-50 overflow-hidden flex items-end sm:items-center justify-center">
+    <div class="bg-white w-full h-full sm:w-[500px] sm:h-[90vh] sm:rounded-2xl flex flex-col p-4 shadow-xl">
       <!-- 헤더 -->
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-bold">부서 선택</h3>
-        <button class="text-2xl" @click="$emit('close')">✕</button>
+      <div class="flex items-center justify-between py-2 border-b mb-3">
+        <h3 class="text-xl font-bold text-gray-800">부서 선택</h3>
+        <button class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors" @click="$emit('close')">
+          <span class="text-2xl leading-none">✕</span>
+        </button>
       </div>
 
-      <!-- 초성 필터 -->
-      <div class="mb-2 flex flex-wrap gap-1">
+
+
+      <!-- 초성 필터 (가로 스크롤) -->
+      <div class="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <button
+          class="shrink-0 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
+          :class="!activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-100' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
+          @click="clearChosung"
+        >전체</button>
         <button
           v-for="ch in chosungs"
           :key="ch"
-          class="px-2 py-1 rounded border text-sm"
-          :class="{'bg-purple-100 border-purple-300': ch === activeChosung}"
+          class="shrink-0 px-2 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
+          :class="ch === activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-100' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
           @click="toggleChosung(ch)"
         >{{ ch }}</button>
-        <button
-          class="ml-2 px-2 py-1 rounded border text-sm"
-          :class="{'bg-gray-100': !activeChosung}"
-          @click="clearChosung"
-        >전체</button>
       </div>
 
-      <!-- 리스트 컨테이너 -->
-      <div class="relative h-[70vh]">
+      <!-- 리스트 컨테이너 (남은 공간 모두 차지) -->
+      <div class="relative flex-1 min-h-0">
         <!-- 스크롤 영역 -->
-        <div ref="scrollArea" class="absolute inset-0 overflow-auto pr-6">
+        <div ref="scrollArea" class="absolute inset-0 overflow-y-auto custom-scrollbar">
           <!-- ⭐🕘 상단 고정 바 (즐겨찾기/최근) -->
-          <div class="sticky top-0 z-10 bg-white/95 backdrop-blur border-b">
-            <div class="px-2 py-2 space-y-2">
-              <div v-if="favoriteDepts.length" class="space-y-1">
-                <div class="text-xs text-gray-500">⭐ 즐겨찾기</div>
-                <div class="flex flex-wrap gap-2">
+          <div v-if="favoriteDepts.length || recentDepts.length" class="sticky top-0 z-10 bg-white/95 backdrop-blur mb-4">
+            <div class="py-2 space-y-4">
+              <div v-if="favoriteDepts.length" class="space-y-2">
+                <div class="flex items-center gap-1 px-1">
+                  <span class="text-xs font-bold text-gray-400">⭐ 즐겨찾기</span>
+                </div>
+                <div class="flex flex-wrap gap-2 px-1">
                   <button
                     v-for="d in favoriteDepts"
                     :key="'fav-'+d.id"
                     :data-testid="'dept-item-' + d.dept_name"
-                    class="px-3 py-2 rounded-full bg-yellow-50 border border-yellow-200 text-sm active:bg-yellow-100"
+                    class="px-3 py-1.5 rounded-xl bg-yellow-50 border border-yellow-100 text-sm font-medium text-yellow-800 active:bg-yellow-100 active:scale-95 transition-all"
                     @click="select(d)"
                   >
                     {{ d.dept_name }}
@@ -45,14 +51,16 @@
                 </div>
               </div>
 
-              <div v-if="recentDepts.length" class="space-y-1">
-                <div class="text-xs text-gray-500">🕘 최근</div>
-                <div class="flex flex-wrap gap-2">
+              <div v-if="recentDepts.length" class="space-y-2 border-t pt-2">
+                <div class="flex items-center gap-1 px-1">
+                  <span class="text-xs font-bold text-gray-400">🕘 최근 선택</span>
+                </div>
+                <div class="flex flex-wrap gap-2 px-1">
                   <button
                     v-for="d in recentDepts"
                     :key="'recent-'+d.id"
                     :data-testid="'dept-item-' + d.dept_name"
-                    class="px-3 py-2 rounded-full bg-gray-50 border text-sm active:bg-gray-100"
+                    class="px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-100 text-sm font-medium text-gray-700 active:bg-gray-100 active:scale-95 transition-all"
                     @click="select(d)"
                   >
                     {{ d.dept_name }}
@@ -66,46 +74,39 @@
           <div
             v-for="group in grouped"
             :key="group.key"
-            :ref="el => setSectionRef(group.key, el)"
-            class="mb-2"
+            class="mb-3"
           >
-            <div class="sticky top-[0] bg-white/90 backdrop-blur px-1 py-1 text-xs text-gray-500 border-b">
+            <div class="sticky top-0 bg-white/90 backdrop-blur px-2 py-1 text-xs font-bold text-purple-600 border-b border-purple-50 z-[5]">
               {{ group.key }}
             </div>
-            <div class="divide-y">
+            <div class="divide-y divide-gray-50">
               <div
                 v-for="d in group.items"
                 :key="d.id"
                 :data-testid="'dept-item-' + d.dept_name"
-                class="px-1 py-3 flex items-center justify-between active:bg-purple-50"
+                class="px-2 py-1 flex items-center justify-between hover:bg-purple-50 active:bg-purple-100 rounded-lg transition-colors cursor-pointer"
                 @click="select(d)"
               >
-                <div class="text-base">{{ d.dept_name }}</div>
-                <div class="flex items-center gap-2">
-                  <div class="text-xs text-gray-400">{{ d.dept_cd }}</div>
-                  <button
-                    class="ml-2 text-yellow-500 text-lg"
-                    @click.stop="toggleFavorite(d)"
-                    :aria-label="isFavorite(d) ? '즐겨찾기 제거' : '즐겨찾기 추가'"
-                  >{{ isFavorite(d) ? '★' : '☆' }}</button>
+                <div class="flex items-center gap-2 overflow-hidden">
+                  <div class="text-[15px] font-medium text-gray-900 truncate">{{ d.dept_name }}</div>
+                  <span class="shrink-0 px-1.5 py-0.5 bg-gray-50 border border-gray-100 rounded text-[10px] font-mono text-gray-400">{{ d.dept_cd }}</span>
                 </div>
+                <button
+                  class="p-2 -mr-2 text-xl transition-all active:scale-125"
+                  @click.stop="toggleFavorite(d)"
+                  :aria-label="isFavorite(d) ? '즐겨찾기 제거' : '즐겨찾기 추가'"
+                >
+                  <span :class="isFavorite(d) ? 'text-yellow-500' : 'text-gray-300 hover:text-yellow-300'">{{ isFavorite(d) ? '★' : '☆' }}</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <div v-if="!grouped.length" class="p-6 text-center text-gray-500">
-            결과가 없습니다
+          <div v-if="!grouped.length" class="py-20 text-center flex flex-col items-center gap-3">
+            <span class="text-4xl">🔎</span>
+            <p class="text-gray-500 text-sm font-medium">부서를 찾을 수 없습니다</p>
+            <button v-if="activeChosung" @click="resetFilters" class="text-purple-600 text-xs font-bold underline">필터 초기화</button>
           </div>
-        </div>
-
-        <!-- 오른쪽 인덱스 바 -->
-        <div class="absolute right-0 top-0 h-full flex flex-col items-center justify-center gap-1 pr-1">
-          <button
-            v-for="i in indexLabels"
-            :key="i"
-            class="text-[10px] px-1 py-0.5 rounded text-gray-500 active:bg-gray-100"
-            @click="jump(i)"
-          >{{ i }}</button>
         </div>
       </div>
     </div>
@@ -155,9 +156,15 @@ function toggleChosung(ch) {
 }
 function clearChosung() { activeChosung.value = ""; }
 
+function resetFilters() {
+  activeChosung.value = "";
+}
+
 // 그룹핑
 const grouped = computed(() => {
   let list = props.departments;
+  
+  // 2. 초성 필터링
   if (activeChosung.value) {
     list = list.filter(d => getChosung(d.dept_name?.[0]) === activeChosung.value);
   }
@@ -181,18 +188,35 @@ const grouped = computed(() => {
   return arr.sort((a,b) => order(a.key)-order(b.key));
 });
 
-// 섹션 점프
-const sectionRefs = {};
-function setSectionRef(key, el) { if (el) sectionRefs[key] = el; }
-const indexLabels = computed(() => [...chosungs, ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ", "기타"]);
-function jump(label) {
-  const el = sectionRefs[label];
-  if (el && scrollArea.value) {
-    scrollArea.value.scrollTo({ top: el.offsetTop - 8, behavior: "smooth" });
-  }
-}
+
 </script>
 
 <style scoped>
 /* 모바일 터치 UX에 최적화된 기본 스타일 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+
+/* 터치 타겟 확보 및 활성 상태 시각화 */
+input, button {
+  -webkit-tap-highlight-color: transparent;
+}
 </style>
