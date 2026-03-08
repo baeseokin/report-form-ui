@@ -353,9 +353,9 @@ const login = async () => {
       const rolesFromSession = userStore.roles.map((r) => r.role_name || r);
 
       if (rolesFromSession.includes("회계")) {
-        router.push("/reportForm");
+        router.replace("/reportForm");
       } else {
-        router.push("/approvalStatus");
+        router.replace("/approvalStatus");
       }
     } else {
       error.value = res.data?.message || "로그인 실패";

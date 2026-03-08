@@ -83,7 +83,7 @@ const routes = [
   { path: "/accountCategories", component: AccountCategoriesGrid, meta: { menuName: "계정과목 관리" } },
   { path: "/budgets", component: BudgetsGrid, meta: { menuName: "예산 관리" } },
   { path: "/budgetStatus", component: BudgetStatus, meta: { menuName: "예산집행 현황" } },
-  { path: "/deptBudgetStatus", component: DeptBudgetStatus, meta: { menuName: "부서 예산집행 현황" } },  
+  { path: "/deptBudgetStatus", component: DeptBudgetStatus, meta: { menuName: "부서 예산집행 현황" } },
   { path: "/departments", component: DepartmentManagement, meta: { menuName: "부서 관리" } },
 
   // ✅ 이메일 테스트 (권한 없이 접근 허용)
@@ -102,6 +102,11 @@ router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
   if (!userStore.user) {
     await userStore.loadSession();
+  }
+
+  // ✅ 이미 로그인된 상태에서 로그인 페이지 접근 시 리다이렉트
+  if (userStore.user && to.path === "/login") {
+    return next("/approvalStatus");
   }
 
   // ✅ 로그인 안 되어 있으면 로그인 페이지로
