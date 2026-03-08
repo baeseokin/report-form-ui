@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen flex flex-col md:flex-row bg-gray-100 font-nanum overflow-hidden relative">
+  <div class="min-h-screen flex flex-col lg:flex-row bg-gray-100 font-nanum overflow-hidden relative">
     
     <!-- 왼쪽: 수채화 이미지 영역 (PC/태블릿) -->
-    <div class="hidden md:flex flex-[1.4] items-center justify-center p-16 relative bg-gray-100">
+    <div class="hidden lg:flex flex-[1.4] items-center justify-center p-16 relative bg-gray-100">
       <div 
         class="w-full h-full max-w-3xl bg-contain bg-center bg-no-repeat relative"
         style="background-image: url('/images/login_bg.png');"
@@ -13,7 +13,7 @@
     </div>
 
     <!-- 모바일 전용: 상단에 작게 배치되는 이미지 (옵션) -->
-    <div class="md:hidden absolute top-8 left-0 right-0 h-40 opacity-20 pointer-events-none">
+    <div class="lg:hidden absolute top-8 left-0 right-0 h-40 opacity-20 pointer-events-none">
       <div 
         class="w-full h-full bg-contain bg-center bg-no-repeat"
         style="background-image: url('/images/login_bg.png');"
@@ -21,15 +21,15 @@
     </div>
 
     <!-- 오른쪽: 로그인 폼 영역 -->
-    <div class="flex-1 flex flex-col items-center justify-center p-6 md:p-12 z-10 bg-transparent">
+    <div class="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 z-10 bg-transparent">
       
       <!-- 초기 화면 전용 메시지 타이틀 -->
       <div class="mb-10 text-center animate-fadeIn drop-shadow-sm select-none font-gowun">
-        <h1 class="text-2xl md:text-5xl font-bold text-gray-800 tracking-tight leading-tight">
-          원천교회<br class="md:hidden" />
-          <span class="text-indigo-600 block md:inline md:ml-3">지출청구 시스템</span>
+        <h1 class="text-3xl md:text-4xl lg:text-3xl xl:text-4xl 2xl:text-5xl font-bold text-gray-800 tracking-tight leading-tight whitespace-nowrap lg:whitespace-nowrap">
+          <span class="block lg:inline mb-1 lg:mb-0">원천교회</span>
+          <span class="text-indigo-600 block lg:inline lg:ml-3">지출청구 시스템</span>
         </h1>
-        <p class="mt-4 text-gray-500 font-medium tracking-widest text-sm md:text-lg hidden md:block opacity-70 font-nanum">
+        <p class="mt-4 text-gray-500 font-medium tracking-widest text-[10px] md:text-sm lg:text-lg opacity-70 font-nanum">
           WONCHEON FINANCIAL REQUEST SYSTEM
         </p>
       </div>
@@ -177,7 +177,7 @@ const loading = ref({
 });
 
 // ===== 모바일/즐겨찾기/최근 상태 =====
-const isMobile = computed(() => typeof window !== "undefined" && window.innerWidth <= 640);
+const isMobile = computed(() => typeof window !== "undefined" && window.innerWidth < 1024);
 const deptModalOpen = ref(false);
 const FAVORITE_KEY = "dept_favorites";
 const RECENT_KEY = "dept_recent";
