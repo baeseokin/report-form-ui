@@ -100,30 +100,35 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
+
+  // ✅ 앱 초기 진입 시 세션 로드 (로그인이 안 된 상태라면 한 번은 무조건 대기)
   if (!userStore.user) {
     await userStore.loadSession();
   }
 
-  // ✅ 이미 로그인된 상태에서 로그인 페이지 접근 시 리다이렉트
+  // ✅ 이미 로그인된 상태에서 로그인 페이지 진입 시 리다이렉트
   if (userStore.user && to.path === "/login") {
-    return next("/approvalStatus");
+    // replace를 사용하여 히스토리 스택을 오염시키지 않음 (뒤로가기 시 무한 루프 방지)
+    return next({ path: "/approvalStatus", replace: true });
   }
 
   // ✅ 로그인 안 되어 있으면 로그인 페이지로
-  if (!userStore.user && to.path !== "/login") {
+  if (!userStore.user && to.path !== "/login" && !to.meta.public) {
     alert("로그인이 필요합니다.");
-    return next("/login");
+    return next({ path: "/login", replace: true });
   }
 
-  // ✅ 메뉴 접근 권한 체크
-  if (to.meta.menuName) {
+  // ✅ 메뉴 접근 권한 체크 (로그인된 경우에만 실행됨)
+  if (userStore.user && to.meta.menuName) {
+    // 권한 목록이 로드되기 전(race condition)에 체크되는 것을 방지하기 위해 userStore.access가 로드되었는지 확인
     const hasAccess = userStore.access.some(
       (a) => a.menu_name === to.meta.menuName && a.access_type === "all"
     );
 
     if (!hasAccess) {
-      alert("해당 메뉴에 대한 권한이 없습니다.");
-      return next("/login");
+      alert(`[${to.meta.menuName}] 메뉴에 대한 권한이 없습니다.`);
+      // 권한 없는 메뉴 접근 시 로그인이 아닌 메인 페이지로 보냄
+      return next({ path: "/approvalStatus", replace: true });
     }
   }
 
