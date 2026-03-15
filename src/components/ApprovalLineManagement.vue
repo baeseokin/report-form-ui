@@ -93,7 +93,8 @@
             결재 역할
             <select
               v-model="editable.approver_role"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              disabled
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-gray-100 cursor-not-allowed"
             >
               <option value="">역할을 선택하세요</option>
               <option
@@ -135,6 +136,7 @@
 
           <div class="md:col-span-2 flex flex-wrap gap-2">
             <button
+              type="button"
               class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 disabled:opacity-50"
               :disabled="!isValid"
               @click="saveLine"
@@ -142,6 +144,7 @@
               저장
             </button>
             <button
+              type="button"
               class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
               @click="resetForm"
             >
@@ -175,28 +178,32 @@
                 <td class="px-3 py-2 border">
                   <div class="flex flex-wrap gap-2 justify-end">
                     <button
+                      type="button"
                       class="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
-                      @click="move(line, -1)"
+                      @click.stop="move(line, -1)"
                       :disabled="line.order_no === 1"
                     >
                       ▲ 위로
                     </button>
                     <button
+                      type="button"
                       class="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
-                      @click="move(line, 1)"
+                      @click.stop="move(line, 1)"
                       :disabled="line.order_no === filteredLines.length"
                     >
                       ▼ 아래로
                     </button>
                     <button
+                      type="button"
                       class="px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700"
-                      @click="editExisting(line)"
+                      @click.stop="editExisting(line)"
                     >
                       수정
                     </button>
                     <button
+                      type="button"
                       class="px-2 py-1 text-xs bg-rose-500 text-white rounded hover:bg-rose-600"
-                      @click="removeLine(line.id)"
+                      @click.stop.prevent="removeLine(line.id)"
                     >
                       삭제
                     </button>
@@ -211,11 +218,34 @@
         </div>
       </section>
     </div>
-  </div>
-</template>
+ 
+     <!-- ✅ 커스텀 확인 모달 (Native confirm 대용) -->
+     <div v-if="confirmModal.visible" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+       <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+         <div class="p-6 text-center">
+           <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+             </svg>
+           </div>
+           <h3 class="text-lg font-bold text-gray-900 mb-2">삭제 확인</h3>
+           <p class="text-gray-600">{{ confirmModal.message }}</p>
+         </div>
+         <div class="flex border-t">
+           <button @click="confirmModal.visible = false" class="flex-1 px-6 py-4 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+             취소
+           </button>
+           <button @click="confirmModal.onConfirm" class="flex-1 px-6 py-4 text-sm font-semibold text-rose-600 hover:bg-rose-50 border-l transition-colors">
+             삭제하기
+           </button>
+         </div>
+       </div>
+     </div>
+   </div>
+ </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import axios from "axios";
 
 const lines = ref([]);
@@ -229,6 +259,13 @@ const newDeptMode = ref(false);
 const departmentOptions = ref([]);
 const roleOptions = ref([]);
 const userOptions = ref([]);
+
+// ✅ 커스텀 컨펌 모달 상태
+const confirmModal = ref({
+  visible: false,
+  message: "",
+  onConfirm: null,
+});
 
 const isEdit = computed(() => Boolean(editable.value.id));
 const isDeptLocked = computed(
@@ -325,6 +362,24 @@ async function fetchUsers() {
     error.value = "사용자 정보를 불러오지 못했습니다.";
   }
 }
+
+// ✅ 사용자 선택 시 역할 자동 매핑
+watch(
+  () => editable.value.approver_user_id,
+  (newVal) => {
+    if (!newVal) return;
+    const user = userOptions.value.find(
+      (u) => (u.userId || u.id || u.approver_user_id) === newVal
+    );
+    if (user && user.roleNames) {
+      // 콤마로 구분된 역할 중 첫 번째 역할을 기본으로 선택
+      const firstRole = user.roleNames.split(",")[0];
+      if (firstRole) {
+        editable.value.approver_role = firstRole;
+      }
+    }
+  }
+);
 
 function selectDept(dept) {
   selectedDept.value = dept;
@@ -432,14 +487,20 @@ async function saveLine() {
 }
 
 async function removeLine(id) {
-  if (!confirm("삭제하시겠습니까?")) return;
-  try {
-    await axios.delete(`/api/approval-lines/${id}`);
-    await fetchLines();
-  } catch (err) {
-    console.error(err);
-    error.value = "삭제 중 오류가 발생했습니다.";
-  }
+  confirmModal.value = {
+    visible: true,
+    message: "정말로 이 결재선을 삭제하시겠습니까?",
+    onConfirm: async () => {
+      confirmModal.value.visible = false;
+      try {
+        await axios.delete(`/api/approval-lines/${id}`);
+        await fetchLines();
+      } catch (err) {
+        console.error(err);
+        error.value = "삭제 중 오류가 발생했습니다.";
+      }
+    }
+  };
 }
 
 async function move(line, direction) {

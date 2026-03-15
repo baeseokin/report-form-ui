@@ -347,13 +347,16 @@ const getExpense = (c) => {
     return children.reduce((s, child) => s + getExpense(child), 0);
   }
 
-  // 3. 최하위 Leaf (세목 등): 정확히 일치하는 지출 합산
+  // 3. 최하위 Leaf: 해당 레벨에 맞춰 지출 합산 (세목이 아니더라도 Leaf면 합산)
   const myId = c.category_id;
-  if (c.level === '세목') {
-    return expenses.value.reduce((s, ex) => (ex.semok === myId ? s + (Number(ex.amount) || 0) : s), 0);
-  }
-  
-  return 0;
+  return expenses.value.reduce((s, ex) => {
+    let match = false;
+    if (c.level === '세목') match = (ex.semok === myId);
+    else if (c.level === '목') match = (ex.mok === myId);
+    else if (c.level === '항') match = (ex.hang === myId);
+    else if (c.level === '관') match = (ex.gwan === myId);
+    return match ? s + (Number(ex.amount) || 0) : s;
+  }, 0);
 };
 
 // 금액 포맷

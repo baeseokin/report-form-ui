@@ -409,14 +409,14 @@ const getExpense = (c) => {
   }
 
   const myId = c.category_id;
-  if (c.level === "세목") {
-    return expenses.value.reduce(
-      (s, ex) => (ex.semok === myId ? s + (Number(ex.amount) || 0) : s),
-      0
-    );
-  }
-
-  return 0;
+  return expenses.value.reduce((s, ex) => {
+    let match = false;
+    if (c.level === "세목") match = ex.semok === myId;
+    else if (c.level === "목") match = ex.mok === myId;
+    else if (c.level === "항") match = ex.hang === myId;
+    else if (c.level === "관") match = ex.gwan === myId;
+    return match ? s + (Number(ex.amount) || 0) : s;
+  }, 0);
 };
 
 // 금액 포맷
