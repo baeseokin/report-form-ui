@@ -226,6 +226,7 @@ const pageTitle = computed(() => {
 
 // ✅ 전체 메뉴 정의 (label은 권한 관리/role_access의 menu_name과 일치해야 함)
 const allMenus = [
+  { label: "공지사항", path: "/notices", icon: "📢", alwaysShow: true },
   { label: "지출결의서 작성", path: "/reportForm", icon: "📝" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
@@ -253,7 +254,7 @@ const allowedMenus = computed(() => {
   console.log("🔑 사용자 접근권한(userStore.access):", userStore.access);
 
   const filtered = allMenus.filter((m) =>
-    userStore.access.some(
+    m.alwaysShow || userStore.access.some(
       (a) => a.menu_name === m.label && a.access_type === "all"
     )
   );

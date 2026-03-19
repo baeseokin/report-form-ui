@@ -60,6 +60,11 @@ const ApprovalLineManagement = () =>
     ? import("../components/mobile/ApprovalLineManagementMobile.vue")
     : import("../components/ApprovalLineManagement.vue");
 
+const NoticeManagement = () =>
+  isMobile()
+    ? import("../components/mobile/NoticeManagementMobile.vue")
+    : import("../components/NoticeManagement.vue");
+
 const routes = [
   { path: "/", redirect: "/login" },
   { path: "/login", component: Login },
@@ -88,6 +93,9 @@ const routes = [
 
   // ✅ 이메일 테스트 (권한 없이 접근 허용)
   { path: "/email-test", name: "EmailTest", component: EmailTest, meta: { public: true } },
+
+  // ✅ 공지사항 (모두 접근 가능하지만 작성/수정/삭제는 관리자만)
+  { path: "/notices", component: NoticeManagement, meta: { menuName: "공지사항", publicMenu: true } },
 ];
 
 const router = createRouter({
@@ -119,7 +127,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // ✅ 메뉴 접근 권한 체크 (로그인된 경우에만 실행됨)
-  if (userStore.user && to.meta.menuName) {
+  if (userStore.user && to.meta.menuName && !to.meta.publicMenu) {
     // 권한 목록이 로드되기 전(race condition)에 체크되는 것을 방지하기 위해 userStore.access가 로드되었는지 확인
     const hasAccess = userStore.access.some(
       (a) => a.menu_name === to.meta.menuName && a.access_type === "all"
