@@ -8,11 +8,7 @@
         isOpen ? 'translate-x-0' : '-translate-x-full'
       ]"
     >
-      <div class="flex-shrink-0 p-6 pb-4">
-        <h2 class="text-2xl font-bold">📑 메뉴</h2>
-      </div>
-
-      <nav class="left-menu-nav flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 space-y-1">
+      <nav class="left-menu-nav flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-6 pt-6 space-y-1">
         <!-- ✅ 로그인 사용자만 메뉴 표시 -->
         <template v-if="user">
           <router-link
@@ -226,6 +222,7 @@ const pageTitle = computed(() => {
 
 // ✅ 전체 메뉴 정의 (label은 권한 관리/role_access의 menu_name과 일치해야 함)
 const allMenus = [
+  { label: "홈", path: "/portal", icon: "🏠", alwaysShow: true },
   { label: "공지사항", path: "/notices", icon: "📢", alwaysShow: true },
   { label: "게시판", path: "/boards", icon: "💬", alwaysShow: true },
   { label: "지출결의서 작성", path: "/reportForm", icon: "📝" },

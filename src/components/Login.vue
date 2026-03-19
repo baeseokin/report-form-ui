@@ -350,13 +350,7 @@ const login = async () => {
     if (res.data?.success) {
       closeSidebar?.(); // 로그인 후 left menu 접힌 상태로 보이도록 (모바일)
       await userStore.loadSession(); // 세션 로드
-      const rolesFromSession = userStore.roles.map((r) => r.role_name || r);
-
-      if (rolesFromSession.includes("회계")) {
-        router.replace("/reportForm");
-      } else {
-        router.replace("/approvalStatus");
-      }
+      router.replace("/portal");
     } else {
       error.value = res.data?.message || "로그인 실패";
     }

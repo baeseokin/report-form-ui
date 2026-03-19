@@ -13,6 +13,11 @@ function isMobile() {
  */
 const Login = () => import("../components/Login.vue");
 
+const PortalHome = () =>
+  isMobile()
+    ? import("../components/mobile/PortalHomeMobile.vue")
+    : import("../components/PortalHome.vue");
+
 // 보고서 작성 (PC/모바일 모두 같은 컴포넌트 사용 시)
 const ReportForm = () => import("../components/ReportForm.vue");
 
@@ -71,8 +76,9 @@ const BoardManagement = () =>
     : import("../components/BoardManagement.vue");
 
 const routes = [
-  { path: "/", redirect: "/login" },
+  { path: "/", redirect: "/portal" },
   { path: "/login", component: Login },
+  { path: "/portal", component: PortalHome, meta: { menuName: "포탈 홈", publicMenu: true } },
 
   // 보고서 관련
   { path: "/reportForm", component: ReportForm, meta: { menuName: "지출결의서 작성" } },
@@ -125,7 +131,7 @@ router.beforeEach(async (to, from, next) => {
   // ✅ 이미 로그인된 상태에서 로그인 페이지 진입 시 리다이렉트
   if (userStore.user && to.path === "/login") {
     // replace를 사용하여 히스토리 스택을 오염시키지 않음 (뒤로가기 시 무한 루프 방지)
-    return next({ path: "/approvalStatus", replace: true });
+    return next({ path: "/portal", replace: true });
   }
 
   // ✅ 로그인 안 되어 있으면 로그인 페이지로
@@ -143,8 +149,8 @@ router.beforeEach(async (to, from, next) => {
 
     if (!hasAccess) {
       alert(`[${to.meta.menuName}] 메뉴에 대한 권한이 없습니다.`);
-      // 권한 없는 메뉴 접근 시 로그인이 아닌 메인 페이지로 보냄
-      return next({ path: "/approvalStatus", replace: true });
+      // 권한 없는 메뉴 접근 시 포탈 홈으로
+      return next({ path: "/portal", replace: true });
     }
   }
 
