@@ -3,13 +3,14 @@
 
     <!-- ✅ 목록 화면 -->
     <div v-if="mode === 'list'" class="space-y-6">
-      <!-- 상단 컨트롤 영역 (등록버튼 위치, 타 화면 검색조건 박스 스타일과 유사하게 처리) -->
-      <div v-if="isManager" class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white border border-gray-200 rounded-lg shadow-sm py-3 px-4 sm:p-4 mb-6 flex justify-end">
+      <!-- 상단 액션 버튼 영역 -->
+      <div v-if="isManager" class="flex justify-end mb-4">
         <button
           @click="openForm()"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-0.5"
         >
-          공지 등록
+          <svg class="w-4 h-4 text-purple-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+          공지 등록하기
         </button>
       </div>
 

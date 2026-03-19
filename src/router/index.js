@@ -65,6 +65,11 @@ const NoticeManagement = () =>
     ? import("../components/mobile/NoticeManagementMobile.vue")
     : import("../components/NoticeManagement.vue");
 
+const BoardManagement = () =>
+  isMobile()
+    ? import("../components/mobile/BoardManagementMobile.vue")
+    : import("../components/BoardManagement.vue");
+
 const routes = [
   { path: "/", redirect: "/login" },
   { path: "/login", component: Login },
@@ -96,6 +101,9 @@ const routes = [
 
   // ✅ 공지사항 (모두 접근 가능하지만 작성/수정/삭제는 관리자만)
   { path: "/notices", component: NoticeManagement, meta: { menuName: "공지사항", publicMenu: true } },
+
+  // ✅ 게시판 (모두 작성 가능, 수정 삭제는 본인/관리자)
+  { path: "/boards", component: BoardManagement, meta: { menuName: "게시판", publicMenu: true } },
 ];
 
 const router = createRouter({
