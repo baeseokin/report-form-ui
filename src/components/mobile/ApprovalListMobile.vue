@@ -179,7 +179,8 @@ const departments = ref([]);
 
 const today = new Date();
 const year = today.getFullYear();
-const startOfYear = new Date(year, 0, 1);
+const startOfMonth = new Date();
+startOfMonth.setMonth(startOfMonth.getMonth() - 1);
 
 const formatDateValue = (date) => {
   const y = date.getFullYear();
@@ -192,7 +193,7 @@ const formatDateValue = (date) => {
 const filters = ref({
   deptName: "",
   documentType: "",
-  startDate: formatDateValue(startOfYear),
+  startDate: formatDateValue(startOfMonth),
   endDate: formatDateValue(today),
   status: "",
 });

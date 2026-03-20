@@ -104,7 +104,14 @@ const goTo = (path) => router.push(path);
 
 onMounted(async () => {
   try {
-    const res = await axios.get('/api/portal/summary');
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 1);
+    const y = startDate.getFullYear();
+    const m = String(startDate.getMonth() + 1).padStart(2, "0");
+    const d = String(startDate.getDate()).padStart(2, "0");
+    const startDateStr = `${y}-${m}-${d}`;
+    
+    const res = await axios.get('/api/portal/summary', { params: { startDate: startDateStr } });
     if (res.data.success) summary.value = res.data.data;
   } catch (e) {
     console.error('포탈 요약 로드 실패', e);
@@ -176,6 +183,7 @@ onMounted(async () => {
 .big-card__head {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
@@ -200,6 +208,7 @@ onMounted(async () => {
 .big-card__body {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.2rem;
 }
 
