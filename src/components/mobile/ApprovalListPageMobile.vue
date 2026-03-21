@@ -37,18 +37,16 @@
             </label>
           </div>
 
-          <!-- 요청기간 -->
-          <div>
-            <label class="block text-sm mb-1">요청기간</label>
-            <select
-              v-model="search.months"
-              @change="onMonthsChange"
-              class="mobile-form-control mobile-form-control-select w-full"
-            >
-              <option v-for="m in [1,3,6,12]" :key="m" :value="m">
-                {{ m }}개월
-              </option>
-            </select>
+          <!-- 청구 시작일 -->
+          <div class="flex flex-col gap-1">
+            <label class="text-sm mb-1">청구 시작일자</label>
+            <input type="date" v-model="search.startDate" class="mobile-form-control w-full" />
+          </div>
+
+          <!-- 청구 종료일 -->
+          <div class="flex flex-col gap-1">
+            <label class="text-sm mb-1">청구 종료일자</label>
+            <input type="date" v-model="search.endDate" class="mobile-form-control w-full" />
           </div>
           <button
             @click="page=1; searchList()"
@@ -125,13 +123,24 @@ const previewReport = ref(null);
 
 const userStore = useUserStore();
 const userDeptName = userStore.user?.deptName || "";
+
+const formatDateValue = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+const today = new Date();
+const startOfMonth = new Date();
+startOfMonth.setMonth(startOfMonth.getMonth() - 1);
+
 const search = reactive({
-  months: 1,
   deptName: userDeptName,
-  status: userDeptName === "재정부" ? "" : "결재진행중",
-  approverUserId: userStore.user?.userId || "",
-  startDate: "",
-  endDate: "",
+  status: "결재대기",
+  approverUserId: "",
+  startDate: formatDateValue(startOfMonth),
+  endDate: formatDateValue(today),
 });
 
 // ✅ 검색조건 펼침/접힘 (기본: 접힌 상태)
@@ -143,7 +152,7 @@ const searchConditionSummary = computed(() => {
   if (userDeptName === "재정부") {
     parts.push(financeScope.value === "finance" ? "재정부 청구" : "타부서 청구");
   }
-  parts.push(`요청기간 ${search.months}개월`);
+  parts.push(`${search.startDate} ~ ${search.endDate}`);
   return parts.join(" · ");
 });
 
@@ -152,29 +161,13 @@ const financeScope = ref("finance"); // 'finance' | 'others'
 
 const updateFinanceScope = () => {
   if (financeScope.value === "finance") {
-    search.status = "";
-    search.deptName = userDeptName;
-    search.approverUserId = userStore.user?.userId || "";
+    search.status = "결재대기";
+    search.deptName = "";
   } else {
     search.status = "결재진행중";
     search.deptName = "";
-    search.approverUserId = "";
   }
-  page.value = 1;
-  searchList();
-};
-
-const updateDateRange = () => {
-  const now = new Date();
-  const months = search.months;
-  const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  search.startDate = start.toISOString().split("T")[0];
-  search.endDate = end.toISOString().split("T")[0];
-};
-
-const onMonthsChange = () => {
-  updateDateRange();
+  search.approverUserId = "";
   page.value = 1;
   searchList();
 };
@@ -192,20 +185,8 @@ const searchList = async () => {
   });
   const data = await res.json();
   if (data.success) {
-    // 필터링 규칙 적용
-    rows.value = data.rows.filter(row => {
-      if (row.status === '재정부이관완료') return false;
-      
-      // 재정부 사용자가 '재정부 청구' 조회 시의 특수 필터
-      if (userStore.user?.deptName === '재정부' && financeScope.value === 'finance') {
-        if (row.dept_name !== '재정부') {
-          return row.status === '결재완료';
-        } else {
-          return row.status === '결재완료' || row.status === '결재진행중';
-        }
-      }
-      return true;
-    });
+    // 필터링 규칙 적용 (서버측 일치로 인해 필요없으나 방어용)
+    rows.value = data.rows.filter(row => row.status !== '재정부이관완료');
     totalPages.value = data.totalPages;
   }
 };
@@ -234,12 +215,6 @@ const openDetail = async (row) => {
 const formatDate = (d) => new Date(d).toLocaleDateString("ko-KR");
 
 onMounted(() => {
-  // 초기 조건 설정 
-  search.deptName = userStore.user?.deptName || "";
-  search.status = userStore.user?.deptName === "재정부" ? "" : "결재진행중";
-  search.approverUserId = userStore.user?.userId || "";
-
-  updateDateRange();
   searchList();
 });
 </script>

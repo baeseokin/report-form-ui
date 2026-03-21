@@ -15,7 +15,7 @@
       <div class="big-card pastel-indigo" @click="goTo('/approvalList')">
         <div class="big-card__head">
           <div class="big-card__icon-wrap icon-indigo">📑</div>
-          <span class="big-card__label">청구목록</span>
+          <span class="big-card__label">청구목록 (최근 1개월)</span>
         </div>
         <div class="big-card__body">
           <span class="big-card__count text-indigo-600">{{ summary?.approvalCount ?? '0' }}</span>
@@ -27,9 +27,6 @@
         <div class="big-card__head">
           <div class="big-card__icon-wrap icon-amber">⏳</div>
           <span class="big-card__label">결재 대기</span>
-          <div class="big-card__badge" v-if="(summary?.myApprovalCount ?? 0) > 0">
-            {{ summary.myApprovalCount }}
-          </div>
         </div>
         <div class="big-card__body">
           <span class="big-card__count text-amber-600">{{ summary?.myApprovalCount ?? '0' }}</span>

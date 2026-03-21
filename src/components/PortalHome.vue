@@ -178,7 +178,7 @@ const shortcuts = [
 ];
 
 const kpis = [
-  { key: 'approvalCount',   label: '청구목록',    icon: '📑', color: '#6366f1', path: '/approvalList'  },
+  { key: 'approvalCount',   label: '청구목록 (최근 1개월)',    icon: '📑', color: '#6366f1', path: '/approvalList'  },
   { key: 'myApprovalCount', label: '결재 대기',    icon: '⏳', color: '#f59e0b', path: '/approvalStatus' },
   { key: 'unreadNoticeCount', label: '읽지 않은 공지', icon: '📢', color: '#10b981', path: '/notices'       },
   { key: 'unreadBoardCount', label: '읽지 않은 게시글', icon: '💬', color: '#8b5cf6', path: '/boards'        },

@@ -18,15 +18,16 @@
         </div>
       </div>
 
-      <!-- 요청기간 -->
-      <div class="flex flex-col">
-        <label class="font-semibold text-gray-600 mb-1 text-sm">청구기간</label>
-        <div class="flex gap-2 flex-wrap">
-          <label v-for="m in [1,3,6,12]" :key="m" class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg bg-white border border-gray-200 hover:border-gray-300 transition has-[:checked]:border-gray-400 has-[:checked]:bg-gray-50">
-            <input type="radio" name="months" :value="m" v-model="search.months" @change="updateDateRange" class="w-4 h-4 accent-gray-600" />
-            <span class="text-slate-700">{{ m }}개월</span>
-          </label>
-        </div>
+      <!-- 청구 시작일자 -->
+      <div class="flex flex-col w-40">
+        <label class="font-semibold text-gray-600 mb-1 text-sm">청구 시작일자</label>
+        <input type="date" v-model="search.startDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
+      </div>
+
+      <!-- 청구 종료일자 -->
+      <div class="flex flex-col w-40">
+        <label class="font-semibold text-gray-600 mb-1 text-sm">청구 종료일자</label>
+        <input type="date" v-model="search.endDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
       </div>
 
       <!-- 조회 버튼 -->
@@ -116,13 +117,24 @@ const previewReport = ref(null);
 
 const userStore = useUserStore();
 const userDeptName = userStore.user?.deptName || "";
+
+const formatDateValue = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+const today = new Date();
+const startOfMonth = new Date();
+startOfMonth.setMonth(startOfMonth.getMonth() - 1);
+
 const search = reactive({
-  months: 1,
   deptName: userDeptName,
-  status: userDeptName === "재정부" ? "" : "결재진행중",
-  approverUserId: userStore.user?.userId || "",
-  startDate: "",
-  endDate: "",
+  status: "결재대기",
+  approverUserId: "",
+  startDate: formatDateValue(startOfMonth),
+  endDate: formatDateValue(today),
 });
 
 // ✅ 재정부 조회범위 상태
@@ -130,26 +142,16 @@ const financeScope = ref("finance"); // 'finance' | 'others'
 
 const updateFinanceScope = () => {
   if (financeScope.value === "finance") {
-    search.status = "";
-    search.deptName = userStore.user?.deptName || "";
-    search.approverUserId = userStore.user?.userId || "";
+    search.status = "결재대기";
+    search.deptName = "";
   } else {
-    // 타부서 청구 조회 시 결재자 ID 필터를 제거하여 모든 미결재 내역 모니터링
+    // 타부서 청구 조회 시 결재진행중인 모든 건 모니터링
     search.status = "결재진행중";
     search.deptName = "";
-    search.approverUserId = "";
   }
+  search.approverUserId = "";
   page.value = 1;
   searchList();
-};
-
-const updateDateRange = () => {
-  const now = new Date();
-  const months = search.months;
-  const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  search.startDate = start.toISOString().split("T")[0];
-  search.endDate = end.toISOString().split("T")[0];
 };
 
 const searchList = async () => {
@@ -165,22 +167,8 @@ const searchList = async () => {
   });
   const data = await res.json();
   if (data.success) {
-    // 필터링 규칙 적용
-    rows.value = data.rows.filter(row => {
-      if (row.status === '재정부이관완료') return false;
-      
-      // 재정부 사용자가 '재정부 청구' 조회 시의 특수 필터
-      if (userStore.user?.deptName === '재정부' && financeScope.value === 'finance') {
-        if (row.dept_name !== '재정부') {
-          // 타 부서 건은 '결재완료' 상태만 (이미 각 부서 승인 후 재정부에 넘어온 건)
-          return row.status === '결재완료';
-        } else {
-          // 재정부 본인 건은 '결재진행중', '결재완료' 모두 노출
-          return row.status === '결재완료' || row.status === '결재진행중';
-        }
-      }
-      return true;
-    });
+    // 서버측 필터링 적용으로 인해 프론트엔드 필터링은 불필요 (재정부이관완료 제외는 서버에서도 수행하나 방어용으로 유지 가능)
+    rows.value = data.rows.filter(row => row.status !== '재정부이관완료');
     totalPages.value = data.totalPages;
   }
 };
@@ -209,12 +197,6 @@ const openDetail = async (row) => {
 const formatDate = (d) => new Date(d).toLocaleDateString("ko-KR");
 
 onMounted(() => {
-  // 초기 조건 설정 (재정부면 전체, 아니면 본인 결재건)
-  search.deptName = userStore.user?.deptName || "";
-  search.status = userStore.user?.deptName === "재정부" ? "" : "결재진행중";
-  search.approverUserId = userStore.user?.userId || "";
-
-  updateDateRange();
   searchList();
 });
 </script>
