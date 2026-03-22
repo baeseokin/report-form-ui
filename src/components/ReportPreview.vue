@@ -177,10 +177,11 @@
           </thead>
           <tbody>
             <tr v-for="(item, idx) in paddedItems" :key="idx">
-              <td class="border">{{ item.mok }}</td>
-              <td class="border">{{ item.semok }}</td>
+              <td class="border" :style="getShrinkStyle(item.mok, 14)">{{ item.mok }}</td>
+              <td class="border" :style="getShrinkStyle(item.semok, 14)">{{ item.semok }}</td>
               <td
                 class="border text-left expense-col-detail cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
+                :style="getShrinkStyle(item.detail, 38)"
                 @click.stop="(e) => copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim())"
                 @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(item.detail ?? e.target?.textContent?.trim()); }"
               >
@@ -879,6 +880,29 @@ const getSignatureUrl = (role) => {
   return `/api/files/${encodeURIComponent(rel)}`;
 };
 const getApprovedAt = (role) => getHistoryRecord(role)?.approved_at || null;
+
+/**
+ * 글자 길이에 따라 폰트 크기를 조절하는 스타일 반환
+ * @param {string} text 표시할 텍스트
+ * @param {number} maxWeightedLen 줄바꿈 없이 들어갈 수 있는 최대 가중치 길이 (한글 2, 영문 1)
+ */
+const getShrinkStyle = (text, maxWeightedLen) => {
+  if (!text) return { whiteSpace: "nowrap" };
+  let weightedLen = 0;
+  for (let i = 0; i < text.length; i++) {
+    weightedLen += text.charCodeAt(i) > 255 ? 2 : 1;
+  }
+  if (weightedLen <= maxWeightedLen) return { whiteSpace: "nowrap" };
+
+  const ratio = maxWeightedLen / weightedLen;
+  const fontSizeFactor = Math.max(0.65, ratio); // 너무 작아지지 않게 최소 0.65 (약 9pt)
+  return {
+    fontSize: `${fontSizeFactor * 0.875}em`, // 0.875em이 기본 폰트 크기
+    whiteSpace: "nowrap",
+    textOverflow: "clip",
+  };
+};
+
 const formatDateTime = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -1300,7 +1324,6 @@ table td, table th {
 .report-content table.expense-table td.expense-col-detail {
   width: 45%;
   min-width: 0;
-  word-break: break-word;
   padding-left: 12px;
   padding-right: 12px;
 }
