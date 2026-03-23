@@ -30,6 +30,7 @@
           <p class="kpi-card__value">
             <span class="kpi-card__num">{{ summary ? summary[k.key] : '–' }}</span>
             <span class="kpi-card__unit">건</span>
+            <span v-if="k.suffix" class="kpi-card__suffix">{{ k.suffix }}</span>
           </p>
         </div>
         <div class="kpi-card__bar"></div>
@@ -178,7 +179,7 @@ const shortcuts = [
 ];
 
 const kpis = [
-  { key: 'approvalCount',   label: '청구목록 (최근 1개월)',    icon: '📑', color: '#6366f1', path: '/approvalList'  },
+  { key: 'approvalCount',   label: '청구목록',    icon: '📑', color: '#6366f1', path: '/approvalList', suffix: '(최근 1개월)'  },
   { key: 'myApprovalCount', label: '결재 대기',    icon: '⏳', color: '#f59e0b', path: '/approvalStatus' },
   { key: 'unreadNoticeCount', label: '읽지 않은 공지', icon: '📢', color: '#10b981', path: '/notices'       },
   { key: 'unreadBoardCount', label: '읽지 않은 게시글', icon: '💬', color: '#8b5cf6', path: '/boards'        },
@@ -334,6 +335,7 @@ onMounted(async () => {
   line-height: 1;
 }
 .kpi-card__unit { font-size: 0.8rem; font-weight: 600; color: #6b7280; }
+.kpi-card__suffix { font-size: 0.7rem; color: #9ca3af; font-weight: 500; margin-left: 0.2rem; }
 /* 하단 컬러 바 */
 .kpi-card__bar {
   position: absolute;

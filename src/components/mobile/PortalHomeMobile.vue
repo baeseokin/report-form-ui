@@ -15,11 +15,11 @@
       <div class="big-card pastel-indigo" @click="goTo('/approvalList')">
         <div class="big-card__head">
           <div class="big-card__icon-wrap icon-indigo">📑</div>
-          <span class="big-card__label">청구목록 (최근 1개월)</span>
+          <span class="big-card__label">청구목록</span>
         </div>
         <div class="big-card__body">
           <span class="big-card__count text-indigo-600">{{ summary?.approvalCount ?? '0' }}</span>
-          <span class="big-card__unit">건</span>
+          <span class="big-card__unit">건 <span class="big-card__suffix">(최근 1개월)</span></span>
         </div>
       </div>
 
@@ -300,6 +300,7 @@ onMounted(async () => {
 .big-card__body { display: flex; align-items: baseline; justify-content: center; gap: 0.2rem; }
 .big-card__count { font-size: 1.75rem; font-weight: 900; }
 .big-card__unit { font-size: 0.75rem; font-weight: 700; color: #9ca3af; }
+.big-card__suffix { font-size: 0.65rem; color: #94a3b8; font-weight: 500; margin-left: 2px; }
 
 /* 🌟 즐겨찾기 섹션 */
 .fav-section { padding: 0.5rem 1.25rem; }
