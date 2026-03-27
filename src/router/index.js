@@ -15,7 +15,7 @@ const Login = () => import("../components/Login.vue");
 
 const PortalHome = () =>
   isMobile()
-    ? import("../components/mobile/PortalHomeMobile.vue")
+    ? import("../components/mobile/PortalHomeMobileV2.vue")
     : import("../components/PortalHome.vue");
 
 // 보고서 작성 (PC/모바일 모두 같은 컴포넌트 사용 시)

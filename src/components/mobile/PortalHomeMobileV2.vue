@@ -118,18 +118,8 @@
       </button>
     </section>
 
-    <!-- ══ BOTTOM NAV (Minimalist 3 items) ══ -->
-    <nav class="fixed bottom-0 inset-x-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 px-10 pt-3 pb-8 flex justify-between items-center z-50">
-      <div v-for="nav in navMenus" :key="nav.id"
-           class="flex flex-col items-center gap-1 active:scale-90 transition-transform cursor-pointer"
-           @click="goTo(nav.path)">
-        <span class="material-symbols-outlined text-2xl" 
-              :class="$route.path === nav.path ? 'text-indigo-600 font-variation-fill' : 'text-slate-300'">
-          {{ nav.icon }}
-        </span>
-        <span class="text-[9px] font-bold" :class="$route.path === nav.path ? 'text-indigo-600' : 'text-slate-400'">{{ nav.name }}</span>
-      </div>
-    </nav>
+    <!-- ══ BOTTOM NAV (REMOVED: User Request) ══ -->
+
 
     <!-- ══ FAVORITE EDIT MODAL (Full Height Drawer Style) ══ -->
     <Transition name="slide-up">
@@ -195,12 +185,6 @@ const menuMeta = {
   '공지사항': { icon: '📢', path: '/notices' },
   '게시판': { icon: '💬', path: '/boards' },
 };
-
-const navMenus = [
-  { id: 'portal', name: '홈', icon: 'home', path: '/portal' },
-  { id: 'new', name: '청구', icon: 'add_circle', path: '/reportForm' },
-  { id: 'list', name: '조회', icon: 'history', path: '/approvalList' },
-];
 
 const userName = computed(() => userStore.user?.userName || '사용자');
 
