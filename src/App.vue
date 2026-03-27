@@ -53,7 +53,7 @@
     ></div>
 
     <!-- ✅ 본문 (로그인 시 여백 없음) -->
-    <main ref="mainEl" class="flex-1 bg-gray-100 p-6 overflow-y-auto relative" :class="{ 'lg:ml-64': !isLoginPage }">
+    <main ref="mainEl" class="flex-1 bg-gray-100 lg:p-6 overflow-y-auto relative" :class="{ 'lg:ml-64': !isLoginPage }">
       <!-- 플로팅 책갈피 메뉴: body로 텔레포트하여 최상위 배치, 좌측 고정, 28px 노출 (로그인 시 숨김) -->
       <Teleport to="body">
         <div
