@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#F8F9FD] text-slate-800 font-sans pb-24 transition-colors duration-500" :class="{ 'dark-mode-overlay': isNight }">
     <!-- ══ HEADER (Subtle Glassmorphism) ══ -->
-    <header class="relative pt-12 pb-20 overflow-hidden">
+    <header class="relative px-6 pt-12 pb-20 overflow-hidden">
       <div class="absolute inset-0 z-0 bg-gradient-to-br transition-all duration-700"
            :class="isNight ? 'from-slate-900 via-indigo-950 to-slate-950' : 'from-indigo-600 via-violet-500 to-fuchsia-500'">
       </div>
@@ -10,7 +10,7 @@
            v-if="!isNight">
       </div>
       
-      <div class="relative z-10 px-6">
+      <div class="relative z-10">
         <div class="flex items-center gap-2 mb-6">
           <span class="text-[10px] font-black tracking-[0.2em] text-white/60 uppercase">Woncheon Finance</span>
           <div class="h-px w-8 bg-white/20"></div>
@@ -26,10 +26,10 @@
     </header>
 
     <!-- ══ MAIN DASHBOARD (2x2 Glass Cards) ══ -->
-    <main class="relative z-20 -mt-10">
-      <div class="grid grid-cols-2 gap-0.5">
+    <main class="relative z-20 px-4 -mt-10">
+      <div class="grid grid-cols-2 gap-4">
         <!-- Dashboard Card 1 -->
-        <div class="bg-white p-6 shadow-sm border-b border-r border-slate-100/50 active:bg-slate-50 transition-all duration-200 group"
+        <div class="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 active:scale-95 transition-all duration-200 group"
              @click="goTo('/approvalList')">
           <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4 transition-transform group-hover:rotate-6">
             <span class="material-symbols-outlined text-indigo-500 font-bold">description</span>
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Dashboard Card 2 -->
-        <div class="bg-white p-6 shadow-sm border-b border-slate-100/50 active:bg-slate-50 transition-all duration-200 group"
+        <div class="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 active:scale-95 transition-all duration-200 group"
              @click="goTo('/approvalStatus')">
           <div class="w-10 h-10 rounded-2xl bg-amber-50 flex items-center justify-center mb-4 transition-transform group-hover:rotate-6">
             <span class="material-symbols-outlined text-amber-500 font-bold">hourglass_empty</span>
@@ -60,7 +60,7 @@
         </div>
 
         <!-- Dashboard Card 3 -->
-        <div class="bg-white p-6 shadow-sm border-r border-slate-100/50 active:bg-slate-50 transition-all duration-200 group"
+        <div class="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 active:scale-95 transition-all duration-200 group"
              @click="goTo('/notices')">
           <div class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4 transition-transform group-hover:rotate-6">
             <span class="material-symbols-outlined text-emerald-500 font-bold">campaign</span>
@@ -75,7 +75,7 @@
         </div>
 
         <!-- Dashboard Card 4 -->
-        <div class="bg-white p-6 shadow-sm border-slate-100/50 active:bg-slate-50 transition-all duration-200 group"
+        <div class="bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50 active:scale-95 transition-all duration-200 group"
              @click="goTo('/boards')">
           <div class="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center mb-4 transition-transform group-hover:rotate-6">
             <span class="material-symbols-outlined text-purple-500 font-bold">forum</span>
@@ -92,20 +92,20 @@
     </main>
 
     <!-- ══ FAVORITES SECTION (Minimalist Pill Grid) ══ -->
-    <section class="mt-10">
-      <div class="flex items-center justify-between mb-6 px-6">
+    <section class="mt-10 px-6">
+      <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-headline font-extrabold tracking-tight">즐겨찾기 메뉴</h3>
         <button class="w-8 h-8 flex items-center justify-center bg-white rounded-full border border-slate-200 shadow-sm active:scale-90" @click="showEdit = true">
           <span class="material-symbols-outlined text-slate-400 text-lg">settings</span>
         </button>
       </div>
 
-      <div v-if="favoriteMenus.length > 0" class="grid grid-cols-4 gap-0 border-t border-slate-100">
+      <div v-if="favoriteMenus.length > 0" class="grid grid-cols-4 gap-4">
         <div v-for="menu in favoriteMenus" :key="menu.name"
-             class="flex flex-col items-center gap-2 group active:bg-slate-50 transition-all py-6 border-b border-r border-slate-100"
+             class="flex flex-col items-center gap-2 group active:scale-90 transition-transform"
              @click="goTo(menu.path)">
-          <div class="w-12 h-12 flex items-center justify-center transition-transform group-hover:scale-110">
-            <span class="text-2xl">{{ menu.icon }}</span>
+          <div class="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow">
+            <span class="text-2xl transition-transform group-hover:scale-110">{{ menu.icon }}</span>
           </div>
           <span class="text-[10px] font-bold text-slate-500 text-center leading-tight">{{ menu.name }}</span>
         </div>
