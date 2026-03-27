@@ -4,14 +4,16 @@
     <!-- ══ HEADER ══ -->
     <header class="max-w-[1440px] mx-auto px-8 py-10 flex items-center justify-between border-b transition-colors duration-500" 
             :class="isNight ? 'border-slate-800' : 'border-slate-200'">
-      <div class="flex flex-col">
-        <span class="text-xs font-bold uppercase tracking-[0.2em] opacity-50 mb-1 animate-fade-in">{{ greetingContext }}</span>
-        <h1 class="text-5xl font-headline font-extrabold tracking-tight leading-none animate-slide-right">
-          Hello, <span class="text-primary italic">{{ userName }}</span><span class="text-primary-container">.</span>
-        </h1>
-        <p class="mt-3 text-sm font-medium opacity-60 tracking-wider transition-colors" :class="isNight ? 'text-slate-400' : 'text-on-surface-variant'">
-          {{ today }} • Today's Insight: <span class="text-tertiary">All systems optimal</span>
-        </p>
+      <div class="flex items-center gap-6">
+        <div class="flex flex-col">
+          <span class="text-xs font-bold uppercase tracking-[0.3em] text-amber-500 mb-1 animate-fade-in">Woncheon Church Finance</span>
+          <h1 class="text-4xl font-headline font-extrabold tracking-tight leading-tight animate-slide-right">
+            원천교회 <span class="text-amber-500">재정부</span><span class="ml-2 text-2xl text-amber-500/40">†</span>
+          </h1>
+          <p class="mt-2 text-xs font-semibold opacity-40 tracking-wider transition-colors uppercase" :class="isNight ? 'text-slate-400' : 'text-slate-500'">
+            {{ today }} • Financial Integrity & Stewardship
+          </p>
+        </div>
       </div>
 
       <div class="flex items-center gap-6">
@@ -25,17 +27,20 @@
           </button>
         </div>
         <div class="w-px h-10 bg-slate-200" :class="{ 'bg-slate-800': isNight }"></div>
-        <div class="flex items-center gap-3 group cursor-pointer">
+        <div class="flex items-center gap-4 group cursor-pointer">
           <div class="text-right">
             <p class="text-sm font-extrabold leading-none">{{ userName }}</p>
-            <p class="text-[10px] opacity-60 mt-1 font-bold">{{ userStore.user?.role || 'Senior Manager' }}</p>
+            <p class="text-[10px] opacity-60 mt-1 font-bold">{{ userStore.user?.roles?.[0]?.role_name || '재정부원' }}</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl overflow-hidden shadow-lg border-2 border-primary/20 group-hover:border-primary transition-colors">
+          <div class="w-14 h-14 rounded-2xl overflow-hidden shadow-[0_0_25px_rgba(245,158,11,0.2)] border-2 border-amber-500/30 group-hover:border-amber-500 transition-all duration-300 relative">
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxoDwpCwQGC0grUgo7hcODOMqQGREA8tnF0psVRsIe3-JuO_r_OgfUP8-1Jvp8yUVPZ0a1DBGd81MdtUuuwuSJYq-E81TJgfYIOqAir820vSzAwLbcvRc9gbrhL9SIlFpis3DY_pPARpZiSKlMmj1R2tla19RGoyAaxnga_fPYTkiUo4qat3CHSzH1l6gI5phsR4zHlrW6ka66LFWikx5zYzxalhcjOpwCjMuX2b0IiXVi2Rkzmzky39Z1gK5tdm_r2ixhNpZhWKqQ" 
-                 class="w-full h-full object-cover">
+                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent"></div>
           </div>
         </div>
       </div>
+      <!-- Accent Navy/Gold Line -->
+      <div class="absolute bottom-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-30"></div>
     </header>
 
     <main class="max-w-[1440px] mx-auto px-8 py-12 space-y-12">

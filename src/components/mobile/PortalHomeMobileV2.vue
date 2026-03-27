@@ -3,16 +3,20 @@
     <!-- ══ 헤더 ══ -->
     <header class="flex justify-between items-center w-full px-6 py-4 sticky top-0 z-40 transition-colors duration-500" :class="isNight ? 'bg-slate-950/80 backdrop-blur-md' : 'bg-[#f8f9ff]/80 backdrop-blur-md'">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl overflow-hidden shadow-lg border-2 border-primary/20">
+        <div class="w-10 h-10 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(245,158,11,0.3)] border-2 border-amber-500/40 relative group">
           <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxoDwpCwQGC0grUgo7hcODOMqQGREA8tnF0psVRsIe3-JuO_r_OgfUP8-1Jvp8yUVPZ0a1DBGd81MdtUuuwuSJYq-E81TJgfYIOqAir820vSzAwLbcvRc9gbrhL9SIlFpis3DY_pPARpZiSKlMmj1R2tla19RGoyAaxnga_fPYTkiUo4qat3CHSzH1l6gI5phsR4zHlrW6ka66LFWikx5zYzxalhcjOpwCjMuX2b0IiXVi2Rkzmzky39Z1gK5tdm_r2ixhNpZhWKqQ" 
-               alt="User Profile" class="w-full h-full object-cover">
+               alt="User Profile" class="w-full h-full object-cover transition-transform group-hover:scale-110">
+          <div class="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent pointer-events-none"></div>
         </div>
-        <span class="text-xl font-headline font-extrabold tracking-tighter" :class="isNight ? 'text-white' : 'text-on-surface'">
-          <span class="text-primary italic">Financial</span> Architect
-        </span>
+        <div class="flex flex-col">
+          <span class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/80 mb-0.5 leading-none">Woncheon Finance</span>
+          <h2 class="text-lg font-headline font-extrabold tracking-tight" :class="isNight ? 'text-white' : 'text-slate-900'">
+            원천교회 <span class="text-amber-500">재정부</span><span class="ml-1 text-sm text-amber-500/60 font-medium">†</span>
+          </h2>
+        </div>
       </div>
-      <button class="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 duration-200"
-              :class="isNight ? 'text-rose-400 bg-rose-400/10 hover:bg-rose-400/20' : 'text-rose-500 bg-rose-50 hover:bg-rose-100'"
+      <button class="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 duration-200 border border-slate-200/50 shadow-sm"
+              :class="isNight ? 'text-rose-400 bg-rose-400/10 hover:bg-rose-400/20 border-rose-400/20' : 'text-slate-400 bg-white hover:text-rose-500 hover:bg-rose-50'"
               @click="handleLogout">
         <span class="material-symbols-outlined text-2xl font-bold">logout</span>
       </button>
