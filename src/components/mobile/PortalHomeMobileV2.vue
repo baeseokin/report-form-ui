@@ -12,8 +12,9 @@
         </span>
       </div>
       <button class="w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-95 duration-200"
-              :class="isNight ? 'text-slate-300 bg-slate-800/50 hover:bg-slate-800' : 'text-slate-500 bg-surface-container-low hover:bg-surface-container-high'">
-        <span class="material-symbols-outlined text-2xl">notifications</span>
+              :class="isNight ? 'text-rose-400 bg-rose-400/10 hover:bg-rose-400/20' : 'text-rose-500 bg-rose-50 hover:bg-rose-100'"
+              @click="handleLogout">
+        <span class="material-symbols-outlined text-2xl font-bold">logout</span>
       </button>
     </header>
 
@@ -377,6 +378,20 @@ const saveFavorites = async () => {
     const res = await axios.post('/api/user/favorites', { menus: userFavorites.value });
     if (res.data.success) showEdit.value = false;
   } catch (e) { alert('저장에 실패했습니다.'); }
+};
+
+const handleLogout = async () => {
+  if (!confirm('로그아웃 하시겠습니까?')) return;
+  try {
+    await axios.post("/api/logout", {}, { withCredentials: true });
+    userStore.clearUser();
+    router.push("/login");
+  } catch (e) {
+    console.error('Logout failed', e);
+    // 폴백: 세션 만료 등으로 실패해도 클라이언트 정보는 삭제
+    userStore.clearUser();
+    router.push("/login");
+  }
 };
 
 onMounted(async () => {

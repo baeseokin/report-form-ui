@@ -2,7 +2,7 @@
   <div class="flex h-screen font-nanum" :class="{ 'left-menu-open': isOpen }">
     <!-- ✅ Sidebar (로그인 화면에서는 숨김) -->
     <aside
-      v-if="!isLoginPage"
+      v-if="!isLoginPage && !isMobileViewport()"
       :class="[
         'bg-gray-800 text-white flex flex-col fixed top-0 left-0 h-full z-40 transform transition-transform duration-300 w-64 lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -47,7 +47,7 @@
 
     <!-- ✅ Overlay (Tablet/Mobile 전용, 터치 스크롤 전파 방지, 로그인 화면 제외) -->
     <div
-      v-if="isOpen && !isLoginPage"
+      v-if="isOpen && !isLoginPage && !isMobileViewport()"
       class="fixed inset-0 bg-black/50 z-30 lg:hidden overlay-no-scroll"
       @click="closeSidebar"
     ></div>
@@ -57,7 +57,7 @@
       <!-- 플로팅 책갈피 메뉴: body로 텔레포트하여 최상위 배치, 좌측 고정, 28px 노출 (로그인 시 숨김) -->
       <Teleport to="body">
         <div
-          v-if="!isLoginPage"
+          v-if="!isLoginPage && !isMobileViewport()"
           class="mobile-menu-tab lg:hidden"
           :class="{ 'mobile-menu-tab--open': isOpen }"
           :style="{ top: menuTabTopPx + 'px' }"
