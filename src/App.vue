@@ -69,7 +69,7 @@
             aria-label="메뉴 열기"
             @click="onMenuTabClick"
           >
-            <span class="mobile-menu-tab__label">MENU</span>
+            <span class="material-symbols-outlined text-white text-2xl">menu</span>
           </button>
         </div>
       </Teleport>
@@ -380,19 +380,17 @@ const logout = async () => {
 .mobile-menu-tab__btn {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.25rem;
-  width: 40px;
-  min-width: 40px;
-  height: 72px;
-  padding: 0 6px 0 10px;
-  background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+  justify-content: center;
+  width: 52px;
+  min-width: 52px;
+  height: 52px;
+  background: rgba(79, 70, 229, 0.85); /* Indigo-600 with opacity */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: white;
-  border: none;
-  border-radius: 0 12px 12px 0;
-  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
-  font-size: 0.95rem;
-  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
@@ -403,15 +401,5 @@ const logout = async () => {
   transform: scale(0.98);
 }
 
-/* MENU 글씨 세로 배치 */
-.mobile-menu-tab__label {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  white-space: nowrap;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  padding-right: 2px;
-}
+/* MENU 라벨 삭제됨 */
 </style>
