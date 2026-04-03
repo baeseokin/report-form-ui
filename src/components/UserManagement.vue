@@ -149,6 +149,16 @@
               />
             </label>
 
+            <!-- ✅ 핸드폰번호 추가 -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">핸드폰번호</span>
+              <input
+                v-model="selectedUser.phone"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+                placeholder="예: 01012345678"
+              />
+            </label>
+
             <!-- 부서 -->
             <label class="block">
               <span class="font-semibold text-gray-700">부서</span>
@@ -400,6 +410,7 @@ export default {
         userId: "",
         name: "",
         email: "",
+        phone: "",
         dept: this.departments[0]?.name || "",
         roles: [],
         newPassword: "",
@@ -436,6 +447,7 @@ export default {
           userId: su.userId,
           name: su.name,
           email: su.email,
+          phone: su.phone,
           dept: su.dept,
           roles: Array.isArray(su.roles) ? su.roles : [],
           password: su.newPassword,

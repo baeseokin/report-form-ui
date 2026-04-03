@@ -161,6 +161,15 @@
           </label>
 
           <label class="block text-sm font-semibold text-gray-700">
+            핸드폰번호
+            <input
+              v-model="selectedUser.phone"
+              class="mt-1 w-full mobile-form-control"
+              placeholder="예: 01012345678"
+            />
+          </label>
+
+          <label class="block text-sm font-semibold text-gray-700">
             부서
             <select
               v-model="selectedUser.dept"
@@ -407,6 +416,7 @@ export default {
         userId: "",
         name: "",
         email: "",
+        phone: "",
         dept: this.departments[0]?.name || "",
         roles: [],
         newPassword: "",
@@ -441,6 +451,7 @@ export default {
           userId: su.userId,
           name: su.name,
           email: su.email,
+          phone: su.phone,
           dept: su.dept,
           roles: Array.isArray(su.roles) ? su.roles : [],
           password: su.newPassword,
