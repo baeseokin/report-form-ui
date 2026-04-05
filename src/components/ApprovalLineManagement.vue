@@ -162,7 +162,7 @@
               <tr>
                 <th class="px-3 py-2 border">순서</th>
                 <th class="px-3 py-2 border">결재 역할</th>
-                <th class="px-3 py-2 border">사용자 ID</th>
+                <th class="px-3 py-2 border">결재자</th>
                 <th class="px-3 py-2 border">비고</th>
               </tr>
             </thead>
@@ -174,7 +174,7 @@
               >
                 <td class="px-3 py-2 border text-center font-mono">{{ line.order_no }}</td>
                 <td class="px-3 py-2 border">{{ line.approver_role }}</td>
-                <td class="px-3 py-2 border">{{ line.approver_user_id }}</td>
+                <td class="px-3 py-2 border">{{ getDisplayName(line) }}</td>
                 <td class="px-3 py-2 border">
                   <div class="flex flex-wrap gap-2 justify-end">
                     <button
@@ -361,6 +361,13 @@ async function fetchUsers() {
     console.error(err);
     error.value = "사용자 정보를 불러오지 못했습니다.";
   }
+}
+
+function getDisplayName(line) {
+  const name = line.approver_user_name || line.approverUserName;
+  if (name) return `${line.approver_user_id} (${name})`;
+  const user = userOptions.value.find(u => (u.userId || u.id || u.approver_user_id) === line.approver_user_id);
+  return user?.name ? `${line.approver_user_id} (${user.name})` : line.approver_user_id;
 }
 
 // ✅ 사용자 선택 시 역할 자동 매핑

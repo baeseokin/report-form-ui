@@ -95,7 +95,7 @@
             <div class="flex items-center justify-between gap-2">
               <span class="font-mono text-sm font-semibold text-purple-700">#{{ line.order_no }}</span>
               <span class="text-sm text-gray-700">{{ line.approver_role }}</span>
-              <span class="text-sm text-gray-600 truncate">{{ line.approver_user_id }}{{ (line.approver_user_name || line.approverUserName) ? ` (${line.approver_user_name || line.approverUserName})` : '' }}</span>
+              <span class="text-sm text-gray-600 truncate">{{ getDisplayName(line) }}</span>
             </div>
             <div class="flex flex-wrap gap-1.5 justify-end">
               <button
@@ -360,6 +360,13 @@ async function fetchUsers() {
     console.error(err);
     error.value = "사용자 정보를 불러오지 못했습니다.";
   }
+}
+
+function getDisplayName(line) {
+  const name = line.approver_user_name || line.approverUserName;
+  if (name) return `${line.approver_user_id} (${name})`;
+  const user = userOptions.value.find(u => (u.userId || u.id || u.approver_user_id) === line.approver_user_id);
+  return user?.name ? `${line.approver_user_id} (${user.name})` : line.approver_user_id;
 }
 
 // ✅ 사용자 선택 시 역할 자동 매핑
