@@ -711,7 +711,7 @@ onMounted(async () => {
   const handler = () => {
     if (hideTimerId.value) clearTimeout(hideTimerId.value);
     showActionBar.value = true;
-    hideTimerId.value = setTimeout(() => { showActionBar.value = false; }, 3000);
+    hideTimerId.value = setTimeout(() => { showActionBar.value = false; }, 1500);
   };
   activityHandler.value = handler;
   window.addEventListener("mousemove", handler, { passive: true });
