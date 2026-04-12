@@ -800,11 +800,12 @@ const handleNext = () => {
     showBlockAlert.value = true;
     return; // 진행 중단
   }    
-  if (totalAmount.value === 0) {
-    blockAlertMessage.value = "지출항목을 입력해야 다음으로 이동할 수 있습니다.";
+  const hasZeroAmount = (props.items || []).some(item => item.amount === 0);
+  if (hasZeroAmount) {
+    blockAlertMessage.value = "금액이 0원인 항목이 있습니다. 금액을 입력해 주세요.";
     showBlockAlert.value = true;
     return;
-  }  
+  }
   if (remainingBudget.value < 0) {
     confirmMessage.value = "예산을 초과하였습니다. 반드시 소속 위원장님과 획인 바랍니다.";
     showConfirm.value = true;
