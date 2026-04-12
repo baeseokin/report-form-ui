@@ -120,6 +120,14 @@
             <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
           </button>
           <button
+            @click="attemptEdit(a)"
+            class="p-2 rounded hover:bg-blue-100"
+            :class="{ 'opacity-30 cursor-not-allowed': !(a.author === user?.userName && a.historyCount === 1) }"
+            :title="a.author === user?.userName && a.historyCount === 1 ? '수정' : '수정 불가'"
+          >
+            <img src="/icons/edit.svg" alt="수정" class="w-6 h-6" />
+          </button>
+          <button
             @click="goToReport(a.id)"
             class="p-2 rounded hover:bg-purple-100"
             title="보고서작성"
@@ -305,5 +313,17 @@ const openPreview = async (id) => {
 
 const goToReport = (id) => {
   router.push({ name: "ReportForm", params: { id } });
+};
+
+const editReport = (id) => {
+  router.push({ name: "ReportForm", params: { id }, query: { mode: 'edit' } });
+};
+
+const attemptEdit = (a) => {
+  if (a.author === user.value?.userName && a.historyCount === 1) {
+    editReport(a.id);
+  } else {
+    alert("이미 결재가 진행중인 건은 수정할 수 없습니다.");
+  }
 };
 </script>

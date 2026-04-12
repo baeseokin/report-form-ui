@@ -107,8 +107,10 @@ import axios from "axios";
 import { ref, onMounted, computed, nextTick } from "vue";
 import { useUserStore } from "@/store/userStore";
 import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import ModalAlert from "@/components/ModalAlert.vue";
+
+const route = useRoute();
 
 const props = defineProps([
   "documentType",
@@ -380,7 +382,9 @@ const sendApprovalRequest = async () => {
 
     // API에는 반드시 선택한 부서명 사용 (재정부 등이 다른 부서 선택 시)
     const payloadDeptName = (props.selectedDept && props.selectedDept.trim()) ? props.selectedDept.trim() : userDept.value;
+    const isEdit = route.query.mode === 'edit';
     const data = {
+      id: isEdit ? route.params.id : null,
       documentType: props.documentType,
       deptName: payloadDeptName,
       dept_name: payloadDeptName,
@@ -402,15 +406,20 @@ const sendApprovalRequest = async () => {
     if (!res.data.success) throw new Error("서버 저장 실패");
     const requestId = res.data.id;
 
-    // 첨부파일 업로드
-    if (props.attachedFiles?.length > 0) {
+    // 첨부파일 업로드 및 관리
+    const newFiles = (props.attachedFiles || []).filter(f => !f.isExisting);
+    const existingFileIds = (props.attachedFiles || []).filter(f => f.isExisting).map(f => f.id);
+
+    if (newFiles.length > 0 || isEdit) {
       const formData = new FormData();
       const aliasNames = [];
-      props.attachedFiles.forEach((f) => {
+      newFiles.forEach((f) => {
         formData.append("files", f.file);
         aliasNames.push(f.aliasName || f.name);
       });
       formData.append("aliasNames", JSON.stringify(aliasNames));
+      formData.append("existingFileIds", JSON.stringify(existingFileIds));
+      formData.append("isEdit", isEdit ? "true" : "false");
 
       await axios.post(`/api/approval/${requestId}/files`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -418,8 +427,8 @@ const sendApprovalRequest = async () => {
       });
     }
 
-    // 결재이력 저장
-    if (user.value) {
+    // 결재이력 저장 (신규일 때만)
+    if (user.value && !isEdit) {
       const formData = new FormData();
       formData.append("requestId", requestId);
       formData.append("approver_role", user.value.roles?.[0]?.role_name || "작성자");

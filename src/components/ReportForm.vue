@@ -140,6 +140,7 @@ const BasicInfoTabMobile = defineAsyncComponent(() => import("./mobile/BasicInfo
 const ExpenseTabMobile = defineAsyncComponent(() => import("./mobile/ExpenseTabMobile.vue"));
 const FileAttachTabMobile = defineAsyncComponent(() => import("./mobile/FileAttachTabMobile.vue"));
 const ConfirmTabMobile = defineAsyncComponent(() => import("./mobile/ConfirmTabMobile.vue"));
+const props = defineProps(['id']);
 
 // 반응형 감지
 const isMobile = ref(false);
@@ -296,8 +297,25 @@ onMounted(async () => {
 
       items.value = (data.items || []).map(resolveItemForEdit);
 
-      date.value = new Date().toISOString().slice(0, 10);
-      attachedFiles.value = [];
+      // ✅ 수정 모드(edit)일 때는 원래 날짜 유지, 그 외(복사/작성)는 오늘 날짜
+      if (route.query.mode === 'edit') {
+        date.value = data.request_date?.slice(0, 10);
+      } else {
+        date.value = new Date().toISOString().slice(0, 10);
+      }
+
+      // ✅ 기존 파일 로드
+      if (data.attachedFiles && data.attachedFiles.length > 0) {
+        attachedFiles.value = data.attachedFiles.map(f => ({
+          id: f.id,
+          name: f.file_name,
+          aliasName: f.alias_name || f.file_name,
+          size: f.file_size,
+          isExisting: true
+        }));
+      } else {
+        attachedFiles.value = [];
+      }
     } catch (err) {
       console.error("❌ 보고서 데이터 불러오기 실패:", err);
     }

@@ -90,8 +90,20 @@
         <div
           v-for="(item, idx) in formattedItems"
           :key="item.uuid || idx"
-          class="border rounded-lg p-4 bg-white shadow-sm space-y-3 relative"
+          class="border rounded-lg p-4 shadow-sm space-y-3 relative mb-3 border-l-4"
+          :class="[
+            idx % 2 === 0 ? 'bg-white border-l-blue-400' : 'bg-slate-50/60 border-l-indigo-400'
+          ]"
         >
+          <!-- ✅ 항목 순번 표시 -->
+          <div class="flex items-center justify-between mb-1 pb-2 border-b border-gray-100">
+            <span
+              class="text-xs font-bold px-3 py-1 rounded-full shadow-sm text-white"
+              :class="idx % 2 === 0 ? 'bg-blue-500' : 'bg-indigo-500'"
+            >
+              항목 {{ idx + 1 }}
+            </span>
+          </div>
           <!-- 선택 체크박스 (✅ 첫 로딩/행추가 시 기본 미체크) -->
           <div class="absolute top-2 right-2">
             <input
@@ -204,6 +216,23 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ✅ 하단 행추가/삭제 버튼 추가 (상단과 동일한 스타일 적용) -->
+      <div v-if="isSelectionReady && formattedItems.length > 0" class="flex justify-end gap-2 pt-1 pb-3">
+        <button
+          class="px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200"
+          @click="addRow"
+        >
+          + 행추가
+        </button>
+        <button
+          class="px-3 py-2 text-sm rounded bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+          @click="removeSelected"
+          :disabled="!hasSelected"
+        >
+          행삭제
+        </button>
       </div>
     </div>
 
