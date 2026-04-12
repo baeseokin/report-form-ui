@@ -128,6 +128,14 @@
             <img src="/icons/edit.svg" alt="수정" class="w-6 h-6" />
           </button>
           <button
+            @click="attemptDelete(a)"
+            class="p-2 rounded hover:bg-red-100"
+            :class="{ 'opacity-30 cursor-not-allowed': !(a.author === user?.userName && a.historyCount === 1) }"
+            :title="a.author === user?.userName && a.historyCount === 1 ? '삭제' : '삭제 불가'"
+          >
+            <img src="/icons/trash.svg" alt="삭제" class="w-6 h-6" />
+          </button>
+          <button
             @click="goToReport(a.id)"
             class="p-2 rounded hover:bg-purple-100"
             title="보고서작성"
@@ -324,6 +332,31 @@ const attemptEdit = (a) => {
     editReport(a.id);
   } else {
     alert("이미 결재가 진행중인 건은 수정할 수 없습니다.");
+  }
+};
+
+const attemptDelete = (a) => {
+  if (a.author === user.value?.userName && a.historyCount === 1) {
+    if (confirm("삭제된 데이터는 복원되지 않습니다. 정말로 삭제하시겠습니까?")) {
+      confirmDelete(a.id);
+    }
+  } else {
+    alert("이미 결재가 진행중인 건은 삭제할 수 없습니다.");
+  }
+};
+
+const confirmDelete = async (id) => {
+  try {
+    const res = await axios.delete(`/api/approval/${id}`);
+    if (res.data.success) {
+      alert("삭제되었습니다.");
+      fetchApprovals(currentPage.value);
+    } else {
+      alert("삭제 실패: " + res.data.message);
+    }
+  } catch (err) {
+    console.error("삭제 중 오류 발생:", err);
+    alert("삭제 중 오류가 발생했습니다.");
   }
 };
 </script>
