@@ -98,8 +98,8 @@ import { computed, ref } from "vue";
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   // ✅ 데스크톱과 동일한 한도 props
-  maxFileSizeMB: { type: Number, default: 5 }, // 파일당 최대 (MB)
-  maxTotalSizeMB: { type: Number, default: 20 }, // 총합 최대 (MB)
+  maxFileSizeMB: { type: Number, default: 10 }, // 파일당 최대 (MB)
+  maxTotalSizeMB: { type: Number, default: 50 }, // 총합 최대 (MB)
 });
 
 const emit = defineEmits(["update:modelValue", "prev", "next", "invalid"]);
