@@ -126,7 +126,16 @@
             </td>
             <!-- 금액 -->
             <td class="border p-2 text-right">
-              <input :disabled="!isSelectionReady" type="text" :value="amountMinusOnly[idx] ? '-' : formatCurrencyInput(item.amount)" @input="updateAmount($event, idx)" :data-testid="'row-'+idx+'-amount'" class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400" />
+              <input
+                :disabled="!isSelectionReady"
+                type="text"
+                :value="amountMinusOnly[idx] ? '-' : (amountFocusedIdx === idx && item.amount === 0 ? '' : formatCurrencyInput(item.amount))"
+                @focus="onAmountFocus(idx)"
+                @blur="onAmountBlur(idx)"
+                @input="updateAmount($event, idx)"
+                :data-testid="'row-'+idx+'-amount'"
+                class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400"
+              />
             </td>
           </tr>
           <!-- 합계 -->
@@ -660,6 +669,17 @@ const formatCurrencyInput = (value) => {
 };
 // (-)만 입력한 경우 표시 유지 (Vue :value가 0→"0"으로 덮어쓰는 것 방지)
 const amountMinusOnly = ref({});
+const amountFocusedIdx = ref(null);
+
+const onAmountFocus = (idx) => {
+  amountFocusedIdx.value = idx;
+};
+
+const onAmountBlur = (idx) => {
+  amountFocusedIdx.value = null;
+  amountMinusOnly.value[idx] = false;
+};
+
 const updateAmount = (event, idx) => {
   const str = event.target.value.replace(/\s/g, "");
   // '0' 뒤에 (-) 입력해도 마이너스로 인식 (예: "0-", "0-5" → -5)
