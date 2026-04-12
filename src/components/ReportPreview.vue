@@ -810,6 +810,32 @@ const refreshApprovalData = async () => {
     approvalLines.value = res.data.approvalLine || [];
   } catch (err) { console.error("❌ 결재 이력 갱신 실패:", err); }
 };
+const APPLICANT_ROLES = ["작성자", "회계"];
+
+const getHistoryRecord = (role) => {
+  const history = [...approvalHistory.value].reverse();
+  const sorted = sortedApprovalHistory.value;
+  const firstLineRole = approvalLines.value[0]?.approver_role;
+
+  const result = history.find((h) => {
+    // 1. 역할이 정확히 일치하는 경우 (가장 기본)
+    if (h.approver_role === role) return true;
+    
+    // 2. 첫 번째 결재칸(기안)인데, 이력이 '기안자 전용 역할'이고 시간순 첫 번째인 경우
+    const isApplicantRole = APPLICANT_ROLES.includes(h.approver_role);
+    const isFirstAction = sorted.length > 0 && h.approved_at === sorted[0].approved_at && h.approver_user_id === sorted[0].approver_user_id;
+    if (firstLineRole === role && isApplicantRole && isFirstAction) return true;
+    
+    return false;
+  }) || null;
+
+  // ✅ 재정부 열에는 기안 이력(첫 번째 이력)을 표시하지 않음
+  if (role === "재정부" && result && sorted.length > 0 && result.approved_at === sorted[0].approved_at && result.approver_user_id === sorted[0].approver_user_id) {
+    return null;
+  }
+  return result;
+};
+
 const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; emit("refreshList"); };
 const handleModalClose = () => { showModal.value = false; emit("close"); };
 
@@ -825,12 +851,8 @@ const sortedApprovalHistory = computed(() => {
   });
 });
 
-// ✅ "기안" 뱃지는 시간순 첫 번째 결재(기안자 역할)일 때만 표시
-const firstApplicantIndexInSorted = computed(() =>
-  sortedApprovalHistory.value.findIndex((h) => APPLICANT_ROLES.includes(h.approver_role))
-);
-const isFirstApplicantInHistory = (h, idx) =>
-  APPLICANT_ROLES.includes(h.approver_role) && idx === firstApplicantIndexInSorted.value;
+// ✅ "기안" 뱃지는 시간순 첫 번째 기록일 때 표시
+const isFirstApplicantInHistory = (h, idx) => idx === 0;
 
 const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
 
@@ -845,31 +867,8 @@ const leftTableColumns = computed(() => {
 });
 
 // ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
-const APPLICANT_ROLES = ["재정부", "작성자", "회계"];
 const isApprovedStatus = (s) => s && (String(s).toLowerCase() === "approved" || s === "승인");
 const isRejectedStatus = (s) => s && (String(s).toLowerCase() === "rejected" || s === "반려");
-const getHistoryRecord = (role) => {
-  const history = [...approvalHistory.value].reverse();
-  const firstLineRole = approvalLines.value[0]?.approver_role;
-  const result = history.find((h) => {
-    if (h.approver_role === role) return true;
-    if (firstLineRole === role && APPLICANT_ROLES.includes(h.approver_role)) return true;
-    return false;
-  }) || null;
-  // ✅ 재정부 열에는 첫 번째 결재 데이터(기안)를 표시하지 않음
-  if (role === "재정부" && result) {
-    const firstIdx = firstApplicantIndexInSorted.value;
-    if (firstIdx >= 0) {
-      const firstApplicant = sortedApprovalHistory.value[firstIdx];
-      const isSameRecord =
-        firstApplicant &&
-        firstApplicant.approved_at === result.approved_at &&
-        firstApplicant.approver_user_id === result.approver_user_id;
-      if (isSameRecord) return null;
-    }
-  }
-  return result;
-};
 const getSignature = (role) => getHistoryRecord(role)?.signature_path || null;
 const getComment = (role) => getHistoryRecord(role)?.comment || null;
 const getSignatureUrl = (role) => {
