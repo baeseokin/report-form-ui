@@ -105,19 +105,19 @@
                 <img src="/icons/edit.svg" alt="수정" class="w-6 h-6" />
               </button>
               <button
+                @click="goToReport(a.id)"
+                class="p-2 rounded-lg hover:bg-purple-100 transition"
+                title="복사하기"
+              >
+                <img src="/icons/copy.svg" alt="복사하기" class="w-6 h-6" />
+              </button>
+              <button
                 @click="attemptDelete(a)"
                 class="p-2 rounded-lg hover:bg-red-100 transition"
                 :class="{ 'opacity-30 cursor-not-allowed': !(a.author === user?.userName && a.historyCount === 1) }"
                 :title="a.author === user?.userName && a.historyCount === 1 ? '삭제' : '삭제 불가'"
               >
                 <img src="/icons/trash.svg" alt="삭제" class="w-6 h-6" />
-              </button>
-              <button
-                @click="goToReport(a.id)"
-                class="p-2 rounded-lg hover:bg-purple-100 transition"
-                title="보고서작성"
-              >
-                <img src="/icons/report.svg" alt="보고서작성" class="w-6 h-6" />
               </button>
             </td>
           </tr>
