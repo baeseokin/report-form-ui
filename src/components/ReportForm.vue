@@ -33,6 +33,7 @@
         v-model:documentType="documentType"
         v-model:selectedDept="selectedDept"
         v-model:author="author"
+        v-model:payee="payee"
         v-model:date="date"
         v-model:aliasName="aliasName"
         :dept-data="deptData"
@@ -67,6 +68,7 @@
         :document-type="documentType"
         :selected-dept="selectedDept"
         :author="author"
+        :payee="payee"
         :date="date"
         :total-amount="totalAmount"
         :selected-gwan="selectedGwan"
@@ -159,6 +161,7 @@ const selectedDept = ref("");
 const selectedGwan = ref("");
 const selectedHang = ref("");
 const author = ref("");
+const payee = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
 const deptData = ref({}); // ✅ 서버에서 가져올 dept+계정 데이터
@@ -182,6 +185,7 @@ onMounted(async () => {
   }
   if (!author.value && user.value?.userName) {
     author.value = user.value.userName;
+    if (!payee.value) payee.value = user.value.userName;
   }
   try {
     const deptRes = await axios.get("/api/departments");
@@ -290,6 +294,7 @@ onMounted(async () => {
       selectedDept.value = data.dept_name;
       // ✅ 작성자는 원본 작성자가 아닌 현재 로그인 사용자로 채움
       author.value = user.value?.userName || data.author;
+      payee.value = data.payee || author.value;
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
       selectedGwan.value = data.selectedGwan;
@@ -413,6 +418,7 @@ const generateReport = (previewData) => {
     documentType: documentType.value,
     deptName: previewData.deptName,
     author: author.value,
+    payee: payee.value,
     date: date.value,
     totalAmount: totalAmount.value,
     aliasName: aliasName.value,

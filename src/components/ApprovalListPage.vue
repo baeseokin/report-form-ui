@@ -184,6 +184,7 @@ const openDetail = async (row) => {
     documentType: data.document_type,
     deptName: data.dept_name,
     author: data.author,
+    payee: data.payee,
     date: data.request_date,
     totalAmount: data.total_amount,
     comment: data.comment,

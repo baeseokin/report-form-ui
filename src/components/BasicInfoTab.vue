@@ -26,9 +26,9 @@
       </div>
     </div>
 
-    <!-- 부서명 / 작성자 / 제출일자 -->
-    <div class="grid grid-cols-3 gap-4">
-      <!-- ✅ 부서 선택: 재정부/관리자 권한 시 전체 부서 선택 가능, 그 외는 본인 부서만 비활성 -->
+    <!-- 부서명 / 작성자 / 영수인 / 제출일자 -->
+    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+      <!-- ✅ 부서 선택 -->
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">부서명</label>
         <select
@@ -51,6 +51,18 @@
           :value="author"
           disabled
           class="w-full border p-3 rounded-lg shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+        />
+      </div>
+
+      <!-- 영수인 -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">영수인</label>
+        <input
+          type="text"
+          :value="payee"
+          @input="$emit('update:payee', $event.target.value)"
+          placeholder="영수인 성명 입력"
+          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
         />
       </div>
 
@@ -102,6 +114,7 @@ import { storeToRefs } from "pinia";
 const props = defineProps([
   "selectedDept",
   "author",
+  "payee",
   "date",
   "deptData",
   "documentType",
@@ -111,6 +124,7 @@ const props = defineProps([
 const emits = defineEmits([
   "update:selectedDept",
   "update:author",
+  "update:payee",
   "update:date",
   "update:documentType",
   "update:aliasName",
@@ -145,9 +159,6 @@ const departmentOptions = computed(() => {
 });
 
 onMounted(async () => {
-  if (user.value?.userName) {
-    emits("update:author", user.value.userName);
-  }
   try {
     const res = await axios.get("/api/departments");
     const list = (res.data || []).slice().sort((a, b) => (a.dept_name || "").localeCompare(b.dept_name || ""));

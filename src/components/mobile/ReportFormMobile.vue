@@ -23,6 +23,7 @@
         v-model:documentType="documentType"
         v-model:selectedDept="selectedDept"
         v-model:author="author"
+        v-model:payee="payee"
         v-model:date="date"
         v-model:aliasName="aliasName"
         :dept-data="deptData"
@@ -55,6 +56,7 @@
         :document-type="documentType"
         :selected-dept="selectedDept"
         :author="author"
+        :payee="payee"
         :date="date"
         :total-amount="totalAmount"
         :selected-gwan="selectedGwan"
@@ -102,6 +104,7 @@ const selectedDept = ref("");
 const selectedGwan = ref("");
 const selectedHang = ref("");
 const author = ref("");
+const payee = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
 const deptData = ref({});
@@ -217,6 +220,7 @@ onMounted(async () => {
       documentType.value = data.document_type;
       selectedDept.value = data.dept_name;
       author.value = data.author;
+      payee.value = data.payee || "";
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
       selectedGwan.value = data.selectedGwan;
@@ -276,6 +280,7 @@ const generateReport = () => {
     documentType: documentType.value,
     deptName: selectedDept.value,
     author: author.value,
+    payee: payee.value,
     date: date.value,
     totalAmount: totalAmount.value,
     aliasName: aliasName.value,

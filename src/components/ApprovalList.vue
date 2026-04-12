@@ -265,6 +265,7 @@ const openPreview = async (id) => {
       documentType: res.data.document_type,
       deptName: res.data.dept_name,
       author: res.data.author,
+      payee: res.data.payee,
       date: res.data.request_date,
       totalAmount: res.data.total_amount,
       comment: res.data.comment,

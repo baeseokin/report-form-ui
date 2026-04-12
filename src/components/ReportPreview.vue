@@ -206,7 +206,7 @@
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
           {{ formatDate(report.date) }}<br />
-          영수인 성명 : {{ report.author }}
+          영수인 성명 : {{ report.payee || report.author }}
         </div>
       </div>
 

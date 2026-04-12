@@ -5,6 +5,7 @@
       <p><strong>청구 유형:</strong> {{ documentType }}</p>
       <p><strong>부서명:</strong> {{ props.selectedDept?.trim() || user?.deptName || '—' }}</p>
       <p><strong>작성자:</strong> {{ author }}</p>
+      <p><strong>영수인:</strong> {{ payee }}</p>
       <p><strong>제출일자:</strong> {{ date }}</p>
       <p><strong>계정명:</strong> {{ gwanName }} / {{ hangName }}</p>
       <p><strong>청구총액:</strong> ₩{{ Number(totalAmount || 0).toLocaleString() }}</p>
@@ -115,6 +116,7 @@ const route = useRoute();
 const props = defineProps([
   "documentType",
   "author",
+  "payee",
   "date",
   "totalAmount",
   "comment",
@@ -164,6 +166,7 @@ const generatePreview = () => {
     documentType: props.documentType,
     deptName: userDept.value,
     author: props.author,
+    payee: props.payee,
     date: props.date,
     totalAmount: props.totalAmount,
     comment: props.comment,
@@ -381,6 +384,7 @@ const sendApprovalRequest = async () => {
       deptName: payloadDeptName,
       dept_name: payloadDeptName,
       author: props.author,
+      payee: props.payee,
       userId: user.value.userId,
       date: props.date,
       totalAmount: props.totalAmount,
