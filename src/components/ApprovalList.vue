@@ -149,12 +149,41 @@
       :report="previewReport"
       @close="previewReport = null"
     />
+
+    <!-- ✅ 커스텀 Alert 모달 -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="alertModal.visible" class="al-overlay" @click.self="alertModal.close()">
+          <div class="al-box">
+            <p class="al-msg">{{ alertModal.message }}</p>
+            <div class="al-actions">
+              <button class="al-ok" @click="alertModal.close()">확인</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ✅ 커스텀 Confirm 모달 -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="confirmModal.visible" class="al-overlay" @click.self="confirmModal.resolve(false)">
+          <div class="al-box">
+            <p class="al-msg">{{ confirmModal.message }}</p>
+            <div class="al-actions">
+              <button class="al-cancel" @click="confirmModal.resolve(false)">취소</button>
+              <button class="al-ok" @click="confirmModal.resolve(true)">확인</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, reactive } from "vue";
 import axios from "axios";
 import { defineAsyncComponent } from 'vue';
 const ReportPreview = defineAsyncComponent(() => import ("./ReportPreview.vue"));
@@ -290,21 +319,50 @@ const editReport = (id) => {
   router.push({ name: "ReportForm", params: { id }, query: { mode: 'edit' } });
 };
 
+// ─── 커스텀 Alert 모달 ────────────────────────────────────────
+const alertModal = reactive({
+  visible: false,
+  message: "",
+  close() { this.visible = false; },
+});
+
+function showAlert(message) {
+  alertModal.message = message;
+  alertModal.visible = true;
+}
+
+// ─── 커스텀 Confirm 모달 ──────────────────────────────────────
+const confirmModal = reactive({ visible: false, message: "", resolve: null });
+
+function showConfirm(message) {
+  return new Promise((resolve) => {
+    confirmModal.message = message;
+    confirmModal.visible = true;
+    confirmModal.resolve = (result) => {
+      confirmModal.visible = false;
+      confirmModal.resolve = null;
+      resolve(result);
+    };
+  });
+}
+
+// ─── 수정 / 삭제 ──────────────────────────────────────────────
 const attemptEdit = (a) => {
   if (a.author === user.value?.userName && a.historyCount === 1) {
     editReport(a.id);
   } else {
-    alert("이미 결재가 진행중인 건은 수정할 수 없습니다.");
+    showAlert("이미 결재가 진행중인 건은 수정할 수 없습니다.");
   }
 };
 
-const attemptDelete = (a) => {
+const attemptDelete = async (a) => {
   if (a.author === user.value?.userName && a.historyCount === 1) {
-    if (confirm("삭제된 데이터는 복원되지 않습니다. 정말로 삭제하시겠습니까?")) {
+    const confirmed = await showConfirm("삭제된 데이터는 복원되지 않습니다.\n정말로 삭제하시겠습니까?");
+    if (confirmed) {
       confirmDelete(a.id);
     }
   } else {
-    alert("이미 결재가 진행중인 건은 삭제할 수 없습니다.");
+    showAlert("이미 결재가 진행중인 건은 삭제할 수 없습니다.");
   }
 };
 
@@ -312,14 +370,14 @@ const confirmDelete = async (id) => {
   try {
     const res = await axios.delete(`/api/approval/${id}`);
     if (res.data.success) {
-      alert("삭제되었습니다.");
+      showAlert("삭제되었습니다.");
       fetchApprovals(currentPage.value);
     } else {
-      alert("삭제 실패: " + res.data.message);
+      showAlert("삭제 실패: " + res.data.message);
     }
   } catch (err) {
     console.error("삭제 중 오류 발생:", err);
-    alert("삭제 중 오류가 발생했습니다.");
+    showAlert("삭제 중 오류가 발생했습니다.");
   }
 };
 </script>
@@ -332,4 +390,69 @@ table td, table th {
   padding-bottom: 0.25rem;
   vertical-align: middle;
 }
+
+/* ─── 공통 모달 오버레이 ──────────────────────────── */
+.al-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.al-box {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+  padding: 28px 32px 22px;
+  min-width: 300px;
+  max-width: 400px;
+  text-align: center;
+  animation: alPop 0.18s ease-out;
+}
+@keyframes alPop {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.al-msg {
+  font-size: 0.97rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.65;
+  margin-bottom: 20px;
+  white-space: pre-line;
+}
+.al-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.al-cancel {
+  padding: 8px 24px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.al-cancel:hover { background: #f3f4f6; }
+.al-ok {
+  padding: 8px 24px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.12s;
+  border: none;
+}
+.al-ok:hover { opacity: 0.88; }
+
+.modal-fade-enter-active, .modal-fade-leave-active { transition: opacity 0.18s ease; }
+.modal-fade-enter-from, .modal-fade-leave-to { opacity: 0; }
 </style>

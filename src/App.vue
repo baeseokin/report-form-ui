@@ -228,6 +228,7 @@ const allMenus = [
   { label: "지출결의서 작성", path: "/reportForm", icon: "📝" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
+  { label: "재정부 일괄결재", path: "/bulkApproval", icon: "🗂️" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
   { label: "예산 관리", path: "/budgets", icon: "💰" }, 
   { label: "예산집행 현황", path: "/budgetStatus", icon: "🏛" },

@@ -75,6 +75,9 @@ const BoardManagement = () =>
     ? import("../components/mobile/BoardManagementMobile.vue")
     : import("../components/BoardManagement.vue");
 
+// ✅ 재정부 전용 일괄결재 (PC 전용)
+const BulkApprovalPage = () => import("../components/BulkApprovalPage.vue");
+
 const routes = [
   { path: "/", redirect: "/portal" },
   { path: "/login", component: Login },
@@ -94,6 +97,9 @@ const routes = [
   { path: "/userManagement", component: UserManagement, meta: { menuName: "사용자 관리" } },
   { path: "/roleAccess", component: RoleAccess, meta: { menuName: "권한 관리" } },
   { path: "/approval-lines", component: ApprovalLineManagement, meta: { menuName: "결재선 관리" } },
+
+  // ✅ 재정부 전용 일괄결재
+  { path: "/bulkApproval", component: BulkApprovalPage, meta: { menuName: "재정부 일괄결재" } },
 
   // ✅ 계정과목 / 예산 / 예산집행 현황
   { path: "/accountCategories", component: AccountCategoriesGrid, meta: { menuName: "계정과목 관리" } },
