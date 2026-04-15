@@ -11,26 +11,24 @@
     <!-- ✅ 본문 (재정부만) -->
     <template v-else>
 
-      <!-- ─── 검색 필터 ─────────────────────────────── -->
-      <div class="filter-bar">
-        <div class="filter-group">
-          <label>청구 시작일</label>
-          <input type="date" v-model="search.startDate" class="filter-input" />
+      <!-- ⬛ 1단계: 처리 대기 (ready) -->
+      <div v-if="currentStage === 'ready'" class="main-layout fade-in">
+        <!-- ─── 검색 필터 ─────────────────────────────── -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label>청구 시작일</label>
+            <input type="date" v-model="search.startDate" class="filter-input" />
+          </div>
+          <div class="filter-group">
+            <label>청구 종료일</label>
+            <input type="date" v-model="search.endDate" class="filter-input" />
+          </div>
+          <div class="filter-group">
+            <label>부서명</label>
+            <input type="text" v-model="search.deptName" placeholder="전체" class="filter-input w-32" />
+          </div>
+          <button @click="page = 1; fetchList()" class="btn-search">🔍 조회</button>
         </div>
-        <div class="filter-group">
-          <label>청구 종료일</label>
-          <input type="date" v-model="search.endDate" class="filter-input" />
-        </div>
-        <div class="filter-group">
-          <label>부서명</label>
-          <input type="text" v-model="search.deptName" placeholder="전체" class="filter-input w-32" />
-        </div>
-        <button @click="page = 1; fetchList()" class="btn-search">🔍 조회</button>
-      </div>
-
-      <!-- ─── 메인 2-칼럼 레이아웃 ────────────────── -->
-      <div class="main-layout">
-
         <!-- ◀ 좌측: 결재 목록 -->
         <section class="list-panel">
           <div class="panel-header">
@@ -55,7 +53,7 @@
                   <th>작성자</th>
                   <th>청구일</th>
                   <th>금액</th>
-                  <th class="col-action"></th>
+                  <th class="col-action">상세</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,12 +76,15 @@
                   <td>{{ row.author }}</td>
                   <td>{{ formatDate(row.request_date) }}</td>
                   <td class="text-right pr-2">{{ Math.floor(row.total_amount).toLocaleString() }}</td>
-                  <!-- ✅ 건별 결재 버튼 -->
+                  <!-- ✅ 건별 상세보기 버튼 -->
                   <td class="text-center" @click.stop>
                     <button
                       @click.stop="openPreview(row)"
-                      class="btn-row-detail"
-                    >결재</button>
+                      class="p-2 rounded-lg hover:bg-green-100 transition"
+                      title="상세보기"
+                    >
+                      <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
+                    </button>
                   </td>
                 </tr>
                 <tr v-if="rows.length === 0">
@@ -113,13 +114,6 @@
           <!-- 선택 항목 요약 -->
           <div class="selected-summary" v-if="selectedIds.size > 0">
             <p class="summary-label">선택된 {{ selectedIds.size }}건에 동일 서명·의견이 적용됩니다.</p>
-            <ul class="summary-list">
-              <li v-for="row in selectedRows" :key="row.id">
-                <span class="tag-dept">{{ row.dept_name }}</span>
-                {{ row.document_type }} — {{ row.author }}
-                <span class="text-gray-400 text-xs">({{ formatDate(row.request_date) }})</span>
-              </li>
-            </ul>
           </div>
           <div v-else class="empty-sign">
             <span class="text-4xl">☑️</span>
@@ -136,7 +130,6 @@
             </div>
           </div>
 
-          <!-- ✅ 결재의견 — sign-section 과 동일한 padding -->
           <div class="sign-section mt-4" :class="{ 'opacity-40 pointer-events-none': selectedIds.size === 0 }">
             <label class="sign-label">결재의견 <span class="text-gray-400 font-normal text-xs">(선택)</span></label>
             <textarea
@@ -149,12 +142,10 @@
 
           <!-- 액션 버튼 -->
           <div class="action-buttons" :class="{ 'opacity-40 pointer-events-none': selectedIds.size === 0 }">
-            <button @click="printAll" class="btn-print">🖨️ 프린트</button>
-            <button @click="downloadAllPDF" class="btn-pdf">📄 PDF 저장</button>
-            <button @click="submitBulkApproval" class="btn-approve" :disabled="submitting">
-              <span v-if="submitting" class="animate-spin mr-1">⏳</span>
-              <span v-else>✅</span>
-              {{ submitting ? '처리중...' : '일괄 이관처리' }}
+            <button @click="submitBulkApproval" class="btn-approve-main" :disabled="submitting">
+              <span v-if="submitting" class="animate-spin mr-2">⏳</span>
+              <span v-else class="mr-2">🚀</span>
+              {{ submitting ? '처리중...' : '일괄 이관처리 및 출력' }}
             </button>
           </div>
 
@@ -166,6 +157,46 @@
             </div>
           </div>
         </section>
+      </div>
+
+      <!-- ⬛ 2단계: 처리 결과 및 일괄 출력 (completed) -->
+      <div v-else-if="currentStage === 'completed'" class="success-layout fade-in">
+        <div class="success-card">
+          <div class="success-header">
+            <h2 class="success-title">일괄 이관 처리가 완료되었습니다!</h2>
+            <p class="success-subtitle">이제 아래 항목들을 한번에 프린트할 수 있습니다.</p>
+          </div>
+
+          <div class="result-list-wrap">
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th>부서</th>
+                  <th>유형</th>
+                  <th>작성자</th>
+                  <th>청구일</th>
+                  <th>금액</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in lastProcessedItems" :key="row.id">
+                  <td>{{ row.dept_name }}</td>
+                  <td>{{ row.document_type }}</td>
+                  <td>{{ row.author }}</td>
+                  <td>{{ formatDate(row.request_date) }}</td>
+                  <td class="text-right font-semibold">{{ Math.floor(row.total_amount).toLocaleString() }} 원</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="result-actions">
+            <div class="flex gap-4 w-full justify-center mb-8">
+              <button @click="printProcessedAll" class="btn-print-lg">🖨️ 일괄 프린트</button>
+            </div>
+            <button @click="resetStage" class="btn-back">🔙 처음으로 돌아가기 (목록)</button>
+          </div>
+        </div>
       </div>
 
     </template>
@@ -203,7 +234,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, defineAsyncComponent } from "vue";
+import { ref, computed, reactive, onMounted, defineAsyncComponent, nextTick } from "vue";
 import { useUserStore } from "@/store/userStore";
 import axios from "axios";
 
@@ -236,6 +267,33 @@ const search = reactive({
 const rows = ref([]);
 const page = ref(1);
 const totalPages = ref(1);
+
+const currentStage = ref("ready"); // "ready" | "completed"
+const lastProcessedItems = ref([]);
+const currentSignatureData = ref(null); // 처리된 건용 서명 보관
+
+const resetStage = async () => {
+  const lastSign = currentSignatureData.value; // 이전 단계에서 사용한 서명 백업
+  currentStage.value = "ready";
+  lastProcessedItems.value = [];
+  selectedIds.value = new Set();
+  bulkComment.value = "";
+
+  // 캔버스가 다시 마운트될 때까지 대기
+  await nextTick();
+  initCanvas(true); // 캔버스 초기화 (기본 서명 로드는 수동 제어)
+
+  if (lastSign) {
+    // 방금 사용한 서명이 있다면 복원
+    await drawImageToCanvas(lastSign);
+    currentSignatureData.value = null; // 복원 완료 후 초기화
+  } else {
+    // 없으면 기본 서명 로드
+    loadDefaultSignature();
+  }
+
+  fetchList();
+};
 
 // ─── 목록 조회 ────────────────────────────────────────────────
 const fetchList = async () => {
@@ -483,50 +541,31 @@ const submitBulkApproval = async () => {
     progress.done++;
   }
 
+  // ✅ 스테이지 전환 전, 현재 서명 데이터를 보관 (캔버스가 unmount 되기 전)
+  currentSignatureData.value = getSignatureDataURL();
+
   if (wasCleared.value && didRedrawAfterClear.value) await saveDefaultSignature();
 
   submitting.value = false;
-  showToast(failIds.length === 0 ? `✅ ${successCount}건 일괄 이관 완료!` : `⚠️ ${successCount}건 성공, ${failIds.length}건 실패`);
 
-  selectedIds.value = new Set();
+  if (successCount > 0) {
+    // 성공한 항목들 따로 보관하여 2단계에서 출력 가능하게 함
+    lastProcessedItems.value = rows.value.filter(r =>
+      selectedIds.value.has(r.id) && !failIds.includes(r.id)
+    );
+    currentStage.value = "completed";
+    showToast(`✅ ${successCount}건 처리 완료! 출력 단계로 이동합니다.`);
+  } else {
+    showToast(`❌ 처리에 실패했습니다.`);
+  }
   progress.done = 0;
   progress.total = 0;
-  await fetchList();
 };
 
-// ─── 상세 로드 ────────────────────────────────────────────────
-async function fetchDetail(id) {
-  const res = await fetch(`/api/approval/detail/${id}`, { credentials: "include" });
-  return await res.json();
-}
-
-// ─── Account categories ────────────────────────────────────────
-const categories = ref([]);
-async function loadCategories() {
-  try {
-    const res = await axios.get("/api/accountCategories");
-    categories.value = res.data.categories || [];
-  } catch (_) {}
-}
-function getCatName(code) {
-  if (!code) return "";
-  const f = categories.value.find(c => c.category_id === code);
-  return f ? f.category_name : code;
-}
-
-// ─── 서명 DataURL ─────────────────────────────────────────────
-function getSignatureDataURL() {
-  const el = signaturePad.value;
-  return el ? el.toDataURL("image/png") : null;
-}
-
-// ========================================================
-// ✅ 프린트/PDF — ReportPreview 와 동일한 CSS/HTML 구조 사용
-// ========================================================
-
-/**
- * ReportPreview.vue 의 generatePDF 에서 사용하는 것과 동일한 CSS 문자열
- * (scoped 스타일을 인라인으로 재현)
+/*
+ * ========================================================
+ * ✅ 프린트/PDF — ReportPreview 와 동일한 CSS/HTML 구조 사용
+ * ========================================================
  */
 const PDF_CSS = `
   @font-face {
@@ -543,7 +582,7 @@ const PDF_CSS = `
     color-adjust: exact !important;
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    font-family: "Nanum Barun Gothic", "Malgun Gothic", "Apple SD Gothic Neo", "AppleGothic", "Noto Sans KR", sans-serif;
     font-size: 14pt;
     color: #111;
     background: #fff;
@@ -558,18 +597,19 @@ const PDF_CSS = `
     background: white;
     box-sizing: border-box;
     page-break-after: always;
+    position: relative;
   }
   .page:last-child { page-break-after: auto; }
 
   /* 제목 */
-  .title-lg { font-size: 20pt; font-weight: 800; text-align: center; margin-bottom: 24px; margin-top: 16px; }
-  .title-md { font-size: 16pt; font-weight: 700; margin: 16px 0 12px; }
+  .title-lg { font-size: 20pt; font-weight: 800; text-align: center; margin-bottom: 24px; margin-top: 16px; color: #1f2937; }
+  .title-md { font-size: 16pt; font-weight: 700; margin: 24px 0 16px; display: flex; align-items: center; color: #1f2937; }
 
   /* 결재란 영역 */
   .approval-wrapper {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     overflow: hidden;
   }
   .approval-table-left {
@@ -594,9 +634,10 @@ const PDF_CSS = `
   }
   .approval-table-left thead th,
   .approval-table-right thead th {
-    background: #ede9fe;
+    background: #f3e8ff !important; /* bg-purple-100 */
+    color: #374151; /* text-gray-700 */
     font-size: 10pt;
-    height: 28px;
+    height: 32px;
   }
   .sign-row td { height: 100px; }
   .sign-img {
@@ -613,16 +654,22 @@ const PDF_CSS = `
   .info-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
   .info-table td {
     border: 1px solid #d1d5db;
-    padding: 5px 10px;
-    height: 3rem;
+    padding: 5px 12px;
+    height: 2.6rem;
     vertical-align: middle;
-    font-size: 0.9em;
+    font-size: 0.95em;
   }
-  .info-label { background: #dbeafe; font-weight: bold; width: 130px; text-align: center; }
+  .info-label { 
+    background: #dbeafe !important; /* bg-blue-100 */
+    font-weight: bold; 
+    width: 200px; 
+    text-align: center; 
+    color: #1f2937;
+  }
 
   /* 지출내역 테이블 */
   .expense-table {
@@ -634,22 +681,30 @@ const PDF_CSS = `
   .expense-table th, .expense-table td {
     border: 1px solid #d1d5db;
     padding: 3px 5px;
-    height: 3rem;
+    height: 2.6rem;
     vertical-align: middle;
     text-align: center;
     font-size: 0.875em;
   }
-  .expense-table thead { background: #dbeafe; }
-  .expense-table .detail-col { width: 45%; text-align: left; padding-left: 12px; }
-  .expense-table .amount-col { text-align: right; padding-right: 10px; }
-  .expense-table .total-row { background: #dbeafe; font-weight: bold; }
+  .expense-table thead th { 
+    background: #dbeafe !important; /* bg-blue-100 */
+    color: #1f2937;
+    text-align: center !important;
+  }
+  .expense-table td.detail-col { width: 45%; text-align: left; padding-left: 12px; }
+  .expense-table td.amount-col { text-align: right; padding-right: 12px; }
+  .expense-table .total-row td { 
+    background: #dbeafe !important; /* bg-blue-100 */
+    font-weight: bold; 
+  }
 
   /* 영수 문구 */
   .receipt-text {
-    margin-top: 40px;
+    margin-top: 24px;
     text-align: right;
-    font-size: 11pt;
-    line-height: 2;
+    font-size: 15pt;
+    line-height: 1.8;
+    color: #111;
   }
 
   @media print {
@@ -664,7 +719,7 @@ const PDF_CSS = `
     }
     .approval-table-left thead th,
     .approval-table-right thead th {
-      background: #ede9fe !important;
+      background: #f3e8ff !important;
     }
     .info-label {
       background: #dbeafe !important;
@@ -672,7 +727,7 @@ const PDF_CSS = `
     .expense-table thead th {
       background: #dbeafe !important;
     }
-    .expense-table .total-row {
+    .expense-table .total-row td {
       background: #dbeafe !important;
     }
   }
@@ -683,6 +738,8 @@ const PDF_CSS = `
  * 메인 결재 페이지 + 첨부파일 페이지(있는 경우) 모두 포함
  */
 function buildReportHTML(detail, signatureDataURL) {
+  const APPLICANT_ROLES = ["작성자", "회계"];
+  
   const items = (detail.items || []).map(i => ({
     mok: i.mok === "__custom__" ? (i.customMok || "") : getCatName(i.mok),
     semok: i.semok === "__custom__" ? (i.customSemok || "") : getCatName(i.semok),
@@ -692,40 +749,75 @@ function buildReportHTML(detail, signatureDataURL) {
   while (items.length < 8) items.push({ mok: "", semok: "", detail: "", amount: null });
 
   const totalAmount = Number(detail.total_amount || 0).toLocaleString("ko-KR");
-  const requestDate = detail.request_date
-    ? new Date(detail.request_date).toLocaleDateString("ko-KR") : "";
+  const requestDate = detail.request_date ? (() => {
+    const d = new Date(detail.request_date);
+    return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+  })() : "";
 
-  // 결재선
+  // 결재선 및 이력
   const approvalLine = detail.approvalLine || [];
   const approvalHistory = detail.approvalHistory || [];
-
-  const getRecord = (role) =>
-    approvalHistory.slice().reverse().find(h => h.approver_role === role) || null;
-
-  const getSignUrl = (role) => {
-    const rec = getRecord(role);
-    if (!rec?.signature_path) return "";
-    return `/api/files/${encodeURIComponent(rec.signature_path)}`;
-  };
-
-  // 좌측 결재란 컬럼
-  const leftCols = approvalLine.map(line => ({
-    label: line.approver_role === "회계" ? "담당" : line.approver_role,
-    signImg: getSignUrl(line.approver_role)
-      ? `<img src="${getSignUrl(line.approver_role)}" class="sign-img" crossorigin="anonymous" />`
-      : "",
-  }));
-  // 재정부 열 (이번에 이관하는 서명)
-  leftCols.push({
-    label: "재정부",
-    signImg: signatureDataURL ? `<img src="${signatureDataURL}" class="sign-img" />` : "",
+  
+  const sortedHistory = [...approvalHistory].sort((a, b) => {
+    const ta = a.approved_at ? new Date(a.approved_at).getTime() : 0;
+    const tb = b.approved_at ? new Date(b.approved_at).getTime() : 0;
+    return ta - tb;
   });
 
-  const colCount = leftCols.length;
-  const thCells = leftCols.map(c => `<th>${c.label}</th>`).join("");
-  const tdCells = leftCols.map(c => `<td>${c.signImg}</td>`).join("");
+  const getRecord = (role) => {
+    const history = [...approvalHistory].reverse();
+    const firstLineRole = approvalLine[0]?.approver_role;
 
-  const gwanHang = [getCatName(detail.selectedGwan), getCatName(detail.selectedHang)]
+    return history.find((h) => {
+      if (h.approver_role === role) return true;
+      const isApplicantRole = APPLICANT_ROLES.includes(h.approver_role);
+      const isFirstAction = sortedHistory.length > 0 && 
+                           h.approved_at === sortedHistory[0].approved_at && 
+                           h.approver_user_id === sortedHistory[0].approver_user_id;
+      if (firstLineRole === role && isApplicantRole && isFirstAction) return true;
+      return false;
+    }) || null;
+  };
+
+  const getSignCellHtml = (role, forceSignature = null) => {
+    const rec = getRecord(role);
+    const sigPath = forceSignature || rec?.signature_path;
+
+    let imgHtml = "";
+    if (sigPath) {
+      const url = forceSignature ? sigPath : `/api/files/${encodeURIComponent(sigPath)}`;
+      imgHtml = `<img src="${url}" class="sign-img" crossorigin="anonymous" />`;
+    }
+
+    return `<td>${imgHtml}</td>`;
+  };
+
+  // 좌측 결재란 컬럼 (이미 있는 결재선 + 이번에 추가될 재정부)
+  const hasRevenueInHistory = approvalHistory.some(h => h.approver_role === "재정부");
+  const alreadyHasRevenue = approvalLine.some(l => l.approver_role === "재정부");
+  
+  const displayLines = [...approvalLine];
+  if (hasRevenueInHistory && !alreadyHasRevenue) {
+    displayLines.push({ approver_role: "재정부" });
+  } else if (!alreadyHasRevenue) {
+    // 현재 일괄 결재 중이므로 "재정부" 컬럼은 무조건 필요함 (signatureDataURL 이 넘어온 경우)
+    displayLines.push({ approver_role: "재정부" });
+  }
+
+  const thCells = displayLines.map(line => {
+    const label = line.approver_role === "회계" ? "담당" : line.approver_role;
+    return `<th>${label}</th>`;
+  }).join("");
+
+  const tdCells = displayLines.map(line => {
+    // 재정부 열이고 현재 일괄 결재 서명이 있는 경우 그걸 우선 사용
+    const isCurrentRevenueAction = line.approver_role === "재정부" && signatureDataURL;
+    return getSignCellHtml(line.approver_role, isCurrentRevenueAction ? signatureDataURL : null);
+  }).join("");
+
+  const colCount = displayLines.length;
+
+  const gwanHang = [getCatName(detail.selectedGwan || detail.items?.[0]?.gwan), getCatName(detail.selectedHang || detail.items?.[0]?.hang)]
     .filter(Boolean).join(" / ") || "—";
 
   // ── getShrinkStyle (ReportPreview 와 동일한 알고리즘) ──────────
@@ -739,7 +831,6 @@ function buildReportHTML(detail, signatureDataURL) {
     return `font-size:${factor * 0.875}em;white-space:nowrap;text-overflow:clip;`;
   };
 
-  // itemRows — shrink 스타일 적용
   const itemRowsHtml = items.map(item => `
     <tr>
       <td style="${shrinkStyle(item.mok, 14)}">${escHtml(item.mok)}</td>
@@ -748,17 +839,16 @@ function buildReportHTML(detail, signatureDataURL) {
       <td class="amount-col">${item.amount != null && item.amount !== "" ? Number(item.amount).toLocaleString("ko-KR") + " 원" : ""}</td>
     </tr>`).join("");
 
-  // ── 메인 결재 페이지 ─────────────────────────────────────────
   const mainPage = `
 <div class="page">
   <h2 class="title-lg">${escHtml(detail.document_type || "")}</h2>
 
   <div class="approval-wrapper">
-    <table class="approval-table-left" style="--left-col-count:${colCount}">
+    <table class="approval-table approval-table-left" style="--left-col-count:${colCount}">
       <thead><tr>${thCells}</tr></thead>
       <tbody><tr class="sign-row">${tdCells}</tr></tbody>
     </table>
-    <table class="approval-table-right">
+    <table class="approval-table approval-table-right">
       <thead><tr><th>담당</th><th>부장</th><th>위원장</th><th>당회장</th></tr></thead>
       <tbody><tr class="sign-row"><td></td><td></td><td></td><td></td></tr></tbody>
     </table>
@@ -766,22 +856,22 @@ function buildReportHTML(detail, signatureDataURL) {
 
   <table class="info-table">
     <tr>
-      <td class="info-label" style="width:256px;">부서명</td>
+      <td class="info-label">부서명</td>
       <td>${escHtml(detail.dept_name || "")}</td>
     </tr>
     <tr>
-      <td class="info-label" style="width:256px;">관/항</td>
+      <td class="info-label">관/항</td>
       <td>${escHtml(gwanHang)}</td>
     </tr>
   </table>
 
-  <h3 class="title-md">💸 지출내역</h3>
+  <h3 class="title-md">💸 <span style="margin-left:8px;">지출내역</span></h3>
   <table class="expense-table">
     <thead>
       <tr>
-        <th>목</th><th>세목</th>
+        <th style="width:15%">목</th><th style="width:15%">세목</th>
         <th class="detail-col">지출내역</th>
-        <th class="amount-col">금액</th>
+        <th class="amount-col" style="width:25%">금액</th>
       </tr>
     </thead>
     <tbody>
@@ -924,8 +1014,6 @@ function buildReportHTML(detail, signatureDataURL) {
   return mainPage + "\n" + filePagesHTML;
 }
 
-
-
 function escHtml(str) {
   if (!str) return "";
   return String(str)
@@ -935,17 +1023,42 @@ function escHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
+// ─── 상세 로드 ────────────────────────────────────────────────
+async function fetchDetail(id) {
+  const res = await fetch(`/api/approval/detail/${id}`, { credentials: "include" });
+  return await res.json();
+}
 
-/** 선택된 모든 건 상세 로드 후 HTML 조합 */
-async function buildBulkHTML() {
-  const signDataURL = getSignatureDataURL();
+// ─── 계정과목 ──────────────────────────────────────────────────
+const categories = ref([]);
+async function loadCategories() {
+  try {
+    const res = await axios.get("/api/accountCategories");
+    categories.value = res.data.categories || [];
+  } catch (_) {}
+}
+function getCatName(code) {
+  if (!code) return "";
+  const f = categories.value.find(c => c.category_id === code);
+  return f ? f.category_name : code;
+}
+
+// ─── 서명 DataURL ─────────────────────────────────────────────
+function getSignatureDataURL() {
+  const el = signaturePad.value;
+  return el ? el.toDataURL("image/png") : null;
+}
+
+/** 선택된 또는 처리된 모든 건 상세 로드 후 HTML 조합 */
+async function buildBulkHTML(targets) {
+  const signDataURL = currentSignatureData.value || getSignatureDataURL();
   const parts = [];
-  for (const id of selectedIds.value) {
+  for (const item of targets) {
     try {
-      const detail = await fetchDetail(id);
+      const detail = await fetchDetail(item.id);
       parts.push(buildReportHTML(detail, signDataURL));
     } catch (e) {
-      console.error("상세 로드 실패 id:", id, e);
+      console.error("상세 로드 실패 id:", item.id, e);
     }
   }
   return parts.join("\n");
@@ -999,44 +1112,60 @@ async function createPrintIframe(bodyHTML, hidden = true) {
   });
 
   // 레이아웃 안정화 대기
-  await new Promise(r => setTimeout(r, 300));
 
   return iframe;
 }
 
+// ─── 일괄 출력/PDF (2단계 전용) ───────────────────────────────────
 
-/** PDF 일괄 생성 */
-const downloadAllPDF = async () => {
-  if (selectedIds.value.size === 0) { alert("PDF로 저장할 항목을 선택하세요."); return; }
+const printProcessedAll = async () => {
+  if (lastProcessedItems.value.length === 0) return;
+  showToast("⏳ 프린트 준비 중...");
+  const bodyHTML = await buildBulkHTML(lastProcessedItems.value);
+  const iframe = await createPrintIframe(bodyHTML, false);
+  
+  // iframe이 존재하는 동안 프린트 호출
+  await new Promise(r => setTimeout(r, 300));
+  iframe.contentWindow.focus();
+  iframe.contentWindow.print();
+  showToast("🖨️ 프린트 완료!");
+};
 
+const downloadProcessedPDF = async () => {
+  if (lastProcessedItems.value.length === 0) return;
   showToast("⏳ PDF 생성 중...");
+  const bodyHTML = await buildBulkHTML(lastProcessedItems.value);
+  await generateAndSavePDF(bodyHTML, `재정부_일괄결재_${new Date().getTime()}`);
+};
 
+/** ── iframe 생성 + 문서 write 후 이미지 로드 대기 ── */
+/** PDF 저장 로직 통합 */
+async function generateAndSavePDF(bodyHTML, fileName) {
   let iframe = null;
   try {
     const { default: jsPDF } = await import("jspdf");
     const { default: html2canvas } = await import("html2canvas-pro");
 
-    const bodyHTML = await buildBulkHTML();
     iframe = await createPrintIframe(bodyHTML, true);
     const iDoc = iframe.contentDocument || iframe.contentWindow.document;
 
     const pages = iDoc.querySelectorAll(".page");
     const pdf = new jsPDF("p", "mm", "a4");
 
-    const ROW_PX = 45;
+    const ROW_PX = 48; // PDF 보정
     const SIGN_ROW_PX_PDF = 100;
 
     const pdfCSS = `
       .page { width: 794px !important; padding: 40px !important; box-shadow: none !important; border: none !important; }
       table { table-layout: fixed !important; border-collapse: collapse !important; }
-      table:not(.approval-table-left):not(.approval-table-right) { width: 100% !important; }
+      table:not(.approval-table) { width: 100% !important; }
       .approval-table-left { float: left !important; width: calc(var(--left-col-count, 4) * 11%) !important; }
       .approval-table-right { float: right !important; width: 40% !important; }
       .approval-wrapper { display: block !important; overflow: hidden !important; }
       th, td { height: ${ROW_PX}px !important; box-sizing: border-box !important; vertical-align: middle !important; text-align: center !important; padding: 0 5px !important; }
       .sign-row td { height: ${SIGN_ROW_PX_PDF}px !important; }
       .detail-col { text-align: left !important; padding-left: 12px !important; }
-      .amount-col { text-align: right !important; padding-right: 10px !important; }
+      .amount-col { text-align: right !important; padding-right: 12px !important; }
     `;
 
     for (let i = 0; i < pages.length; i++) {
@@ -1091,15 +1220,14 @@ const downloadAllPDF = async () => {
         },
       });
 
-      const img = canvas.toDataURL("image/jpeg", 0.97);
+      const img = canvas.toDataURL("image/jpeg", 0.98);
       const pdfW = pdf.internal.pageSize.getWidth();
       const imgH = (canvas.height * pdfW) / canvas.width;
       if (i > 0) pdf.addPage();
       pdf.addImage(img, "JPEG", 0, 0, pdfW, imgH);
     }
 
-    const now = new Date().toISOString().slice(0, 10);
-    pdf.save(`재정부_일괄결재_${now}.pdf`);
+    pdf.save(`${fileName}.pdf`);
     showToast("✅ PDF 저장 완료!");
   } catch (e) {
     console.error("PDF 생성 오류:", e);
@@ -1107,29 +1235,26 @@ const downloadAllPDF = async () => {
   } finally {
     if (iframe) document.body.removeChild(iframe);
   }
+}
+
+/** 1단계용 PDF 일괄 생성 (현재 미사용이나 유지) */
+const downloadAllPDF = async () => {
+  if (selectedIds.value.size === 0) { alert("PDF로 저장할 항목을 선택하세요."); return; }
+  showToast("⏳ PDF 생성 중...");
+  const bodyHTML = await buildBulkHTML(selectedRows.value);
+  await generateAndSavePDF(bodyHTML, `재정부_일괄결재_${new Date().getTime()}`);
 };
 
-/** 프린트 */
+/** 1단계용 프린트 (현재 미사용이나 유지) */
 const printAll = async () => {
   if (selectedIds.value.size === 0) { alert("프린트할 항목을 선택하세요."); return; }
-
   showToast("⏳ 프린트 준비 중...");
-
-  let iframe = null;
-  try {
-    const bodyHTML = await buildBulkHTML();
-    iframe = await createPrintIframe(bodyHTML, false);
-
-    // iframe이 존재하는 동안 프린트 호출
-    await new Promise(r => setTimeout(r, 300));
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    showToast("🖨️ 프린트 완료!");
-  } catch (e) {
-    console.error("프린트 오류:", e);
-    alert("프린트 중 오류가 발생했습니다.");
-  }
-  // iframe은 남겨둠 (프린트 다이얼로그 유지)
+  const bodyHTML = await buildBulkHTML(selectedRows.value);
+  const iframe = await createPrintIframe(bodyHTML, false);
+  await new Promise(r => setTimeout(r, 300));
+  iframe.contentWindow.focus();
+  iframe.contentWindow.print();
+  showToast("🖨️ 프린트 완료!");
 };
 
 // ─── 마운트 ──────────────────────────────────────────────────
@@ -1141,7 +1266,7 @@ onMounted(async () => {
   }
 });
 
-function initCanvas() {
+function initCanvas(skipDefaultLoad = false) {
   const el = signaturePad.value;
   if (!el) return;
   const ratio = window.devicePixelRatio || 1;
@@ -1154,6 +1279,7 @@ function initCanvas() {
   ctx.lineWidth = 2;
   ctx.lineCap = "round";
 
+  // 기존 리스너가 있을 수 있으므로 정리 (또는 중복 방지 로직 필요하나 v-if 재마운트 시엔 신규 엘리먼트임)
   el.addEventListener("mousedown", startDraw);
   el.addEventListener("mousemove", draw);
   el.addEventListener("mouseup", endDraw);
@@ -1162,7 +1288,9 @@ function initCanvas() {
   el.addEventListener("touchmove", draw, { passive: false });
   el.addEventListener("touchend", endDraw);
 
-  loadDefaultSignature();
+  if (!skipDefaultLoad) {
+    loadDefaultSignature();
+  }
 }
 </script>
 
@@ -1173,6 +1301,7 @@ function initCanvas() {
   flex-direction: column;
   gap: 16px;
   min-height: 100%;
+  padding: 24px;
 }
 
 /* ─── 검색 필터 바 ────────────────────────────────── */
@@ -1186,6 +1315,8 @@ function initCanvas() {
   border-radius: 12px;
   padding: 16px 20px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  max-width: 800px;
+  margin-bottom: 0;
 }
 .filter-group {
   display: flex;
@@ -1193,22 +1324,22 @@ function initCanvas() {
   gap: 4px;
 }
 .filter-group label {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #4b5563; /* text-gray-600 */
 }
 .filter-input {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 7px 10px;
+  padding: 8px 12px;
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 0.15s;
+  transition: all 0.15s;
 }
 .filter-input:focus { border-color: #a78bfa; }
 .btn-search {
-  padding: 8px 18px;
-  background: #6d28d9;
+  padding: 8px 24px;
+  background: #374151;
   color: #fff;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -1216,15 +1347,23 @@ function initCanvas() {
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-search:hover { background: #5b21b6; }
+.btn-search:hover { background: #1f2937; }
 
 /* ─── 메인 2분할 레이아웃 ─────────────────────────── */
 .main-layout {
   display: grid;
   grid-template-columns: 1fr 400px;
-  gap: 20px;
+  grid-template-rows: min-content 1fr;
+  grid-template-areas: 
+    "filter sign"
+    "list sign";
+  column-gap: 20px;
+  row-gap: 20px;
   align-items: start;
 }
+.filter-bar { grid-area: filter; }
+.list-panel { grid-area: list; }
+.sign-panel { grid-area: sign; }
 
 /* ─── 공통 패널 ───────────────────────────────────── */
 .panel-header {
@@ -1269,18 +1408,24 @@ function initCanvas() {
 .list-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 .list-table thead tr {
   background: #ede9fe;
   color: #374151;
 }
-.list-table th, .list-table td {
+.list-table th {
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.list-table td {
   padding: 10px 12px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #f3f4f6;
 }
-.list-table th { font-size: 0.78rem; font-weight: 700; }
 .col-check { width: 36px; }
 .col-action { width: 64px; }
 .list-row {
@@ -1290,19 +1435,7 @@ function initCanvas() {
 .list-row:hover { background: #f5f3ff; }
 .row-selected { background: #ede9fe !important; }
 
-/* ✅ 건별 결재 버튼 */
-.btn-row-detail {
-  padding: 4px 12px;
-  background: #7c3aed;
-  color: #fff;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.12s;
-  white-space: nowrap;
-}
-.btn-row-detail:hover { background: #6d28d9; }
+/* 건별 상세보기 버튼은 Tailwind 인라인 클래스로 처리 */
 
 .pagination {
   display: flex;
@@ -1333,33 +1466,20 @@ function initCanvas() {
   padding-bottom: 20px;
 }
 .selected-summary {
-  padding: 14px 18px;
+  padding: 24px 18px;
   background: #f5f3ff;
   border-bottom: 1px solid #ede9fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
 }
 .summary-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 700;
   color: #7c3aed;
-  margin-bottom: 8px;
-}
-.summary-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 140px;
-  overflow-y: auto;
-}
-.summary-list li { font-size: 0.8rem; color: #374151; }
-.tag-dept {
-  background: #ddd6fe;
-  color: #5b21b6;
-  border-radius: 4px;
-  padding: 1px 6px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  margin-right: 4px;
+  margin: 0;
+  text-align: center;
 }
 .empty-sign {
   display: flex;
@@ -1375,11 +1495,11 @@ function initCanvas() {
   padding: 16px 18px 0;
 }
 .sign-label {
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   font-weight: 700;
   color: #374151;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .sign-canvas {
   width: 100%;
@@ -1401,158 +1521,134 @@ function initCanvas() {
 }
 .btn-clear:hover { background: #e5e7eb; }
 
-/* 액션 버튼 */
+/* ─── 액션 버튼 (1단계) ─────────────────────────── */
 .action-buttons {
   display: flex;
   gap: 10px;
   padding: 16px 18px 0;
   flex-wrap: wrap;
 }
-.btn-approve {
-  flex: 1 1 100%;
-  padding: 11px;
+.btn-approve-main {
+  width: 100%;
+  padding: 16px;
   background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  color: #fff;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: opacity 0.15s;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
 }
-.btn-approve:hover { opacity: 0.9; }
-.btn-approve:disabled { opacity: 0.6; cursor: not-allowed; }
-/* 프린트 버튼 — 다크 그레이 */
-.btn-print {
-  flex: 1;
-  padding: 9px 8px;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
+.btn-approve-main:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35); }
+.btn-approve-main:active { transform: translateY(0); }
+.btn-approve-main:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ─── 결과 화면 (2단계: Success Stage) ────────────────────── */
+.success-layout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  min-height: 600px;
+}
+.success-card {
+  background: #fff;
+  width: 100%;
+  max-width: 800px;
+  border-radius: 24px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+  padding: 48px;
+  border: 1px solid #f3f4f6;
+}
+.success-header {
   text-align: center;
-  transition: opacity 0.15s;
+  margin-bottom: 40px;
+}
+.success-icon { font-size: 4rem; margin-bottom: 16px; }
+.success-title { font-size: 1.8rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+.success-subtitle { color: #6b7280; margin-top: 8px; }
+
+.result-list-wrap {
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.result-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.result-table th { background: #f9fafb; padding: 14px; font-weight: 600; color: #374151; border-bottom: 1px solid #f3f4f6; position: sticky; top: 0; }
+.result-table td { padding: 14px; border-bottom: 1px solid #f3f4f6; color: #4b5563; text-align: center; }
+
+.result-actions { text-align: center; }
+
+.btn-print-lg {
+  padding: 16px 36px;
   background: linear-gradient(135deg, #374151, #1f2937);
-  color: #fff;
-}
-.btn-print:hover { opacity: 0.85; }
-
-/* PDF 저장 버튼 — 레드 (Adobe PDF 컬러) */
-.btn-pdf {
-  flex: 1;
-  padding: 9px 8px;
+  color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 1.1rem;
   cursor: pointer;
-  text-align: center;
-  transition: opacity 0.15s;
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  color: #fff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
 }
-.btn-pdf:hover { opacity: 0.85; }
+.btn-pdf-lg {
+  padding: 16px 36px;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2);
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.btn-print-lg:hover, .btn-pdf-lg:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
+.btn-back {
+  background: none; border: none; color: #9ca3af; font-size: 0.95rem; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; margin-top: 20px;
+}
+.btn-back:hover { color: #4b5563; }
 
-/* 진행 바 */
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ─── 기존 버튼 유틸리티 (필요시) ────────────────── */
+.btn-print, .btn-pdf { flex: 1; padding: 9px 8px; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-align: center; transition: opacity 0.15s; color: #fff; }
+.btn-print { background: linear-gradient(135deg, #374151, #1f2937); }
+.btn-pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.btn-print:hover, .btn-pdf:hover { opacity: 0.85; }
+
+/* ─── 진행 바 ───────────────────────────────────── */
 .progress-bar-wrap { padding: 12px 18px 0; }
 .progress-label { font-size: 0.78rem; color: #6b7280; margin-bottom: 6px; text-align: right; }
-.progress-track {
-  width: 100%;
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 9999px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #7c3aed, #a78bfa);
-  border-radius: 9999px;
-  transition: width 0.3s;
-}
+.progress-track { width: 100%; height: 6px; background: #e5e7eb; border-radius: 9999px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); border-radius: 9999px; transition: width 0.3s; }
 
 /* ─── 토스트 ──────────────────────────────────────── */
-.bulk-toast {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  background: #1f2937;
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-  white-space: nowrap;
-}
+.bulk-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1f2937; color: #fff; padding: 10px 22px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.25); white-space: nowrap; }
 .toast-enter-active, .toast-leave-active { transition: opacity 0.2s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; }
 
 /* ─── 커스텀 Confirm 모달 ─────────────────────────── */
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.confirm-box {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
-  padding: 28px 32px 22px;
-  min-width: 320px;
-  max-width: 420px;
-  text-align: center;
-  animation: confirmPop 0.18s ease-out;
-}
-@keyframes confirmPop {
-  from { opacity: 0; transform: scale(0.93); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.confirm-msg {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1f2937;
-  line-height: 1.6;
-  margin-bottom: 22px;
-  white-space: pre-line;
-}
-.confirm-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-.confirm-cancel {
-  padding: 9px 26px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
-  color: #6b7280;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.12s;
-}
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+.confirm-box { background: #fff; border-radius: 14px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22); padding: 28px 32px 22px; min-width: 320px; max-width: 420px; text-align: center; animation: confirmPop 0.18s ease-out; }
+@keyframes confirmPop { from { opacity: 0; transform: scale(0.93); } to { opacity: 1; transform: scale(1); } }
+.confirm-msg { font-size: 1rem; font-weight: 600; color: #1f2937; line-height: 1.6; margin-bottom: 22px; white-space: pre-line; }
+.confirm-actions { display: flex; justify-content: center; gap: 12px; }
+.confirm-cancel { padding: 9px 26px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f9fafb; color: #6b7280; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.12s; }
 .confirm-cancel:hover { background: #f3f4f6; }
-.confirm-ok {
-  padding: 9px 26px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.12s;
-}
+.confirm-ok { padding: 9px 26px; border-radius: 8px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: opacity 0.12s; }
 .confirm-ok:hover { opacity: 0.88; }
 
 .confirm-fade-enter-active, .confirm-fade-leave-active { transition: opacity 0.18s ease; }

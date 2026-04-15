@@ -75,9 +75,9 @@
       </Teleport>
 
       <!-- 화면 제목 + HELP 버튼 (로그인 페이지 제외) -->
-      <div v-if="helpContent && !isLoginPage" class="flex items-center gap-3 mb-4">
+      <div v-if="pageTitle && !isLoginPage" class="flex items-center gap-3 mb-4">
         <h1 class="text-2xl font-bold text-gray-800">{{ pageTitle }}</h1>
-        <HelpButton :content="helpContent" variant="amber" />
+        <HelpButton v-if="helpContent" :content="helpContent" variant="amber" />
       </div>
 
       <router-view />
