@@ -46,8 +46,19 @@
         <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
           <span class="text-xl">🛤️</span> 결재선
         </h2>
-        <div class="p-5 bg-white border border-gray-100 rounded-xl shadow-sm">
-          <div class="flex flex-col gap-3">
+        <div class="p-5 bg-white border border-gray-100 rounded-xl shadow-sm min-h-[300px] flex flex-col justify-center">
+          <div v-if="user?.deptName === '재정부'" class="flex flex-col items-center justify-center space-y-3 py-10">
+            <div class="bg-green-100 text-green-600 p-3 rounded-full shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span class="text-lg font-extrabold text-green-700">즉시 결재완료</span>
+            <p class="text-xs text-gray-400 text-center leading-relaxed">
+              재정부 사용자의 기안은<br/>별도 승인 없이 즉시 완료됩니다.
+            </p>
+          </div>
+          <div v-else class="flex flex-col gap-3">
             <!-- 1안: 기안자 부서 -->
             <div 
               @click="selectedOption = 'dept'"
@@ -55,7 +66,7 @@
                 'cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden',
                 selectedOption === 'dept' 
                   ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 shadow-md' 
-                  : 'border-gray-100 bg-gray-50 hover:border-indigo-200'
+                  : 'border-gray-50 bg-gray-50 hover:border-indigo-200'
               ]"
             >
               <div class="flex justify-between items-center mb-2">
@@ -93,7 +104,7 @@
                 'cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden',
                 selectedOption === 'owner' 
                   ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 shadow-md' 
-                  : 'border-gray-100 bg-gray-50 hover:border-purple-200'
+                  : 'border-gray-50 bg-gray-50 hover:border-purple-200'
               ]"
             >
               <div class="flex justify-between items-center mb-2">

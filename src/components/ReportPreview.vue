@@ -64,55 +64,55 @@
             <thead class="bg-purple-100 text-gray-700">
               <tr>
                 <th
-                  v-for="line in leftTableColumns"
+                  v-for="(line, idx) in leftTableColumns"
                   :key="`h-${line.id || line.approver_role}`"
                   class="border"
                 >
-                  {{ line.approver_role === "회계" ? "담당" : line.approver_role }}
+                  {{ (idx === 0 || line.approver_role === "회계") ? "담당" : line.approver_role }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr class="sign-row">
                 <td
-                  v-for="line in leftTableColumns"
+                  v-for="(line, idx) in leftTableColumns"
                   :key="`c-${line.id || line.approver_role}`"
                   class="border relative"
                 >
                   <div class="flex flex-col items-center justify-center">
                     <!-- ✅ 서명 이미지 -->
                     <img
-                      v-if="getSignature(line.approver_role)"
-                      :src="getSignatureUrl(line.approver_role)"
+                      v-if="getSignature(line.approver_role, idx)"
+                      :src="getSignatureUrl(line.approver_role, idx)"
                       class="signature-img"
                     />
                     <!-- ✅ 상태 뱃지 -->
                     <div class="inline-flex items-center mt-2">
                       <span
-                        v-if="getStatus(line.approver_role)"
+                        v-if="getStatus(line.approver_role, idx)"
                         :class="[
                           'status-badge no-print inline-flex items-center justify-center',
-                          getStatus(line.approver_role) === '이관' ? 'status-badge-transfer' : ''
+                          getStatus(line.approver_role, idx) === '이관' ? 'status-badge-transfer' : ''
                         ]"
                       >
                         <img
-                          v-if="getStatus(line.approver_role) === '기안'"
+                          v-if="getStatus(line.approver_role, idx) === '기안'"
                           src="/icons/draft.svg"
                           alt="Draft"
                           class="h-6 w-auto"
                         />
                         <span
-                          v-else-if="getStatus(line.approver_role) === '이관'"
+                          v-else-if="getStatus(line.approver_role, idx) === '이관'"
                           class="inline-flex items-center justify-center text-xs font-semibold leading-none"
                         >이관</span>
                         <img
-                          v-else-if="getStatus(line.approver_role) === '승인'"
+                          v-else-if="getStatus(line.approver_role, idx) === '승인'"
                           src="/icons/approved.svg"
                           alt="Approved"
                           class="h-6 w-auto"
                         />
                         <img
-                          v-else-if="getStatus(line.approver_role) === '반려'"
+                          v-else-if="getStatus(line.approver_role, idx) === '반려'"
                           src="/icons/rejected.svg"
                           alt="Rejected"
                           class="h-6 w-auto"
@@ -120,8 +120,8 @@
                       </span>
                     </div>
                     <!-- ✅ 결재 시간 (PDF/프린트 시 숨김) -->
-                    <small v-if="getApprovedAt(line.approver_role)" class="no-print text-gray-500 text-[10px] mt-1">
-                      {{ formatDateTime(getApprovedAt(line.approver_role)) }}
+                    <small v-if="getApprovedAt(line.approver_role, idx)" class="no-print text-gray-500 text-[10px] mt-1">
+                      {{ formatDateTime(getApprovedAt(line.approver_role, idx)) }}
                     </small>
                   </div>
                 </td>
@@ -810,30 +810,35 @@ const refreshApprovalData = async () => {
     approvalLines.value = res.data.approvalLine || [];
   } catch (err) { console.error("❌ 결재 이력 갱신 실패:", err); }
 };
-const APPLICANT_ROLES = ["작성자", "회계"];
 
-const getHistoryRecord = (role) => {
-  const history = [...approvalHistory.value].reverse();
+const getHistoryRecord = (role, idx) => {
   const sorted = sortedApprovalHistory.value;
-  const firstLineRole = approvalLines.value[0]?.approver_role;
+  if (sorted.length === 0) return null;
 
-  const result = history.find((h) => {
-    // 1. 역할이 정확히 일치하는 경우 (가장 기본)
-    if (h.approver_role === role) return true;
-    
-    // 2. 첫 번째 결재칸(기안)인데, 이력이 '기안자 전용 역할'이고 시간순 첫 번째인 경우
-    const isApplicantRole = APPLICANT_ROLES.includes(h.approver_role);
-    const isFirstAction = sorted.length > 0 && h.approved_at === sorted[0].approved_at && h.approver_user_id === sorted[0].approver_user_id;
-    if (firstLineRole === role && isApplicantRole && isFirstAction) return true;
-    
-    return false;
-  }) || null;
+  // 1. 첫 번째 결재칸(idx === 0)은 무조건 역사상 첫 번째 기록(기안) 매칭
+  if (idx === 0) return sorted[0];
 
-  // ✅ 재정부 열에는 기안 이력(첫 번째 이력)을 표시하지 않음
-  if (role === "재정부" && result && sorted.length > 0 && result.approved_at === sorted[0].approved_at && result.approver_user_id === sorted[0].approver_user_id) {
-    return null;
+  // 2. 그 외의 결재칸: 첫 번째 기록을 제외한 나머지 필터링
+  const remainingHistory = sorted.slice(1);
+  // 현재 역할(role)이 기안 칸(idx=0)을 제외하고 몇 번째 순서인지 계산
+  const otherColumns = leftTableColumns.value.slice(1);
+  let roleOccurrenceIndex = -1;
+  let count = 0;
+  for (let i = 0; i < otherColumns.length; i++) {
+    if (otherColumns[i].approver_role === role) {
+      if (i === (idx - 1)) {
+        roleOccurrenceIndex = count;
+        break;
+      }
+      count++;
+    }
   }
-  return result;
+
+  if (roleOccurrenceIndex === -1) return null;
+
+  // 역사 기록 중에서 해당 역할을 가진 기록들만 추출하여 매칭
+  const sameRoleHistory = remainingHistory.filter(h => h.approver_role === role);
+  return sameRoleHistory[roleOccurrenceIndex] || null;
 };
 
 const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; emit("refreshList"); };
@@ -869,16 +874,16 @@ const leftTableColumns = computed(() => {
 // ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
 const isApprovedStatus = (s) => s && (String(s).toLowerCase() === "approved" || s === "승인");
 const isRejectedStatus = (s) => s && (String(s).toLowerCase() === "rejected" || s === "반려");
-const getSignature = (role) => getHistoryRecord(role)?.signature_path || null;
-const getComment = (role) => getHistoryRecord(role)?.comment || null;
-const getSignatureUrl = (role) => {
-  const p = getSignature(role);
+const getSignature = (role, idx) => getHistoryRecord(role, idx)?.signature_path || null;
+const getComment = (role, idx) => getHistoryRecord(role, idx)?.comment || null;
+const getSignatureUrl = (role, idx) => {
+  const p = getSignature(role, idx);
   if (!p) return "";
   let rel = p;
   try { rel = decodeURIComponent(p); } catch {}
   return `/api/files/${encodeURIComponent(rel)}`;
 };
-const getApprovedAt = (role) => getHistoryRecord(role)?.approved_at || null;
+const getApprovedAt = (role, idx) => getHistoryRecord(role, idx)?.approved_at || null;
 
 /**
  * 글자 길이에 따라 폰트 크기를 조절하는 스타일 반환
@@ -915,13 +920,15 @@ const formatDateTime = (dateStr) => {
   return `${yy}/${mm}/${dd} ${hh}:${min}`;
 };
 
-const getStatus = (role) => {
-  const record = getHistoryRecord(role);
+const getStatus = (role, idx) => {
+  const record = getHistoryRecord(role, idx);
   if (!record) return null;
 
-  // ✅ 기안: 첫 번째 결재 칸이고, 해당 이력의 approver_role이 재정부/작성자/회계일 때만
-  const isFirstLine = approvalLines.value[0]?.approver_role === role;
-  if (isFirstLine && APPLICANT_ROLES.includes(record.approver_role)) return "기안";
+  // ✅ 기안: 시간순 첫 번째 기록이고, 첫 번째 결재 칸(idx === 0)인 경우
+  const sorted = sortedApprovalHistory.value;
+  const isFirstAction = sorted.length > 0 && record.approved_at === sorted[0].approved_at && record.approver_user_id === sorted[0].approver_user_id;
+  
+  if (idx === 0 && isFirstAction) return "기안";
 
   // ✅ 재정부 열에서 승인인 경우 → "이관"으로 표시
   if (role === "재정부" && isApprovedStatus(record.status)) return "이관";

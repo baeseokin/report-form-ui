@@ -20,7 +20,18 @@
         <span class="text-lg">🛤️</span> 결재선
       </h3>
       
-      <div class="space-y-3">
+      <div v-if="user?.deptName === '재정부'" class="flex flex-col items-center justify-center space-y-3 py-6">
+        <div class="bg-green-100 text-green-600 p-3 rounded-full shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <span class="text-lg font-extrabold text-green-700">즉시 결재완료</span>
+        <p class="text-[11px] text-gray-500 text-center leading-relaxed">
+          재정부 사용자의 기안은<br/>별도 승인 없이 즉시 완료됩니다.
+        </p>
+      </div>
+      <div v-else class="space-y-3">
         <!-- 1안: 기안자 부서 -->
         <div 
           @click="selectedOption = 'dept'"
