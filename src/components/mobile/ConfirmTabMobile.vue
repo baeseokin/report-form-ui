@@ -14,21 +14,88 @@
       <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
     </div>
 
-    <!-- 첨부파일 -->
-    <div class="p-4 bg-gray-50 rounded-lg shadow">
-      <h3 class="text-base font-semibold text-gray-800 mb-2">📎 첨부파일</h3>
-      <div v-if="attachedFiles && attachedFiles.length > 0" class="space-y-3">
-        <div
-          v-for="(f, idx) in attachedFiles"
-          :key="idx"
-          class="p-3 border rounded-lg bg-white shadow-sm"
+    <!-- 결재선 선택 -->
+    <div class="p-4 bg-gray-50 rounded-lg shadow space-y-3">
+      <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+        <span class="text-lg">🛤️</span> 결재선
+      </h3>
+      
+      <div class="space-y-3">
+        <!-- 1안: 기안자 부서 -->
+        <div 
+          @click="selectedOption = 'dept'"
+          :class="[
+            'cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden',
+            selectedOption === 'dept' 
+              ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 shadow-sm' 
+              : 'border-gray-200 bg-white hover:border-indigo-200'
+          ]"
         >
-          <p class="text-purple-700 font-medium">{{ f.aliasName || f.name }}</p>
-          <p class="text-gray-600 text-xs">{{ f.name }}</p>
-          <p class="text-gray-400 text-xs">{{ (f.size / 1024).toFixed(1) }} KB</p>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-bold" :class="selectedOption === 'dept' ? 'text-indigo-700' : 'text-gray-600'">
+              1안: {{ userDept }}
+            </span>
+            <div v-if="selectedOption === 'dept'" class="bg-indigo-500 text-white rounded-full p-0.5 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <template v-if="displayLines1.length > 0">
+              <div v-for="(line, idx) in displayLines1" :key="idx" class="flex flex-col">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                  <span class="text-xs text-gray-700">
+                    <span class="font-bold">{{ line.approver_role }}:</span> {{ line.approver_user_name }}
+                  </span>
+                </div>
+                <div v-if="idx < displayLines1.length - 1" class="ml-[3px] my-0.5 border-l border-dashed border-indigo-200 h-2"></div>
+              </div>
+            </template>
+            <p v-else class="text-xs text-gray-400 italic">결재선 정보가 없습니다.</p>
+          </div>
+        </div>
+
+        <!-- 2안: Owner 부서 (존재할 때만 표시) -->
+        <div 
+          v-if="ownerDeptName && ownerDeptName !== userDept"
+          @click="selectedOption = 'owner'"
+          :class="[
+            'cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden',
+            selectedOption === 'owner' 
+              ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 shadow-md' 
+              : 'border-gray-200 bg-white hover:border-purple-200'
+          ]"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-bold" :class="selectedOption === 'owner' ? 'text-purple-700' : 'text-gray-600'">
+              2안: {{ ownerDeptName }}
+            </span>
+            <div v-if="selectedOption === 'owner'" class="bg-purple-500 text-white rounded-full p-0.5 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <template v-if="displayLines2.length > 0">
+              <div v-for="(line, idx) in displayLines2" :key="idx" class="flex flex-col">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                  <span class="text-xs text-gray-700">
+                    <span class="font-bold">{{ line.approver_role }}:</span> {{ line.approver_user_name }}
+                  </span>
+                </div>
+                <div v-if="idx < displayLines2.length - 1" class="ml-[3px] my-0.5 border-l border-dashed border-purple-200 h-2"></div>
+              </div>
+            </template>
+            <p v-else class="text-xs text-gray-400 italic">결재선 정보가 없습니다.</p>
+          </div>
         </div>
       </div>
-      <p v-else class="text-gray-500 text-sm">첨부된 파일이 없습니다.</p>
     </div>
 
     <!-- 의견 + 서명 -->
@@ -105,7 +172,7 @@
 
 <script setup>
 import axios from "axios";
-import { ref, onMounted, computed, nextTick } from "vue";
+import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useUserStore } from "@/store/userStore";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
@@ -145,10 +212,76 @@ const hangName = computed(() => {
   return c ? c.category_name : props.selectedHang;
 });
 
-onMounted(async () => {
-  const res = await axios.get("/api/accountCategories");
-  categories.value = res.data.categories || [];
+// ✅ 부서 및 결재선 정보
+const departments = ref([]);
+const approvalLines1 = ref([]); // 기안자 부서 결재선
+const approvalLines2 = ref([]); // Owner 부서 결재선
+const selectedOption = ref("dept"); // 'dept' or 'owner'
+
+const ownerDeptName = computed(() => {
+  if (!props.selectedHang || categories.value.length === 0 || departments.value.length === 0) return null;
+  const hangCategory = categories.value.find(c => c.category_id === props.selectedHang);
+  if (!hangCategory || !hangCategory.owner_dept_id) return null;
+  
+  const dept = departments.value.find(d => d.id === hangCategory.owner_dept_id);
+  return dept ? dept.dept_name : null;
 });
+
+const displayLines1 = computed(() => {
+  const myLine = approvalLines1.value.find(line => line.approver_user_id === user.value?.userId);
+  if (myLine) {
+    return approvalLines1.value.filter(line => line.order_no > myLine.order_no);
+  }
+  return approvalLines1.value.filter(line => line.approver_user_id !== user.value?.userId);
+});
+
+const displayLines2 = computed(() => {
+  if (ownerDeptName.value && ownerDeptName.value !== userDept.value) {
+    return approvalLines2.value.filter(line => line.approver_role === "위원장");
+  }
+  const myLine = approvalLines2.value.find(line => line.approver_user_id === user.value?.userId);
+  if (myLine) {
+    return approvalLines2.value.filter(line => line.order_no > myLine.order_no);
+  }
+  return approvalLines2.value.filter(line => line.approver_user_id !== user.value?.userId);
+});
+
+const fetchApprovalLines = async (deptName, targetRef) => {
+  if (!deptName) return;
+  try {
+    const res = await axios.get("/api/approval-lines", {
+      params: { deptName },
+      withCredentials: true,
+    });
+    targetRef.value = Array.isArray(res.data) ? res.data : [];
+  } catch (err) {
+    console.error(`❌ ${deptName} 결재선 조회 실패:`, err);
+  }
+};
+
+onMounted(async () => {
+  const [catRes, deptRes] = await Promise.all([
+    axios.get("/api/accountCategories"),
+    axios.get("/api/departments")
+  ]);
+  categories.value = catRes.data.categories || [];
+  departments.value = deptRes.data || [];
+
+  if (userDept.value) {
+    await fetchApprovalLines(userDept.value, approvalLines1);
+  }
+});
+
+watch(ownerDeptName, async (newVal) => {
+  if (newVal && newVal !== userDept.value) {
+    await fetchApprovalLines(newVal, approvalLines2);
+  } else {
+    approvalLines2.value = [];
+    if (selectedOption.value === 'owner') {
+      selectedOption.value = 'dept';
+    }
+  }
+}, { immediate: true });
 
 /* ✅ 미리보기 데이터 생성 */
 const generatePreview = () => {
@@ -357,8 +490,9 @@ const sendApprovalRequest = async () => {
   if (isSubmitting.value) return;
   isSubmitting.value = true;
   try {
-    // 선택한 부서 기준으로 결재선 존재 여부 확인 (재정부 등이 다른 부서 선택 시 해당 부서 결재선 사용)
-    const deptNameForLines = (props.selectedDept && props.selectedDept.trim()) ? props.selectedDept.trim() : userDept.value;
+    // 선택한 결재선 옵션에 따른 부서 결정
+    const deptNameForLines = selectedOption.value === 'owner' ? ownerDeptName.value : userDept.value;
+    
     if (deptNameForLines) {
       const lineRes = await axios.get("/api/approval-lines", {
         params: { deptName: deptNameForLines },
@@ -366,7 +500,7 @@ const sendApprovalRequest = async () => {
       });
       const lines = Array.isArray(lineRes.data) ? lineRes.data : [];
       if (lines.length === 0) {
-        alert("해당 부서의 결재선 정보가 없습니다. 등록 후 진행하세요.");
+        alert(`${deptNameForLines} 부서의 결재선 정보가 없습니다. 등록 후 진행하세요.`);
         isSubmitting.value = false;
         return;
       }
@@ -383,8 +517,8 @@ const sendApprovalRequest = async () => {
       }));
     };
 
-    // API에는 반드시 선택한 부서명 사용 (재정부 등이 다른 부서 선택 시)
-    const payloadDeptName = (props.selectedDept && props.selectedDept.trim()) ? props.selectedDept.trim() : userDept.value;
+    // API에는 반드시 선택한 부서명 사용 (결재선 선택 기준)
+    const payloadDeptName = selectedOption.value === 'owner' ? ownerDeptName.value : userDept.value;
     const isEdit = route.query.mode === 'edit';
     const data = {
       id: isEdit ? route.params.id : null,
@@ -401,6 +535,7 @@ const sendApprovalRequest = async () => {
       items: normalizeItems(props.items),
       selectedGwan: props.selectedGwan,
       selectedHang: props.selectedHang,
+      selectedChoice: selectedOption.value, // 'dept' or 'owner'
     };
 
     const res = await axios.post("/api/approval", data, {
