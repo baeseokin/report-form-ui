@@ -15,97 +15,105 @@
     </div>
 
     <!-- 결재선 선택 -->
-    <div class="p-4 bg-gray-50 rounded-lg shadow space-y-3">
-      <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+    <div class="space-y-3">
+      <h3 class="text-base font-bold text-gray-800 flex items-center gap-2 px-1">
         <span class="text-lg">🛤️</span> 결재선
       </h3>
+      <div class="p-4 bg-gray-50 rounded-lg shadow space-y-3">
       
-      <div v-if="user?.deptName === '재정부'" class="flex flex-col items-center justify-center space-y-3 py-6">
+      <div v-if="user?.deptName === '재정부'" class="flex flex-col items-center justify-center space-y-3 py-6 bg-white rounded-xl">
         <div class="bg-green-100 text-green-600 p-3 rounded-full shadow-sm">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <span class="text-lg font-extrabold text-green-700">즉시 결재완료</span>
-        <p class="text-[11px] text-gray-500 text-center leading-relaxed">
-          재정부 사용자의 기안은<br/>별도 승인 없이 즉시 완료됩니다.
+        <p class="text-[11px] text-gray-500 text-center leading-relaxed font-medium">
+          재정부 사용자의 기안은<br/>별도 승인 없이 자동 승인됩니다.
         </p>
       </div>
-      <div v-else class="space-y-3">
-        <!-- 1안: 기안자 부서 -->
+      <div v-else class="space-y-4">
+        <!-- 기안자 부서 결재선 -->
         <div 
-          @click="selectedOption = 'dept'"
+          @click="hasMultipleOptions && (selectedOption = 'dept')"
           :class="[
-            'cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden',
-            selectedOption === 'dept' 
-              ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 shadow-sm' 
-              : 'border-gray-200 bg-white hover:border-indigo-200'
+            'p-5 rounded-2xl border-2 transition-all duration-300 relative overflow-hidden',
+            hasMultipleOptions
+              ? (selectedOption === 'dept' 
+                  ? 'cursor-pointer border-indigo-400 bg-white ring-4 ring-indigo-50 shadow-md' 
+                  : 'cursor-pointer border-transparent bg-white/60 hover:border-indigo-100 shadow-sm')
+              : 'border-transparent bg-white/80 shadow-sm'
           ]"
         >
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-bold" :class="selectedOption === 'dept' ? 'text-indigo-700' : 'text-gray-600'">
-              1안: {{ userDept }}
+          <div class="flex justify-between items-center mb-3 pb-1 border-b border-gray-50">
+            <span class="text-[11px] font-black tracking-tight" :class="[hasMultipleOptions && selectedOption === 'dept' ? 'text-indigo-600' : 'text-gray-400']">
+              {{ userDept }}
             </span>
-            <div v-if="selectedOption === 'dept'" class="bg-indigo-500 text-white rounded-full p-0.5 shadow-sm">
+            <div v-if="hasMultipleOptions && selectedOption === 'dept'" class="bg-indigo-600 text-white rounded-full p-0.5 shadow-sm scale-110">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
               </svg>
             </div>
           </div>
           
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-2">
             <template v-if="displayLines1.length > 0">
               <div v-for="(line, idx) in displayLines1" :key="idx" class="flex flex-col">
-                <div class="flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-                  <span class="text-xs text-gray-700">
-                    <span class="font-bold">{{ line.approver_role }}:</span> {{ line.approver_user_name }}
+                <div class="flex items-center gap-3 transition-opacity duration-300" :class="{ 'opacity-30 grayscale': line.isPastOrCurrent }">
+                  <div class="relative flex flex-col items-center">
+                     <div class="w-1.5 h-1.5 rounded-full shadow-sm" :class="[line.isPastOrCurrent ? 'bg-gray-400' : 'bg-indigo-500 ring-2 ring-indigo-100']"></div>
+                     <div v-if="idx < displayLines1.length - 1" class="absolute top-1.5 w-0.5 h-6" :class="[line.isPastOrCurrent ? 'bg-gray-200' : 'bg-indigo-100']"></div>
+                  </div>
+                  <span class="text-[12px] text-gray-800" :class="{ 'font-bold': !line.isPastOrCurrent }">
+                    <span class="text-gray-400 mr-1 text-[10px]">{{ line.approver_role }}</span> {{ line.approver_user_name }}
                   </span>
                 </div>
-                <div v-if="idx < displayLines1.length - 1" class="ml-[3px] my-0.5 border-l border-dashed border-indigo-200 h-2"></div>
               </div>
             </template>
             <p v-else class="text-xs text-gray-400 italic">결재선 정보가 없습니다.</p>
           </div>
         </div>
 
-        <!-- 2안: Owner 부서 (존재할 때만 표시) -->
+        <!-- Owner 부서 결재선 (존재할 때만 표시) -->
         <div 
-          v-if="ownerDeptName && ownerDeptName !== userDept"
+          v-if="hasMultipleOptions"
           @click="selectedOption = 'owner'"
           :class="[
-            'cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 relative overflow-hidden',
+            'cursor-pointer p-5 rounded-2xl border-2 transition-all duration-300 relative overflow-hidden',
             selectedOption === 'owner' 
-              ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200 shadow-md' 
-              : 'border-gray-200 bg-white hover:border-purple-200'
+              ? 'border-purple-400 bg-white ring-4 ring-purple-50 shadow-md' 
+              : 'border-transparent bg-white/60 hover:border-purple-100 shadow-sm'
           ]"
         >
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-sm font-bold" :class="selectedOption === 'owner' ? 'text-purple-700' : 'text-gray-600'">
-              2안: {{ ownerDeptName }}
+          <div class="flex justify-between items-center mb-3 pb-1 border-b border-gray-50">
+            <span class="text-[11px] font-black tracking-tight" :class="selectedOption === 'owner' ? 'text-purple-600' : 'text-gray-400'">
+              {{ ownerDeptName }}
             </span>
-            <div v-if="selectedOption === 'owner'" class="bg-purple-500 text-white rounded-full p-0.5 shadow-sm">
+            <div v-if="selectedOption === 'owner'" class="bg-purple-600 text-white rounded-full p-0.5 shadow-sm scale-110">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
               </svg>
             </div>
           </div>
           
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-2">
             <template v-if="displayLines2.length > 0">
               <div v-for="(line, idx) in displayLines2" :key="idx" class="flex flex-col">
-                <div class="flex items-center gap-2">
-                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                  <span class="text-xs text-gray-700">
-                    <span class="font-bold">{{ line.approver_role }}:</span> {{ line.approver_user_name }}
+                <div class="flex items-center gap-3 transition-opacity duration-300" :class="{ 'opacity-30 grayscale': line.isPastOrCurrent }">
+                  <div class="relative flex flex-col items-center">
+                     <div class="w-1.5 h-1.5 rounded-full shadow-sm" :class="[line.isPastOrCurrent ? 'bg-gray-400' : 'bg-purple-500 ring-2 ring-purple-100']"></div>
+                     <div v-if="idx < displayLines2.length - 1" class="absolute top-1.5 w-0.5 h-6" :class="[line.isPastOrCurrent ? 'bg-gray-200' : 'bg-purple-100']"></div>
+                  </div>
+                  <span class="text-[12px] text-gray-800" :class="{ 'font-bold': !line.isPastOrCurrent }">
+                    <span class="text-gray-400 mr-1 text-[10px]">{{ line.approver_role }}</span> {{ line.approver_user_name }}
                   </span>
                 </div>
-                <div v-if="idx < displayLines2.length - 1" class="ml-[3px] my-0.5 border-l border-dashed border-purple-200 h-2"></div>
               </div>
             </template>
             <p v-else class="text-xs text-gray-400 italic">결재선 정보가 없습니다.</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
 
@@ -209,7 +217,7 @@ const props = defineProps([
 const emits = defineEmits(["update:comment", "prev", "generate"]);
 const { user } = storeToRefs(useUserStore());
 // 재정부 등이 다른 부서를 선택한 경우 선택한 부서 사용, 아니면 로그인 사용자 부서
-const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
+const userDept = computed(() => (props.selectedDept || user.value?.deptName || "").trim());
 const router = useRouter();
 
 // ✅ 계정명 표시를 위한 데이터 조회
@@ -235,26 +243,37 @@ const ownerDeptName = computed(() => {
   if (!hangCategory || !hangCategory.owner_dept_id) return null;
   
   const dept = departments.value.find(d => d.id === hangCategory.owner_dept_id);
-  return dept ? dept.dept_name : null;
+  return dept ? dept.dept_name.trim() : null;
 });
 
+const hasMultipleOptions = computed(() => ownerDeptName.value && ownerDeptName.value !== userDept.value);
+
 const displayLines1 = computed(() => {
-  const myLine = approvalLines1.value.find(line => line.approver_user_id === user.value?.userId);
-  if (myLine) {
-    return approvalLines1.value.filter(line => line.order_no > myLine.order_no);
-  }
-  return approvalLines1.value.filter(line => line.approver_user_id !== user.value?.userId);
+  const result = approvalLines1.value.map(line => {
+    const myLine = approvalLines1.value.find(l => l.approver_user_id === user.value?.userId);
+    return {
+      ...line,
+      isPastOrCurrent: myLine ? line.order_no <= myLine.order_no : false
+    };
+  });
+  return result;
 });
 
 const displayLines2 = computed(() => {
   if (ownerDeptName.value && ownerDeptName.value !== userDept.value) {
-    return approvalLines2.value.filter(line => line.approver_role === "위원장");
+    return approvalLines2.value.map(line => ({
+      ...line,
+      isPastOrCurrent: line.approver_role !== "위원장"
+    }));
   }
-  const myLine = approvalLines2.value.find(line => line.approver_user_id === user.value?.userId);
-  if (myLine) {
-    return approvalLines2.value.filter(line => line.order_no > myLine.order_no);
-  }
-  return approvalLines2.value.filter(line => line.approver_user_id !== user.value?.userId);
+  const result = approvalLines2.value.map(line => {
+    const myLine = approvalLines2.value.find(l => l.approver_user_id === user.value?.userId);
+    return {
+      ...line,
+      isPastOrCurrent: myLine ? line.order_no <= myLine.order_no : false
+    };
+  });
+  return result;
 });
 
 const fetchApprovalLines = async (deptName, targetRef) => {
