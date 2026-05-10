@@ -63,7 +63,21 @@
       </div>
     </div>
 
-        <!-- ✅ 반응형 테이블: 넓은 화면=기존 테이블 / 좁은 화면=2줄 컴팩트 -->
+    <!-- 🔍 지출내역 필터 -->
+    <div v-if="isSelectionReady" class="mt-4 mb-2 flex items-center gap-2">
+      <span class="text-sm font-bold text-gray-600">🔍 지출내역 검색:</span>
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="검색어를 입력하세요..."
+        class="border rounded-lg px-3 py-1.5 text-sm w-64 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
+      />
+      <span v-if="searchQuery" class="text-xs text-blue-600 font-medium animate-pulse">
+        * {{ filteredItems.length }}개의 항목이 검색됨
+      </span>
+    </div>
+
+    <!-- ✅ 반응형 테이블: 넓은 화면=기존 테이블 / 좁은 화면=2줄 컴팩트 -->
     <div class="overflow-x-auto md:overflow-visible -mx-2 md:mx-0">
       <!-- ✅ 선택 전에는 입력을 막고 안내 문구 표시 -->
       <div :class="!isSelectionReady ? 'opacity-50 pointer-events-none' : ''">
@@ -81,18 +95,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, idx) in items" :key="idx">
+          <tr v-for="item in filteredItems" :key="item.uuid || item.originalIndex">
             <!-- 선택 -->
             <td class="border p-2 text-center">
-              <input type="checkbox" :checked="item.selected" @change="updateField(idx, 'selected', $event.target.checked)" />
+              <input type="checkbox" :checked="item.selected" @change="updateField(item.originalIndex, 'selected', $event.target.checked)" />
             </td>
             <!-- 목 -->
             <td class="border p-2">
               <template v-if="isMokCustom(item)">
-                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(idx, $event.target.value, item)" placeholder="목 직접 입력" :data-testid="'row-'+idx+'-mok-input'" class="w-full p-2 border rounded" />
+                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(item.originalIndex, $event.target.value, item)" placeholder="목 직접 입력" :data-testid="'row-'+item.originalIndex+'-mok-input'" class="w-full p-2 border rounded" />
               </template>
               <template v-else>
-                <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(idx, 'mok', $event.target.value)" :data-testid="'row-'+idx+'-mok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
+                <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(item.originalIndex, 'mok', $event.target.value)" :data-testid="'row-'+item.originalIndex+'-mok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
                   <option disabled value="">선택</option>
                   <option v-for="m in getMoks(item)" :key="m.category_id" :value="m.category_id">{{ m.category_name }}</option>
                   <option value="__custom__">직접입력</option>
@@ -102,10 +116,10 @@
             <!-- 세목 -->
             <td class="border p-2">
               <template v-if="isSemokCustom(item)">
-                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(idx, $event.target.value, item)" placeholder="세목 직접 입력" :data-testid="'row-'+idx+'-semok-input'" class="w-full p-2 border rounded" />
+                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(item.originalIndex, $event.target.value, item)" placeholder="세목 직접 입력" :data-testid="'row-'+item.originalIndex+'-semok-input'" class="w-full p-2 border rounded" />
               </template>
               <template v-else>
-                <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(idx, 'semok', $event.target.value)" :data-testid="'row-'+idx+'-semok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
+                <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(item.originalIndex, 'semok', $event.target.value)" :data-testid="'row-'+item.originalIndex+'-semok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
                   <option disabled value="">선택</option>
                   <option v-for="s in getSemoks(item)" :key="s.category_id" :value="s.category_id">{{ s.category_name }}</option>
                   <option value="__custom__">직접입력</option>
@@ -118,9 +132,9 @@
                 :disabled="!isSelectionReady"
                 type="text"
                 :value="item.detail || ''"
-                @input="updateField(idx, 'detail', $event.target.value)"
+                @input="updateField(item.originalIndex, 'detail', $event.target.value)"
                 placeholder="지출내역 입력"
-                :data-testid="'row-'+idx+'-detail'"
+                :data-testid="'row-'+item.originalIndex+'-detail'"
                 class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400"
               />
             </td>
@@ -129,11 +143,11 @@
               <input
                 :disabled="!isSelectionReady"
                 type="text"
-                :value="amountMinusOnly[idx] ? '-' : (amountFocusedIdx === idx && item.amount === 0 ? '' : formatCurrencyInput(item.amount))"
-                @focus="onAmountFocus(idx)"
-                @blur="onAmountBlur(idx)"
-                @input="updateAmount($event, idx)"
-                :data-testid="'row-'+idx+'-amount'"
+                :value="amountMinusOnly[item.originalIndex] ? '-' : (amountFocusedIdx === item.originalIndex && item.amount === 0 ? '' : formatCurrencyInput(item.amount))"
+                @focus="onAmountFocus(item.originalIndex)"
+                @blur="onAmountBlur(item.originalIndex)"
+                @input="updateAmount($event, item.originalIndex)"
+                :data-testid="'row-'+item.originalIndex+'-amount'"
                 class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400"
               />
             </td>
@@ -256,6 +270,18 @@ const showConfirm = ref(false);
 const confirmMessage = ref("");
 const showBlockAlert = ref(false);
 const blockAlertMessage = ref("");
+
+// ✅ 검색 기능
+const searchQuery = ref("");
+const filteredItems = computed(() => {
+  if (!searchQuery.value.trim()) {
+    return props.items.map((it, idx) => ({ ...it, originalIndex: idx }));
+  }
+  const q = searchQuery.value.toLowerCase();
+  return props.items
+    .map((it, idx) => ({ ...it, originalIndex: idx }))
+    .filter(it => (it.detail || "").toLowerCase().includes(q));
+});
 
 // ✅ "다음" 버튼 제어
 const handleNext = () => {
@@ -703,6 +729,7 @@ const updateAmount = (event, idx) => {
 
 // ✅ 행 추가/삭제
 const addItem = () => {
+  searchQuery.value = ""; // 추가 시 검색 초기화
   const newItems = [
     ...props.items,
     {

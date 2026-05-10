@@ -52,6 +52,18 @@
         <input type="date" v-model="filters.endDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
       </div>
 
+      <!-- 검색어 -->
+      <div class="flex flex-col w-48">
+        <label class="font-semibold text-gray-600 mb-1 text-sm">검색어 (별칭/작성자)</label>
+        <input
+          type="text"
+          v-model="filters.keyword"
+          placeholder="검색어 입력"
+          @keyup.enter="fetchApprovals(1)"
+          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+        />
+      </div>
+
       <!-- 조회 버튼 -->
       <div class="flex items-end">
         <button
@@ -219,6 +231,7 @@ const filters = ref({
   startDate: formatDateValue(startOfMonth),
   endDate: formatDateValue(today),
   status: "",
+  keyword: "",
 });
 
 // ✅ 권한 체크: 재정부 or 관리자만 부서 변경 가능

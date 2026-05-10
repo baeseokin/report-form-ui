@@ -81,6 +81,18 @@
             </div>
           </div>
 
+          <!-- 검색어 -->
+          <div>
+            <label class="block text-sm mb-1">검색어 (별칭/작성자)</label>
+            <input
+              type="text"
+              v-model="filters.keyword"
+              placeholder="검색어 입력"
+              @keyup.enter="fetchApprovals(1)"
+              class="mobile-form-control w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400"
+            />
+          </div>
+
           <button
             @click="fetchApprovals(1)"
             class="w-full py-2 bg-purple-600 text-white rounded hover:bg-purple-700 active:bg-purple-800"
@@ -212,6 +224,7 @@ const filters = ref({
   startDate: formatDateValue(startOfMonth),
   endDate: formatDateValue(today),
   status: "",
+  keyword: "",
 });
 
 // ✅ 검색조건 펼침/접힘 (기본: 접힌 상태)
@@ -227,6 +240,7 @@ const searchConditionSummary = computed(() => {
   const start = f.startDate ? f.startDate.replace(/-/g, ".") : "";
   const end = f.endDate ? f.endDate.replace(/-/g, ".") : "";
   if (start && end) parts.push(`${start}~${end}`);
+  if (f.keyword) parts.push(`"${f.keyword}"`);
   return parts.length ? parts.join(" · ") : "조건 선택";
 });
 
