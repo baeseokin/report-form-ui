@@ -25,15 +25,14 @@
           <span class="text-gray-400">▲</span>
         </button>
         <div class="p-3 pt-4 space-y-3 bg-white">
-          <!-- 부서명 (관리자/재정부만 변경 가능, 그 외는 본인 부서 고정) -->
-          <div>
+          <!-- 부서명 (관리자/재정부만 변경 가능, 그 외는 화면에서 숨김) -->
+          <div v-if="canEditDept">
             <label class="block text-sm mb-1">부서명</label>
             <select
               v-model="filters.deptName"
-              :disabled="!canEditDept"
               class="mobile-form-control mobile-form-control-select w-full disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
-              <option v-if="canEditDept" value="">전체</option>
+              <option value="">전체</option>
               <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
                 {{ d.dept_name }}
               </option>
@@ -83,7 +82,7 @@
 
           <!-- 검색어 -->
           <div>
-            <label class="block text-sm mb-1">검색어 (별칭/작성자)</label>
+            <label class="block text-sm mb-1">검색어 (별칭/작성자/지출내역)</label>
             <input
               type="text"
               v-model="filters.keyword"

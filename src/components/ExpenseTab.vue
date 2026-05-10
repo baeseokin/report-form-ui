@@ -62,21 +62,6 @@
         💰 잔액: {{ formatCurrency(remainingBudget) }} 원
       </div>
     </div>
-
-    <!-- 🔍 지출내역 필터 -->
-    <div v-if="isSelectionReady" class="mt-4 mb-2 flex items-center gap-2">
-      <span class="text-sm font-bold text-gray-600">🔍 지출내역 검색:</span>
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="검색어를 입력하세요..."
-        class="border rounded-lg px-3 py-1.5 text-sm w-64 focus:ring-2 focus:ring-blue-500 outline-none transition-all shadow-sm"
-      />
-      <span v-if="searchQuery" class="text-xs text-blue-600 font-medium animate-pulse">
-        * {{ filteredItems.length }}개의 항목이 검색됨
-      </span>
-    </div>
-
     <!-- ✅ 반응형 테이블: 넓은 화면=기존 테이블 / 좁은 화면=2줄 컴팩트 -->
     <div class="overflow-x-auto md:overflow-visible -mx-2 md:mx-0">
       <!-- ✅ 선택 전에는 입력을 막고 안내 문구 표시 -->

@@ -2,15 +2,14 @@
   <div class="p-6 font-nanum">
     <!-- ✅ 검색조건 -->
     <div class="w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl bg-white border border-gray-200 rounded-lg shadow-sm py-4 px-4 sm:p-5 md:p-6 mb-6 flex flex-wrap gap-6 items-end">
-      <!-- 부서명 (관리자/재정부만 변경 가능, 그 외는 본인 부서 고정) -->
-      <div class="flex flex-col w-40">
+      <!-- 부서명 (관리자/재정부만 변경 가능, 그 외는 화면에서 숨김) -->
+      <div v-if="canEditDept" class="flex flex-col w-40">
         <label class="font-semibold text-gray-600 mb-1 text-sm">부서명</label>
         <select
           v-model="filters.deptName"
-          :disabled="!canEditDept"
           class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
-          <option v-if="canEditDept" value="">전체</option>
+          <option value="">전체</option>
           <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
             {{ d.dept_name }}
           </option>
@@ -54,7 +53,7 @@
 
       <!-- 검색어 -->
       <div class="flex flex-col w-48">
-        <label class="font-semibold text-gray-600 mb-1 text-sm">검색어 (별칭/작성자)</label>
+        <label class="font-semibold text-gray-600 mb-1 text-sm">검색어 (별칭/작성자/지출내역)</label>
         <input
           type="text"
           v-model="filters.keyword"
