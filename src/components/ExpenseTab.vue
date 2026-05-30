@@ -131,9 +131,9 @@
                     :id="'dropdown-item-' + item.originalIndex + '-' + i"
                     @mousedown.prevent="selectDetail(item.originalIndex, d)"
                     @mouseenter="activeDropdownIndex = i"
-                    class="px-3 py-2 cursor-pointer text-sm text-gray-700"
-                    :class="activeDropdownIndex === i ? 'bg-blue-100 font-semibold' : 'hover:bg-blue-50'">
-                  {{ d }}
+                    class="px-3 py-2 cursor-pointer text-sm text-gray-700 text-left"
+                    :class="activeDropdownIndex === i ? 'bg-blue-100' : 'hover:bg-blue-50'">
+                  <span v-html="highlightMatch(d, item.detail)"></span>
                 </li>
               </ul>
             </td>
@@ -369,6 +369,23 @@ const filteredDetails = (text) => {
   if (!text) return []; // 입력값이 없을 때는 아무것도 보여주지 않음
   const q = text.toLowerCase();
   return detailHistory.value.filter(d => d && d.toLowerCase().includes(q));
+};
+
+const escapeHtml = (unsafe) => {
+  return (unsafe || '').toString()
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#039;");
+};
+
+const highlightMatch = (text, query) => {
+  if (!query) return escapeHtml(text);
+  const escapedText = escapeHtml(text);
+  const escapedQuery = escapeHtml(query);
+  const regex = new RegExp(`(${escapedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return escapedText.replace(regex, '<span class="text-blue-600 font-bold">$1</span>');
 };
 
 import { nextTick } from 'vue';
