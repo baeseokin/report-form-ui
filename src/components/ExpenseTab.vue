@@ -68,7 +68,7 @@
       <div :class="!isSelectionReady ? 'opacity-50 pointer-events-none' : ''">
         <!-- 넓은 화면: 기존 1줄 테이블 -->
         <table
-          class="min-w-[920px] sm:min-w-0 w-full border text-sm bg-white rounded-lg overflow-hidden mt-3 table-fixed"
+          class="min-w-[920px] sm:min-w-0 w-full border text-sm bg-white rounded-lg mt-3 table-fixed"
         >
         <thead class="bg-gradient-to-r from-blue-100 to-purple-100 text-gray-800">
           <tr>
@@ -112,16 +112,30 @@
               </template>
             </td>
             <!-- 지출내역 (항상 input) -->
-            <td class="border p-2">
+            <td class="border p-2 relative" :class="{'z-50': activeDetailIdx === item.originalIndex}">
               <input
                 :disabled="!isSelectionReady"
                 type="text"
                 :value="item.detail || ''"
-                @input="updateField(item.originalIndex, 'detail', $event.target.value)"
+                @input="onDetailInput(item.originalIndex, $event.target.value)"
+                @focus="onDetailFocus(item.originalIndex)"
+                @blur="onDetailBlur"
+                @keydown="onDetailKeydown($event, item)"
                 placeholder="지출내역 입력"
                 :data-testid="'row-'+item.originalIndex+'-detail'"
                 class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400"
               />
+              <ul v-if="activeDetailIdx === item.originalIndex && filteredDetails(item.detail).length > 0" 
+                  class="absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto mt-1 mx-2">
+                <li v-for="(d, i) in filteredDetails(item.detail)" :key="d" 
+                    :id="'dropdown-item-' + item.originalIndex + '-' + i"
+                    @mousedown.prevent="selectDetail(item.originalIndex, d)"
+                    @mouseenter="activeDropdownIndex = i"
+                    class="px-3 py-2 cursor-pointer text-sm text-gray-700"
+                    :class="activeDropdownIndex === i ? 'bg-blue-100 font-semibold' : 'hover:bg-blue-50'">
+                  {{ d }}
+                </li>
+              </ul>
             </td>
             <!-- 금액 -->
             <td class="border p-2 text-right">
@@ -324,6 +338,74 @@ const departments = ref([]); // 부서 목록 저장용
 // ✅ 재정부 여부 확인
 const isFinanceDept = computed(() => user.value?.deptName === "재정부");
 
+// ✅ 지출내역 자동완성 데이터 및 로직
+const detailHistory = ref([]);
+const activeDetailIdx = ref(null);
+const activeDropdownIndex = ref(-1);
+
+const onDetailFocus = (idx) => {
+  activeDetailIdx.value = idx;
+  activeDropdownIndex.value = -1;
+};
+
+const onDetailInput = (idx, value) => {
+  updateField(idx, 'detail', value);
+  activeDetailIdx.value = idx;
+  activeDropdownIndex.value = -1;
+};
+
+const onDetailBlur = () => {
+  activeDetailIdx.value = null;
+  activeDropdownIndex.value = -1;
+};
+
+const selectDetail = (idx, value) => {
+  updateField(idx, 'detail', value);
+  activeDetailIdx.value = null;
+  activeDropdownIndex.value = -1;
+};
+
+const filteredDetails = (text) => {
+  if (!text) return []; // 입력값이 없을 때는 아무것도 보여주지 않음
+  const q = text.toLowerCase();
+  return detailHistory.value.filter(d => d && d.toLowerCase().includes(q));
+};
+
+import { nextTick } from 'vue';
+
+const onDetailKeydown = async (event, item) => {
+  if (activeDetailIdx.value !== item.originalIndex) return;
+  const list = filteredDetails(item.detail);
+  if (list.length === 0) return;
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    if (activeDropdownIndex.value < list.length - 1) {
+      activeDropdownIndex.value++;
+      await scrollToDropdownItem(item.originalIndex);
+    }
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (activeDropdownIndex.value > 0) {
+      activeDropdownIndex.value--;
+      await scrollToDropdownItem(item.originalIndex);
+    }
+  } else if (event.key === 'Enter') {
+    if (activeDropdownIndex.value >= 0 && activeDropdownIndex.value < list.length) {
+      event.preventDefault();
+      selectDetail(item.originalIndex, list[activeDropdownIndex.value]);
+    }
+  }
+};
+
+const scrollToDropdownItem = async (rowIdx) => {
+  await nextTick();
+  const el = document.getElementById(`dropdown-item-${rowIdx}-${activeDropdownIndex.value}`);
+  if (el) {
+    el.scrollIntoView({ block: 'nearest' });
+  }
+};
+
 onMounted(async () => {
   if (isFinanceDept.value && departments.value.length === 0) {
     try {
@@ -332,6 +414,16 @@ onMounted(async () => {
     } catch (e) {
       console.error("부서 목록 로드 실패", e);
     }
+  }
+
+  // 지출내역 자동완성 이력 가져오기
+  try {
+    const res = await axios.get('/api/expenses/history/details');
+    if (res.data?.success) {
+      detailHistory.value = res.data.details || [];
+    }
+  } catch (err) {
+    console.error("지출내역 이력 가져오기 실패", err);
   }
 });
 

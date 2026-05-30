@@ -172,17 +172,31 @@
           </div>
 
           <!-- 지출내역 (✅ input) -->
-          <div class="space-y-1">
+          <div class="space-y-1 relative" :class="{'z-50': activeDetailIdx === idx}">
             <label class="block text-xs font-semibold text-gray-600">지출내역</label>
             <input
+              :disabled="!isSelectionReady"
               type="text"
               :value="item.detail"
               :data-testid="'row-' + idx + '-detail'"
-              @input="updateField(idx, 'detail', $event.target.value)"
+              @input="onDetailInput(idx, $event.target.value)"
+              @focus="onDetailFocus(idx)"
+              @blur="onDetailBlur"
+              @keydown="onDetailKeydown($event, idx, item.detail)"
               class="w-full p-2 border rounded text-sm disabled:bg-gray-100 disabled:text-gray-400"
-              :disabled="!isSelectionReady"
               placeholder="지출내역을 입력하세요"
             />
+            <ul v-if="activeDetailIdx === idx && filteredDetails(item.detail).length > 0" 
+                class="absolute z-10 left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto">
+              <li v-for="(d, i) in filteredDetails(item.detail)" :key="d" 
+                  :id="'dropdown-item-mobile-' + idx + '-' + i"
+                  @mousedown.prevent="selectDetail(idx, d)"
+                  @mouseenter="activeDropdownIndex = i"
+                  class="px-3 py-3 cursor-pointer text-sm text-gray-700 border-b border-gray-100 last:border-0"
+                  :class="activeDropdownIndex === i ? 'bg-blue-100 font-semibold' : 'hover:bg-blue-50'">
+                {{ d }}
+              </li>
+            </ul>
           </div>
 
           <!-- 금액 (마이너스 입력 가능: 키보드 "-" 또는 음수 버튼) -->
@@ -325,6 +339,74 @@ const departments = ref([]);
 // ✅ 재정부 여부 확인
 const isFinanceDept = computed(() => user.value?.deptName === "재정부");
 
+// ✅ 지출내역 자동완성 데이터 및 로직
+const detailHistory = ref([]);
+const activeDetailIdx = ref(null);
+const activeDropdownIndex = ref(-1);
+
+const onDetailFocus = (idx) => {
+  activeDetailIdx.value = idx;
+  activeDropdownIndex.value = -1;
+};
+
+const onDetailInput = (idx, value) => {
+  updateField(idx, 'detail', value);
+  activeDetailIdx.value = idx;
+  activeDropdownIndex.value = -1;
+};
+
+const onDetailBlur = () => {
+  activeDetailIdx.value = null;
+  activeDropdownIndex.value = -1;
+};
+
+const selectDetail = (idx, value) => {
+  updateField(idx, 'detail', value);
+  activeDetailIdx.value = null;
+  activeDropdownIndex.value = -1;
+};
+
+const filteredDetails = (text) => {
+  if (!text) return []; // 입력값이 없을 때는 아무것도 보여주지 않음
+  const q = text.toLowerCase();
+  return detailHistory.value.filter(d => d && d.toLowerCase().includes(q));
+};
+
+import { nextTick } from 'vue';
+
+const onDetailKeydown = async (event, idx, detailValue) => {
+  if (activeDetailIdx.value !== idx) return;
+  const list = filteredDetails(detailValue);
+  if (list.length === 0) return;
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    if (activeDropdownIndex.value < list.length - 1) {
+      activeDropdownIndex.value++;
+      await scrollToDropdownItem(idx);
+    }
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (activeDropdownIndex.value > 0) {
+      activeDropdownIndex.value--;
+      await scrollToDropdownItem(idx);
+    }
+  } else if (event.key === 'Enter') {
+    if (activeDropdownIndex.value >= 0 && activeDropdownIndex.value < list.length) {
+      event.preventDefault();
+      selectDetail(idx, list[activeDropdownIndex.value]);
+    }
+  }
+};
+
+const scrollToDropdownItem = async (rowIdx) => {
+  await nextTick();
+  const el = document.getElementById(`dropdown-item-mobile-${rowIdx}-${activeDropdownIndex.value}`);
+  if (el) {
+    el.scrollIntoView({ block: 'nearest' });
+  }
+};
+
 onMounted(async () => {
   if (isFinanceDept.value && departments.value.length === 0) {
     try {
@@ -333,6 +415,16 @@ onMounted(async () => {
     } catch (e) {
       console.error("부서 목록 로드 실패", e);
     }
+  }
+
+  // 지출내역 자동완성 이력 가져오기
+  try {
+    const res = await axios.get('/api/expenses/history/details');
+    if (res.data?.success) {
+      detailHistory.value = res.data.details || [];
+    }
+  } catch (err) {
+    console.error("지출내역 이력 가져오기 실패", err);
   }
 });
 
