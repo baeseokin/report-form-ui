@@ -40,15 +40,7 @@
         </div>
       </div>
 
-      <!-- 검색 입력 -->
-      <div class="px-4 py-3 border-b">
-        <input
-          v-model="query"
-          type="text"
-          placeholder="부서명 또는 코드 검색..."
-          class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-300"
-        />
-      </div>
+      
 
       <!-- 언어 토글 & 초성 필터 -->
       <div class="px-4 py-3 border-b bg-gray-50/50 flex flex-col gap-2">
