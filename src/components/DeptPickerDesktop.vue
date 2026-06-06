@@ -50,6 +50,32 @@
         />
       </div>
 
+      <!-- 언어 토글 & 초성 필터 -->
+      <div class="px-4 py-3 border-b bg-gray-50/50 flex flex-col gap-2">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-xs font-bold text-gray-500">언어 선택</span>
+          <div class="flex bg-gray-200/50 rounded-lg p-0.5">
+            <button class="px-3 py-1 rounded-md text-xs font-semibold transition-all" :class="filterMode === 'KO' ? 'bg-white shadow text-purple-600' : 'text-gray-500 hover:text-gray-700'" @click="filterMode = 'KO'; clearChosung()">한글</button>
+            <button class="px-3 py-1 rounded-md text-xs font-semibold transition-all" :class="filterMode === 'EN' ? 'bg-white shadow text-purple-600' : 'text-gray-500 hover:text-gray-700'" @click="filterMode = 'EN'; clearChosung()">영어</button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            class="shrink-0 px-3 py-1 rounded border text-xs font-semibold transition-colors"
+            :class="!activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
+            @click="clearChosung"
+          >전체</button>
+          <button
+            v-for="ch in currentChosungs"
+            :key="ch"
+            class="shrink-0 px-2 py-1 rounded border text-xs font-semibold transition-colors"
+            :class="ch === activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-sm' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
+            @click="toggleChosung(ch)"
+          >{{ ch }}</button>
+        </div>
+      </div>
+
       <!-- 리스트 -->
       <div class="flex-1 overflow-auto px-4 py-2">
         <div
@@ -104,9 +130,13 @@ const props = defineProps({
 const emit = defineEmits(["close", "select", "update:favorites"]);
 
 const query = ref("");
+const activeChosung = ref("");
 
 // 초성 목록
-const chosungs = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const korChosungs = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const engAlphabets = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+const filterMode = ref("KO");
+const currentChosungs = computed(() => filterMode.value === "KO" ? korChosungs : engAlphabets);
 
 // 초성 계산
 function getChosung(kor) {
@@ -114,18 +144,34 @@ function getChosung(kor) {
   const code = kor?.charCodeAt(0) ?? 0;
   if (code < 0xac00 || code > 0xd7a3) return "";
   const idx = Math.floor((code - base) / 588);
-  return chosungs[idx] || "";
+  return korChosungs[idx] || "";
 }
 
 // 즐겨찾기/최근 계산
 const favoriteDepts = computed(() => props.favorites.map(id => props.departments.find(d => d.id === id)).filter(Boolean));
 const recentDepts   = computed(() => props.recent.map(id => props.departments.find(d => d.id === id)).filter(Boolean));
 
+// 초성 토글
+function toggleChosung(ch) {
+  activeChosung.value = (activeChosung.value === ch) ? "" : ch;
+}
+function clearChosung() { activeChosung.value = ""; }
+
 // 검색 결과 필터링
 const filtered = computed(() => {
+  let list = props.departments;
+
+  if (activeChosung.value) {
+    list = list.filter(d => {
+      const first = (d.dept_name || d.dept_cd || "").charAt(0);
+      const key = /^[A-Za-z]$/.test(first) ? first.toUpperCase() : getChosung(first);
+      return key === activeChosung.value;
+    });
+  }
+
   const q = query.value.trim().toLowerCase();
-  if (!q) return props.departments;
-  return props.departments.filter(d =>
+  if (!q) return list;
+  return list.filter(d =>
     d.dept_name.toLowerCase().includes(q) || d.dept_cd.toLowerCase().includes(q)
   );
 });
@@ -146,7 +192,7 @@ const grouped = computed(() => {
     items: items.sort((a, b) => a.dept_name.localeCompare(b.dept_name, "ko")),
   }));
   const order = (k) => {
-    const i = chosungs.indexOf(k);
+    const i = korChosungs.indexOf(k);
     if (i >= 0) return i;
     if (/^[A-Z]$/.test(k)) return 100 + k.charCodeAt(0);
     return 1000;

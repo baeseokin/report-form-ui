@@ -11,20 +11,30 @@
 
 
 
-      <!-- 초성 필터 (가로 스크롤) -->
-      <div class="mb-4 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-        <button
-          class="shrink-0 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
-          :class="!activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-100' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
-          @click="clearChosung"
-        >전체</button>
-        <button
-          v-for="ch in chosungs"
-          :key="ch"
-          class="shrink-0 px-2 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
-          :class="ch === activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-100' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
-          @click="toggleChosung(ch)"
-        >{{ ch }}</button>
+      <!-- 언어 토글 & 초성 필터 -->
+      <div class="mb-4 flex flex-col gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-gray-500">언어 선택</span>
+          <div class="flex bg-gray-100 rounded-lg p-0.5">
+            <button class="px-3 py-1 rounded-md text-xs font-semibold transition-all" :class="filterMode === 'KO' ? 'bg-white shadow text-purple-600' : 'text-gray-500 hover:text-gray-700'" @click="filterMode = 'KO'; clearChosung()">한글</button>
+            <button class="px-3 py-1 rounded-md text-xs font-semibold transition-all" :class="filterMode === 'EN' ? 'bg-white shadow text-purple-600' : 'text-gray-500 hover:text-gray-700'" @click="filterMode = 'EN'; clearChosung()">영어</button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 pb-1">
+          <button
+            class="shrink-0 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
+            :class="!activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-100' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
+            @click="clearChosung"
+          >전체</button>
+          <button
+            v-for="ch in currentChosungs"
+            :key="ch"
+            class="shrink-0 px-2 py-1.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
+            :class="ch === activeChosung ? 'bg-purple-600 border-purple-600 text-white shadow-md shadow-purple-100' : 'bg-white border-gray-200 text-gray-500 hover:border-purple-300'"
+            @click="toggleChosung(ch)"
+          >{{ ch }}</button>
+        </div>
       </div>
 
       <!-- 리스트 컨테이너 (남은 공간 모두 차지) -->
@@ -123,7 +133,11 @@ const props = defineProps({
 });
 const emit = defineEmits(["close", "select", "update:favorites"]);
 
-const chosungs = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const korChosungs = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const engAlphabets = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+const filterMode = ref("KO");
+const currentChosungs = computed(() => filterMode.value === "KO" ? korChosungs : engAlphabets);
+
 const activeChosung = ref("");
 const scrollArea = ref(null);
 
@@ -133,7 +147,7 @@ function getChosung(kor) {
   const code = kor?.charCodeAt(0) ?? 0;
   if (code < 0xac00 || code > 0xd7a3) return "";
   const idx = Math.floor((code - base) / 588);
-  return chosungs[idx] || "";
+  return korChosungs[idx] || "";
 }
 
 // 즐겨찾기/최근 계산
@@ -166,7 +180,11 @@ const grouped = computed(() => {
   
   // 2. 초성 필터링
   if (activeChosung.value) {
-    list = list.filter(d => getChosung(d.dept_name?.[0]) === activeChosung.value);
+    list = list.filter(d => {
+      const first = (d.dept_name || d.dept_cd || "").charAt(0);
+      const key = /^[A-Za-z]$/.test(first) ? first.toUpperCase() : getChosung(first);
+      return key === activeChosung.value;
+    });
   }
   const map = new Map();
   for (const d of list) {
@@ -180,7 +198,7 @@ const grouped = computed(() => {
     items: items.sort((a,b) => a.dept_name.localeCompare(b.dept_name, "ko"))
   }));
   const order = (k) => {
-    const i = chosungs.indexOf(k);
+    const i = korChosungs.indexOf(k);
     if (i >= 0) return i;
     if (/^[A-Z]$/.test(k)) return 100 + k.charCodeAt(0);
     return 1000;
