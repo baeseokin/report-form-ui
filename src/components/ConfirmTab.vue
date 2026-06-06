@@ -394,6 +394,7 @@ const wasCleared = ref(false);   // ✕ 눌러 지웠는지
 const hasNotified = ref(false);  // 재서명 안내 1회만 표시
 const didRedrawAfterClear = ref(false); // ✕ 이후 실제로 다시 그렸는지 (저장 트리거)
 const isImageLoaded = ref(false); // 이미지가 로드된 상태인지 (기본 서명 로드 시 true)
+const hasInitialSignature = ref(false); // 서버에 기본 서명이 있었는지 여부
 
 // 기본서명 불러오기 (서버 → 없으면 패스)
 async function loadDefaultSignature() {
@@ -402,12 +403,14 @@ async function loadDefaultSignature() {
     const url = data?.signature; // 서버는 URL을 반환 (없으면 null)
     if (url) {
       await drawImageToCanvas(url);
+      hasInitialSignature.value = true;
       return;
     }
   } catch (e) {
     // 서버 미구현/오류는 무시
   }
   // 기본서명 없으면 캔버스 클리어
+  hasInitialSignature.value = false;
   clearCanvas(true);
 }
 
@@ -482,8 +485,8 @@ const startDraw = (e) => {
     //alert("변경된 서명이 기본서명에 저장됩니다.");
     hasNotified.value = true;
   }
-  // ✕ 후에 다시 그리기 시작한 경우에만 저장 대상으로 표시
-  if (wasCleared.value) {
+  // ✕ 후에 다시 그리기 시작하거나, 초기 서명이 없었던 경우 저장 대상으로 표시
+  if (wasCleared.value || !hasInitialSignature.value) {
     didRedrawAfterClear.value = true;
   }
   drawing = true;
@@ -508,7 +511,7 @@ const startDrawTouch = (e) => {
     //alert("변경된 서명이 기본서명에 저장됩니다.");
     hasNotified.value = true;
   }
-  if (wasCleared.value) {
+  if (wasCleared.value || !hasInitialSignature.value) {
     didRedrawAfterClear.value = true;
   }  
   const rect = canvas.value.getBoundingClientRect();
@@ -654,10 +657,11 @@ const sendApprovalRequest = async () => {
 
     // 4) 현재 서명을 기본서명으로 저장 (서버 PUT)
     //    ▶ 조회한 기본서명을 수정 없이 그대로 사용하는 경우에는 저장(신규 입력)하지 않음
-    //    ▶ 반드시 X로 지운 뒤 다시 그린 경우에만 저장
+    //    ▶ 반드시 X로 지운 뒤 다시 그린 경우, 또는 초기 서명이 없는 상태에서 새로 그린 경우 저장
     console.log("wasCleared.value :", wasCleared.value);
     console.log("didRedrawAfterClear.value :", didRedrawAfterClear.value);
-    if (wasCleared.value && didRedrawAfterClear.value) {
+    console.log("hasInitialSignature.value :", hasInitialSignature.value);
+    if ((wasCleared.value && didRedrawAfterClear.value) || (!hasInitialSignature.value && didRedrawAfterClear.value)) {
       await saveDefaultSignature();
     }
 
