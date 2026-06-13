@@ -289,6 +289,13 @@
             </button>
             <button
               v-if="!selectedUser.isNew"
+              @click="resetPassword"
+              class="px-6 py-2 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600 transition"
+            >
+              비밀번호 초기화
+            </button>
+            <button
+              v-if="!selectedUser.isNew"
               @click="deleteUser"
               class="px-6 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
             >
@@ -532,6 +539,19 @@ export default {
       } catch (err) {
         console.error("삭제 실패:", err);
         alert(err?.response?.data?.message || "삭제 중 오류가 발생했습니다.");
+      }
+    },
+
+    async resetPassword() {
+      if (!this.selectedUser || this.selectedUser.isNew) return;
+      if (!confirm("해당 사용자의 비밀번호를 '0000'으로 초기화하시겠습니까?")) return;
+      
+      try {
+        const res = await axios.post(`/api/users/${this.selectedUser.id}/reset-password`);
+        alert(res.data.message || "비밀번호가 초기화되었습니다.");
+      } catch (err) {
+        console.error("비밀번호 초기화 실패:", err);
+        alert(err?.response?.data?.message || "초기화 중 오류가 발생했습니다.");
       }
     },
 

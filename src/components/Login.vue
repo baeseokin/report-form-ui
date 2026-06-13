@@ -137,6 +137,52 @@
           </div>
         </template>
       </Suspense>
+
+      <!-- 비밀번호 변경 모달 -->
+      <div v-if="showPasswordChangeModal" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 animate-slideUp">
+          <h3 class="text-xl font-bold mb-2 text-center text-red-600">비밀번호 변경 필요</h3>
+          <p class="text-sm text-gray-500 mb-6 text-center">보안을 위해 초기 비밀번호를 변경해 주세요.</p>
+          
+          <form @submit.prevent="changePassword">
+            <label class="block text-sm font-semibold mb-1">새 비밀번호 (4자 이상)</label>
+            <input
+              v-model="newPassword"
+              type="password"
+              class="w-full mb-3 p-2 border rounded"
+              placeholder="새로운 비밀번호"
+              required
+            />
+            
+            <label class="block text-sm font-semibold mb-1">새 비밀번호 확인</label>
+            <input
+              v-model="confirmNewPassword"
+              type="password"
+              class="w-full mb-4 p-2 border rounded"
+              placeholder="비밀번호 다시 입력"
+              required
+            />
+            
+            <div class="flex gap-2">
+              <button
+                type="button"
+                @click="cancelPasswordChange"
+                class="flex-1 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                class="flex-1 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 transition"
+                :disabled="!canSubmitPasswordChange"
+              >
+                변경하기
+              </button>
+            </div>
+            <p v-if="passwordChangeError" class="text-red-500 mt-3 text-sm text-center">{{ passwordChangeError }}</p>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -169,6 +215,13 @@ const selectedUserId = ref("");
 
 const password = ref("");
 const error = ref("");
+
+// 비밀번호 강제 변경 모달 상태
+const showPasswordChangeModal = ref(false);
+const newPassword = ref("");
+const confirmNewPassword = ref("");
+const passwordChangeError = ref("");
+const loggedInUserId = ref(null);
 
 const loading = ref({
   departments: false,
@@ -218,6 +271,10 @@ const usersDisabledReason = computed(() => {
 // 제출 가능 여부
 const canSubmit = computed(() => {
   return !!selectedUserId.value && !!password.value;
+});
+
+const canSubmitPasswordChange = computed(() => {
+  return newPassword.value.length >= 4 && newPassword.value === confirmNewPassword.value;
 });
 
 // 초기 데이터 로딩
@@ -348,9 +405,14 @@ const login = async () => {
     );
     
     if (res.data?.success) {
-      closeSidebar?.(); // 로그인 후 left menu 접힌 상태로 보이도록 (모바일)
-      await userStore.loadSession(); // 세션 로드
-      router.replace("/portal");
+      if (res.data.user.requirePasswordChange) {
+        loggedInUserId.value = res.data.user.id;
+        showPasswordChangeModal.value = true;
+      } else {
+        closeSidebar?.(); // 로그인 후 left menu 접힌 상태로 보이도록 (모바일)
+        await userStore.loadSession(); // 세션 로드
+        router.replace("/portal");
+      }
     } else {
       error.value = res.data?.message || "로그인 실패";
     }
@@ -362,6 +424,42 @@ const login = async () => {
     }
     
   }
+};
+
+const changePassword = async () => {
+  passwordChangeError.value = "";
+  if (newPassword.value !== confirmNewPassword.value) {
+    passwordChangeError.value = "비밀번호가 일치하지 않습니다.";
+    return;
+  }
+  try {
+    const res = await axios.post(`/api/users/${loggedInUserId.value}/change-password`, {
+      newPassword: newPassword.value
+    }, { withCredentials: true });
+    
+    if (res.data?.success) {
+      alert("비밀번호가 성공적으로 변경되었습니다.");
+      showPasswordChangeModal.value = false;
+      closeSidebar?.();
+      await userStore.loadSession();
+      router.replace("/portal");
+    } else {
+      passwordChangeError.value = res.data?.message || "비밀번호 변경 실패";
+    }
+  } catch (err) {
+    passwordChangeError.value = err?.response?.data?.message || "비밀번호 변경 중 오류 발생";
+  }
+};
+
+const cancelPasswordChange = async () => {
+  try {
+    await axios.post("/api/logout", {}, { withCredentials: true });
+  } catch(e) {}
+  showPasswordChangeModal.value = false;
+  loggedInUserId.value = null;
+  newPassword.value = "";
+  confirmNewPassword.value = "";
+  password.value = "";
 };
 </script>
 
