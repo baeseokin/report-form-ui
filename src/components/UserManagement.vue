@@ -116,14 +116,37 @@
         <div class="space-y-6 bg-white p-6 rounded-lg shadow">
           <!-- 기본 정보 2열 그리드 -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- 사용자ID: 신규만 수정 가능 -->
+            <!-- 부서 (1순위) -->
+            <label class="block">
+              <span class="font-semibold text-gray-700">부서</span>
+              <select
+                v-model="selectedUser.dept"
+                class="border px-3 py-2 rounded-lg w-full mt-1"
+              >
+                <option v-for="dept in departments" :key="dept.id" :value="dept.name">
+                  {{ dept.name }}
+                </option>
+              </select>
+            </label>
+
+            <!-- 사용자ID: 신규만 수정 가능 (2순위) -->
             <label class="block">
               <span class="font-semibold text-gray-700">사용자ID</span>
+              <div v-if="selectedUser.isNew" class="flex mt-1">
+                <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 bg-gray-100 text-gray-600">
+                  {{ selectedDeptCode }}
+                </span>
+                <input
+                  v-model="selectedUser.userId"
+                  class="border px-3 py-2 rounded-r-lg w-full flex-1"
+                  placeholder="나머지 ID 입력 (예: 01)"
+                />
+              </div>
               <input
+                v-else
                 v-model="selectedUser.userId"
-                :disabled="!selectedUser.isNew"
-                class="border px-3 py-2 rounded-lg w-full mt-1 disabled:bg-gray-100 disabled:text-gray-500"
-                placeholder="예: user01"
+                disabled
+                class="border px-3 py-2 rounded-lg w-full mt-1 bg-gray-100 text-gray-500"
               />
             </label>
 
@@ -157,19 +180,6 @@
                 class="border px-3 py-2 rounded-lg w-full mt-1"
                 placeholder="예: 01012345678"
               />
-            </label>
-
-            <!-- 부서 -->
-            <label class="block">
-              <span class="font-semibold text-gray-700">부서</span>
-              <select
-                v-model="selectedUser.dept"
-                class="border px-3 py-2 rounded-lg w-full mt-1"
-              >
-                <option v-for="dept in departments" :key="dept.id" :value="dept.name">
-                  {{ dept.name }}
-                </option>
-              </select>
             </label>
 
             <!-- 역할 -->
@@ -329,12 +339,19 @@ export default {
       _onResize: null,   // 리스너 참조
     };
   },
+  computed: {
+    selectedDeptCode() {
+      if (!this.selectedUser || !this.selectedUser.dept) return "";
+      const dept = this.departments.find(d => d.name === this.selectedUser.dept);
+      return dept && dept.code ? dept.code.toLowerCase() : "";
+    }
+  },
   methods: {
     async fetchDepartments() {
       try {
         const res = await axios.get("/api/departments");
         this.departments = res.data
-          .map(d => ({ id: d.id, name: d.dept_name }))
+          .map(d => ({ id: d.id, name: d.dept_name, code: d.dept_cd }))
           .sort((a, b) => a.name.localeCompare(b.name));
       } catch (err) {
         console.error("부서 데이터 불러오기 실패:", err);
@@ -405,13 +422,14 @@ export default {
 
     // ✅ 신규 사용자
     newUser() {
+      const defaultDept = this.departments[0];
       this.selectedUser = {
         id: null,
         userId: "",
         name: "",
         email: "",
         phone: "",
-        dept: this.departments[0]?.name || "",
+        dept: defaultDept?.name || "",
         roles: [],
         newPassword: "",
         confirmPassword: "",
@@ -437,14 +455,15 @@ export default {
         su.roles = this.normalizeRoles(su.roles);
 
         // 프론트 유효성 검사
-        if (!su.userId) return alert("사용자ID를 입력하세요.");
+        const finalUserId = su.isNew ? `${this.selectedDeptCode}${su.userId}` : su.userId;
+        if (!finalUserId) return alert("사용자ID를 입력하세요.");
         if (!su.name) return alert("이름을 입력하세요.");
         if (!su.dept) return alert("부서를 선택하세요.");
         if (!su.newPassword) return alert("비밀번호를 입력하세요.");
         if (su.newPassword !== su.confirmPassword) return alert("비밀번호가 일치하지 않습니다.");
 
         const payload = {
-          userId: su.userId,
+          userId: finalUserId,
           name: su.name,
           email: su.email,
           phone: su.phone,

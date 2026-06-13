@@ -131,12 +131,34 @@
 
         <div class="space-y-4">
           <label class="block text-sm font-semibold text-gray-700">
+            부서
+            <select
+              v-model="selectedUser.dept"
+              class="mt-1 w-full mobile-form-control mobile-form-control-select"
+            >
+              <option v-for="dept in departments" :key="dept.id" :value="dept.name">
+                {{ dept.name }}
+              </option>
+            </select>
+          </label>
+
+          <label class="block text-sm font-semibold text-gray-700">
             사용자ID
+            <div v-if="selectedUser.isNew" class="flex mt-1">
+              <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 bg-gray-100 text-gray-600 border-gray-200">
+                {{ selectedDeptCode }}
+              </span>
+              <input
+                v-model="selectedUser.userId"
+                class="w-full mobile-form-control rounded-l-none"
+                placeholder="나머지 ID 입력 (예: 01)"
+              />
+            </div>
             <input
+              v-else
               v-model="selectedUser.userId"
-              :disabled="!selectedUser.isNew"
+              disabled
               class="mt-1 w-full mobile-form-control disabled:bg-gray-100 disabled:text-gray-500"
-              placeholder="예: user01"
             />
           </label>
 
@@ -167,18 +189,6 @@
               class="mt-1 w-full mobile-form-control"
               placeholder="예: 01012345678"
             />
-          </label>
-
-          <label class="block text-sm font-semibold text-gray-700">
-            부서
-            <select
-              v-model="selectedUser.dept"
-              class="mt-1 w-full mobile-form-control mobile-form-control-select"
-            >
-              <option v-for="dept in departments" :key="dept.id" :value="dept.name">
-                {{ dept.name }}
-              </option>
-            </select>
           </label>
 
           <label class="block text-sm font-semibold text-gray-700">
@@ -340,13 +350,18 @@ export default {
       if (this.filters.name) parts.push(this.filters.name);
       return parts.join(" · ") || "조회 조건 선택";
     },
+    selectedDeptCode() {
+      if (!this.selectedUser || !this.selectedUser.dept) return "";
+      const dept = this.departments.find(d => d.name === this.selectedUser.dept);
+      return dept && dept.code ? dept.code.toLowerCase() : "";
+    }
   },
   methods: {
     async fetchDepartments() {
       try {
         const res = await axios.get("/api/departments");
         this.departments = res.data
-          .map(d => ({ id: d.id, name: d.dept_name }))
+          .map(d => ({ id: d.id, name: d.dept_name, code: d.dept_cd }))
           .sort((a, b) => a.name.localeCompare(b.name));
       } catch (err) {
         console.error("부서 데이터 불러오기 실패:", err);
@@ -411,13 +426,14 @@ export default {
     },
 
     newUser() {
+      const defaultDept = this.departments[0];
       this.selectedUser = {
         id: null,
         userId: "",
         name: "",
         email: "",
         phone: "",
-        dept: this.departments[0]?.name || "",
+        dept: defaultDept?.name || "",
         roles: [],
         newPassword: "",
         confirmPassword: "",
@@ -441,14 +457,15 @@ export default {
         const su = this.selectedUser;
         su.roles = this.normalizeRoles(su.roles);
 
-        if (!su.userId) return alert("사용자ID를 입력하세요.");
+        const finalUserId = su.isNew ? `${this.selectedDeptCode}${su.userId}` : su.userId;
+        if (!finalUserId) return alert("사용자ID를 입력하세요.");
         if (!su.name) return alert("이름을 입력하세요.");
         if (!su.dept) return alert("부서를 선택하세요.");
         if (!su.newPassword) return alert("비밀번호를 입력하세요.");
         if (su.newPassword !== su.confirmPassword) return alert("비밀번호가 일치하지 않습니다.");
 
         const payload = {
-          userId: su.userId,
+          userId: finalUserId,
           name: su.name,
           email: su.email,
           phone: su.phone,
