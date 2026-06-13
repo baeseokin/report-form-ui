@@ -208,8 +208,10 @@
             <input
               type="password"
               v-model="selectedUser.newPassword"
-              class="mt-1 w-full mobile-form-control"
+              class="mt-1 w-full mobile-form-control disabled:bg-gray-100 disabled:text-gray-500"
               autocomplete="new-password"
+              :disabled="selectedUser.isNew"
+              :placeholder="selectedUser.isNew ? '0000 (초기 비밀번호)' : ''"
             />
           </label>
 
@@ -218,10 +220,15 @@
             <input
               type="password"
               v-model="selectedUser.confirmPassword"
-              class="mt-1 w-full mobile-form-control"
+              class="mt-1 w-full mobile-form-control disabled:bg-gray-100 disabled:text-gray-500"
               autocomplete="new-password"
+              :disabled="selectedUser.isNew"
+              :placeholder="selectedUser.isNew ? '0000 (초기 비밀번호)' : ''"
             />
           </label>
+          <p v-if="selectedUser.isNew" class="text-xs text-red-500 mt-1 mb-2">
+            ※ 신규 사용자의 초기 비밀번호는 '0000'으로 자동 설정되며, 다음 로그인 시 반드시 변경해야 합니다.
+          </p>
         </div>
 
         <!-- 서명 영역 -->
@@ -463,13 +470,11 @@ export default {
       try {
         const su = this.selectedUser;
         su.roles = this.normalizeRoles(su.roles);
-
+        // 프론트 유효성 검사
         const finalUserId = su.isNew ? `${this.selectedDeptCode}${su.userId}` : su.userId;
         if (!finalUserId) return alert("사용자ID를 입력하세요.");
         if (!su.name) return alert("이름을 입력하세요.");
         if (!su.dept) return alert("부서를 선택하세요.");
-        if (!su.newPassword) return alert("비밀번호를 입력하세요.");
-        if (su.newPassword !== su.confirmPassword) return alert("비밀번호가 일치하지 않습니다.");
 
         const payload = {
           userId: finalUserId,
@@ -478,7 +483,7 @@ export default {
           phone: su.phone,
           dept: su.dept,
           roles: Array.isArray(su.roles) ? su.roles : [],
-          password: su.newPassword,
+          password: "0000",
         };
 
         const res = await axios.post(`/api/users`, payload);
