@@ -187,6 +187,8 @@ const openDetail = async (row) => {
     payee: data.payee,
     date: data.request_date,
     totalAmount: data.total_amount,
+    accountInfo: data.accountInfo,
+    requesterPhone: data.requesterPhone,
     comment: data.comment,
     aliasName: data.aliasName,
     items: data.items || [],

@@ -12,6 +12,8 @@
       <p><strong>계정명:</strong> {{ gwanName }} / {{ hangName }}</p>
       <p><strong>청구총액:</strong> ₩{{ Number(totalAmount || 0).toLocaleString() }}</p>
       <p><strong>청구요청 별칭:</strong> {{ aliasName }}</p>
+      <p><strong>청구계좌번호:</strong> {{ accountInfo || '—' }}</p>
+      <p><strong>청구자 전화번호:</strong> {{ requesterPhone || '—' }}</p>
     </div>
 
     <!-- 결재선 선택 -->
@@ -208,6 +210,8 @@ const props = defineProps([
   "comment",
   "items",
   "aliasName",
+  "accountInfo",
+  "requesterPhone",
   "attachedFiles",
   "selectedDept",
   "selectedGwan",
@@ -335,6 +339,8 @@ const generatePreview = () => {
     totalAmount: props.totalAmount,
     comment: props.comment,
     aliasName: props.aliasName,
+    accountInfo: props.accountInfo,
+    requesterPhone: props.requesterPhone,
     items: normalizeItems(props.items),
     attachedFiles: props.attachedFiles || [],
   };
@@ -562,6 +568,8 @@ const sendApprovalRequest = async () => {
       totalAmount: props.totalAmount,
       comment: props.comment,
       aliasName: props.aliasName,
+      accountInfo: props.accountInfo,
+      requesterPhone: props.requesterPhone,
       items: normalizeItems(props.items),
       selectedGwan: props.selectedGwan,
       selectedHang: props.selectedHang,

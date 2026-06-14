@@ -36,6 +36,8 @@
         v-model:payee="payee"
         v-model:date="date"
         v-model:aliasName="aliasName"
+        v-model:accountInfo="accountInfo"
+        v-model:requesterPhone="requesterPhone"
         :dept-data="deptData"
         @next="goNextTab"
       />
@@ -75,6 +77,8 @@
         :selected-hang="selectedHang"
         :items="items"
         :alias-name="aliasName"
+        :account-info="accountInfo"
+        :requester-phone="requesterPhone"
         v-model:comment="comment"
         :attached-files="attachedFiles"
         @prev="goPrevTab"
@@ -164,7 +168,10 @@ const author = ref("");
 const payee = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
+const accountInfo = ref("");
+const requesterPhone = ref("");
 const deptData = ref({}); // ✅ 서버에서 가져올 dept+계정 데이터
+const departmentsRef = ref([]); // ✅ 부서 목록
 const allCategories = ref([]); // ✅ 전체 계정과목 (이름 변환용)
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
@@ -187,9 +194,20 @@ onMounted(async () => {
     author.value = user.value.userName;
     if (!payee.value) payee.value = user.value.userName;
   }
+  if (!requesterPhone.value && user.value?.phone) {
+    requesterPhone.value = user.value.phone;
+  }
   try {
     const deptRes = await axios.get("/api/departments");
     const depts = deptRes.data;
+    departmentsRef.value = depts;
+
+    if (!route.params.id || route.query.mode === 'copy') {
+      const deptInfo = depts.find(d => d.dept_name === selectedDept.value);
+      if (deptInfo && deptInfo.account_info && !accountInfo.value) {
+        accountInfo.value = deptInfo.account_info;
+      }
+    }
 
     // ✅ 전체 계정과목 로드 (이름 변환용)
     try {
@@ -297,6 +315,8 @@ onMounted(async () => {
       payee.value = data.payee || author.value;
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
+      accountInfo.value = data.accountInfo || "";
+      requesterPhone.value = data.requesterPhone || "";
       selectedGwan.value = data.selectedGwan;
       selectedHang.value = data.selectedHang;
 
@@ -339,10 +359,49 @@ const hasValidExpense = computed(() => {
 });
 
 // ✅ 부서 변경 시: 관/항 선택 초기화 → 지출내역 탭에서 새 부서 계정으로 다시 선택
-watch(selectedDept, () => {
+watch(selectedDept, (newDept) => {
   selectedGwan.value = "";
   selectedHang.value = "";
+  // 부서의 기본 계좌번호로 업데이트 (현재 비어있을 경우 또는 수정 모드가 아닐 때)
+  if (!route.params.id || route.query.mode === 'copy') {
+    const deptInfo = departmentsRef.value.find(d => d.dept_name === newDept);
+    if (deptInfo && deptInfo.account_info) {
+      accountInfo.value = deptInfo.account_info;
+    }
+  }
 });
+
+// ✅ user 데이터가 지연 로딩되는 경우를 대비해 watch로도 처리
+watch(user, (newUser) => {
+  if (newUser) {
+    if (!route.params.id || route.query.mode === 'copy') {
+      if (!selectedDept.value && newUser.deptName) {
+        selectedDept.value = newUser.deptName;
+      }
+      if (!author.value && newUser.userName) {
+        author.value = newUser.userName;
+        if (!payee.value) payee.value = newUser.userName;
+      }
+      if (!requesterPhone.value && newUser.phone) {
+        requesterPhone.value = newUser.phone;
+      }
+    }
+  }
+}, { immediate: true });
+
+// ✅ requesterPhone 형식 자동 포맷팅
+watch(requesterPhone, (newVal) => {
+  if (!newVal) return;
+  let val = newVal.replace(/[^0-9]/g, "");
+  if (val.length > 3 && val.length <= 7) {
+    val = val.slice(0, 3) + "-" + val.slice(3);
+  } else if (val.length > 7) {
+    val = val.slice(0, 3) + "-" + val.slice(3, 7) + "-" + val.slice(7, 11);
+  }
+  if (val !== newVal) {
+    requesterPhone.value = val;
+  }
+}, { immediate: true });
 
 // ✅ ConfirmTab 표시용 (코드 -> 이름 변환)
 const currentCategories = computed(() => deptData.value[selectedDept.value] || []);
@@ -421,6 +480,8 @@ const generateReport = (previewData) => {
     payee: payee.value,
     date: date.value,
     totalAmount: totalAmount.value,
+    accountInfo: accountInfo.value,
+    requesterPhone: requesterPhone.value,
     aliasName: aliasName.value,
     items: JSON.parse(JSON.stringify(itemsForConfirm.value)),
     comment: comment.value,

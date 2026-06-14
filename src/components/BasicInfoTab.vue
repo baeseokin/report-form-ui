@@ -78,6 +78,31 @@
       </div>
     </div>
 
+    <!-- ✅ 청구계좌 및 전화번호 -->
+    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">청구계좌번호</label>
+        <input
+          type="text"
+          :value="accountInfo"
+          @input="$emit('update:accountInfo', $event.target.value)"
+          placeholder="예: 국민 495201-01-22221112 홍길동"
+          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">청구자 전화번호</label>
+        <input
+          type="text"
+          :value="requesterPhone"
+          @input="handlePhoneInput($event)"
+          maxlength="13"
+          placeholder="전화번호 입력"
+          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+    </div>
+
     <!-- ✅ 청구요청 별칭 입력란 -->
     <div>
       <label class="block text-sm font-semibold text-gray-700 mb-1">청구요청 별칭</label>
@@ -119,6 +144,8 @@ const props = defineProps([
   "deptData",
   "documentType",
   "aliasName",
+  "accountInfo",
+  "requesterPhone",
 ]);
 
 const emits = defineEmits([
@@ -128,8 +155,21 @@ const emits = defineEmits([
   "update:date",
   "update:documentType",
   "update:aliasName",
+  "update:accountInfo",
+  "update:requesterPhone",
   "next",
 ]);
+
+const handlePhoneInput = (event) => {
+  let val = event.target.value.replace(/[^0-9]/g, "");
+  if (val.length > 3 && val.length <= 7) {
+    val = val.slice(0, 3) + "-" + val.slice(3);
+  } else if (val.length > 7) {
+    val = val.slice(0, 3) + "-" + val.slice(3, 7) + "-" + val.slice(7, 11);
+  }
+  emits("update:requesterPhone", val);
+  event.target.value = val;
+};
 
 // 청구 유형 리스트 (value: 저장/API용, label: 버튼 표시용)
 const documentTypeOptions = [

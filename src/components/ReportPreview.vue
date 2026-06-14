@@ -202,6 +202,12 @@
           </tbody>
         </table>
 
+        <!-- ✅ 청구계좌 및 전화번호 -->
+        <div v-if="report.accountInfo || report.requesterPhone" class="mt-2 flex justify-end gap-4 text-sm text-gray-600">
+          <span v-if="report.accountInfo">청구계좌번호: {{ report.accountInfo }}</span>
+          <span v-if="report.requesterPhone">청구자 전화번호: {{ report.requesterPhone }}</span>
+        </div>
+
         <!-- ✅ 영수 문구 -->
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />

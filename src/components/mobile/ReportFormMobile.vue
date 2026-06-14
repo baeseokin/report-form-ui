@@ -26,6 +26,8 @@
         v-model:payee="payee"
         v-model:date="date"
         v-model:aliasName="aliasName"
+        v-model:accountInfo="accountInfo"
+        v-model:requesterPhone="requesterPhone"
         :dept-data="deptData"
         @next="activeStep++"
       />
@@ -63,6 +65,8 @@
         :selected-hang="selectedHang"
         :items="items"
         :alias-name="aliasName"
+        :account-info="accountInfo"
+        :requester-phone="requesterPhone"
         v-model:comment="comment"
         :attached-files="attachedFiles"
         @prev="activeStep--"
@@ -83,9 +87,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import { useUserStore } from "@/store/userStore";
+import { storeToRefs } from "pinia";
 
 // 모바일 전용 탭 컴포넌트 import
 import BasicInfoTabMobile from "./BasicInfoTabMobile.vue";
@@ -107,7 +113,12 @@ const author = ref("");
 const payee = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
+const accountInfo = ref("");
+const requesterPhone = ref("");
 const deptData = ref({});
+const departmentsRef = ref([]);
+
+const { user } = storeToRefs(useUserStore());
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
 ]);
@@ -122,6 +133,14 @@ onMounted(async () => {
   try {
     const deptRes = await axios.get("/api/departments");
     const depts = deptRes.data;
+    departmentsRef.value = depts;
+
+    if (!route.params.id || route.query.mode === 'copy') {
+      const deptInfo = depts.find(d => d.dept_name === selectedDept.value);
+      if (deptInfo && deptInfo.account_info && !accountInfo.value) {
+        accountInfo.value = deptInfo.account_info;
+      }
+    }
 
     deptMap = {};
     for (const dept of depts) {
@@ -223,6 +242,8 @@ onMounted(async () => {
       payee.value = data.payee || "";
       date.value = data.request_date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
       aliasName.value = data.aliasName;
+      accountInfo.value = data.accountInfo || "";
+      requesterPhone.value = data.requesterPhone || "";
       selectedGwan.value = data.selectedGwan;
       selectedHang.value = data.selectedHang;
       items.value = (data.items || []).map(resolveItemForEdit);
@@ -233,6 +254,47 @@ onMounted(async () => {
     console.error("❌ 부서/계정과목 불러오기 실패:", err);
   }
 });
+
+watch(selectedDept, (newDept) => {
+  selectedGwan.value = "";
+  selectedHang.value = "";
+  if (!route.params.id || route.query.mode === 'copy') {
+    const deptInfo = departmentsRef.value.find(d => d.dept_name === newDept);
+    if (deptInfo && deptInfo.account_info) {
+      accountInfo.value = deptInfo.account_info;
+    }
+  }
+});
+
+watch(user, (newUser) => {
+  if (newUser) {
+    if (!route.params.id || route.query.mode === 'copy') {
+      if (!selectedDept.value && newUser.deptName) {
+        selectedDept.value = newUser.deptName;
+      }
+      if (!author.value && newUser.userName) {
+        author.value = newUser.userName;
+        if (!payee.value) payee.value = newUser.userName;
+      }
+      if (!requesterPhone.value && newUser.phone) {
+        requesterPhone.value = newUser.phone;
+      }
+    }
+  }
+}, { immediate: true });
+
+watch(requesterPhone, (newVal) => {
+  if (!newVal) return;
+  let val = newVal.replace(/[^0-9]/g, "");
+  if (val.length > 3 && val.length <= 7) {
+    val = val.slice(0, 3) + "-" + val.slice(3);
+  } else if (val.length > 7) {
+    val = val.slice(0, 3) + "-" + val.slice(3, 7) + "-" + val.slice(7, 11);
+  }
+  if (val !== newVal) {
+    requesterPhone.value = val;
+  }
+}, { immediate: true });
 
 const totalAmount = computed(() =>
   items.value.reduce((sum, i) => sum + (i.amount || 0), 0)

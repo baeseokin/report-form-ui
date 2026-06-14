@@ -110,6 +110,15 @@
             </select>
           </label>
 
+          <label class="block text-sm font-semibold text-gray-700">
+            청구계좌정보
+            <input
+              v-model="editable.account_info"
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              placeholder="예: 국민 495201-01-22221112 홍길동"
+            />
+          </label>
+
           <div class="grid grid-cols-2 gap-3 text-sm text-gray-600">
             <div>
               <p class="font-semibold">생성일</p>
@@ -164,6 +173,7 @@ function createBlank(parentId = null) {
     dept_name: "",
     dept_cd: "",
     parent_dept_id: parentId,
+    account_info: "",
     created_at: "",
     updated_at: "",
     isNew: true,
@@ -306,8 +316,9 @@ async function saveDepartment() {
   }
 
   const payload = {
-    dept_name: trimmedName,
-    dept_cd: trimmedCode || null,
+    dept_name: editable.value.dept_name,
+    dept_cd: editable.value.dept_cd,
+    account_info: editable.value.account_info,
     parent_dept_id: editable.value.parent_dept_id || null,
   };
 
@@ -332,6 +343,7 @@ async function saveDepartment() {
                 selectById(currentId);
             }
       }
+      alert("저장되었습니다.");
     } catch (err) {
         console.error("부서 저장에 실패했습니다.", err);
         alert("부서를 저장하지 못했습니다. 다시 시도해주세요.");
@@ -349,6 +361,7 @@ async function deleteDepartment() {
     await fetchDepartments();
     selected.value = null;
     editable.value = createBlank();
+    alert("삭제되었습니다.");
   } catch (err) {
     console.error("부서 삭제에 실패했습니다.", err);
     alert("부서를 삭제하지 못했습니다. 다시 시도해주세요.");
