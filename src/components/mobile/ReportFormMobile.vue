@@ -28,6 +28,7 @@
         v-model:aliasName="aliasName"
         v-model:accountInfo="accountInfo"
         v-model:requesterPhone="requesterPhone"
+        v-model:updateDeptAccountInfo="updateDeptAccountInfo"
         :dept-data="deptData"
         @next="activeStep++"
       />
@@ -67,6 +68,7 @@
         :alias-name="aliasName"
         :account-info="accountInfo"
         :requester-phone="requesterPhone"
+        :update-dept-account-info="updateDeptAccountInfo"
         v-model:comment="comment"
         :attached-files="attachedFiles"
         @prev="activeStep--"
@@ -115,6 +117,7 @@ const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
 const accountInfo = ref("");
 const requesterPhone = ref("");
+const updateDeptAccountInfo = ref(true);
 const deptData = ref({});
 const departmentsRef = ref([]);
 

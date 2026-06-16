@@ -81,7 +81,7 @@
     <!-- ✅ 청구계좌 및 전화번호 -->
     <div class="grid grid-cols-2 gap-x-6 gap-y-4">
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">청구계좌번호</label>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">청구 계좌정보</label>
         <input
           type="text"
           :value="accountInfo"
@@ -89,6 +89,16 @@
           placeholder="예: 국민 495201-01-22221112 홍길동"
           class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
         />
+        <div v-if="isAccountInfoChanged" class="mt-2 flex items-center">
+          <input 
+            type="checkbox" 
+            :checked="updateDeptAccountInfo"
+            @change="$emit('update:updateDeptAccountInfo', $event.target.checked)"
+            class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded cursor-pointer"
+            id="chkUpdateAccount"
+          />
+          <label for="chkUpdateAccount" class="text-sm text-gray-600 cursor-pointer">부서정보에 설정된 계좌정보 업데이트</label>
+        </div>
       </div>
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">청구자 전화번호</label>
@@ -146,6 +156,7 @@ const props = defineProps([
   "aliasName",
   "accountInfo",
   "requesterPhone",
+  "updateDeptAccountInfo"
 ]);
 
 const emits = defineEmits([
@@ -157,6 +168,7 @@ const emits = defineEmits([
   "update:aliasName",
   "update:accountInfo",
   "update:requesterPhone",
+  "update:updateDeptAccountInfo",
   "next",
 ]);
 
@@ -196,6 +208,15 @@ const departmentOptions = computed(() => {
   if (!deptName) return list;
   const mine = list.find((d) => d.dept_name === deptName);
   return mine ? [mine] : [{ id: null, dept_name: deptName }];
+});
+
+const isAccountInfoChanged = computed(() => {
+  const dept = departments.value.find(d => d.dept_name === props.selectedDept);
+  if (!dept) return false;
+  const original = dept.account_info || "";
+  const current = props.accountInfo || "";
+  if (!original && !current) return false;
+  return original !== current;
 });
 
 onMounted(async () => {

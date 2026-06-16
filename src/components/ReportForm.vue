@@ -38,6 +38,7 @@
         v-model:aliasName="aliasName"
         v-model:accountInfo="accountInfo"
         v-model:requesterPhone="requesterPhone"
+        v-model:updateDeptAccountInfo="updateDeptAccountInfo"
         :dept-data="deptData"
         @next="goNextTab"
       />
@@ -79,6 +80,7 @@
         :alias-name="aliasName"
         :account-info="accountInfo"
         :requester-phone="requesterPhone"
+        :update-dept-account-info="updateDeptAccountInfo"
         v-model:comment="comment"
         :attached-files="attachedFiles"
         @prev="goPrevTab"
@@ -169,6 +171,7 @@ const payee = ref("");
 const date = ref(new Date().toISOString().slice(0, 10));
 const aliasName = ref("");
 const accountInfo = ref("");
+const updateDeptAccountInfo = ref(true);
 const requesterPhone = ref("");
 const deptData = ref({}); // ✅ 서버에서 가져올 dept+계정 데이터
 const departmentsRef = ref([]); // ✅ 부서 목록
