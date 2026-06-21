@@ -35,10 +35,10 @@
       >맞춤</button>
     </div>
     <div
-      class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen p-0 relative overflow-y-auto overflow-x-hidden border-t-8 border-purple-500 flex justify-center"
+      class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen sm:h-[calc(100vh-5rem)] sm:mb-16 p-0 relative overflow-y-auto overflow-x-hidden border-t-8 border-purple-500 flex justify-center sm:shadow-2xl"
     >
       <!-- 보고서: 한 번에 scale → 페이지 간격이 확대/축소에 따라 변하지 않음 -->
-      <div class="flex flex-col items-center min-h-full w-full">
+      <div class="flex flex-col items-center min-h-full w-full sm:pb-32">
         <div
           ref="reportPanEl"
           :style="scaleWrapperStyle"
@@ -275,9 +275,9 @@
       </div>
     </div>
 
-<!-- ✅ 하단 고정 Float Bar (기본 숨김, 활동 시 표시) -->
+<!-- ✅ 하단 고정 Float Bar (모바일은 활동 시 표시, PC는 항상 표시) -->
 <div
-  class="fixed bottom-0 left-0 w-full bg-gradient-to-r from-purple-100 via-pink-100 to-sky-100 border-t border-gray-200 shadow-inner z-50 no-print transition-opacity duration-500"
+  class="fixed bottom-0 left-0 w-full bg-gradient-to-r from-purple-100 via-pink-100 to-sky-100 border-t border-gray-200 shadow-inner z-50 no-print transition-opacity duration-500 sm:opacity-100 sm:pointer-events-auto"
   :class="{ 'opacity-0 pointer-events-none': !showActionBar, 'opacity-100': showActionBar }"
 >
   <!-- PC 레이아웃 -->
