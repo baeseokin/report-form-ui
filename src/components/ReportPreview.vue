@@ -155,11 +155,23 @@
           <tbody>
             <tr>
               <td class="border w-64 bg-blue-100 font-bold">부서명</td>
-              <td class="border">{{ report.deptName }}</td>
+              <td
+                class="border cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
+                @click.stop="() => copyDetailToClipboard(report.deptName)"
+                @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(report.deptName); }"
+              >
+                {{ report.deptName }}
+              </td>
             </tr>
             <tr>
               <td class="border w-64 bg-blue-100 font-bold">관/항</td>
-              <td class="border">{{ gwanHangLabel }}</td>
+              <td
+                class="border cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
+                @click.stop="() => copyDetailToClipboard(hangLabel)"
+                @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(hangLabel); }"
+              >
+                {{ gwanHangLabel }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -197,7 +209,13 @@
             </tr>
             <tr class="bg-blue-100 font-bold">
               <td colspan="3" class="border text-center">합 계</td>
-              <td class="border text-right">{{ formatAmount(report.totalAmount) }} 원</td>
+              <td
+                class="border text-right cursor-pointer select-none hover:bg-blue-200 active:bg-blue-300 transition-colors"
+                @click.stop="() => copyAmountToClipboard(report.totalAmount)"
+                @pointerup="(e) => { if (e.pointerType !== 'mouse') copyAmountToClipboard(report.totalAmount); }"
+              >
+                {{ formatAmount(report.totalAmount) }} 원
+              </td>
             </tr>
           </tbody>
         </table>
@@ -212,7 +230,13 @@
         <div class="mt-10 text-right text-xl leading-loose">
           위의 금액을 정히 영수합니다.<br />
           {{ formatDate(report.date) }}<br />
-          영수인 성명 : {{ report.payee || report.author }}
+          <span
+            class="cursor-pointer select-none hover:text-purple-600 active:text-purple-800 transition-colors"
+            @click.stop="() => copyDetailToClipboard(report.payee || report.author)"
+            @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(report.payee || report.author); }"
+          >
+            영수인 성명 : {{ report.payee || report.author }}
+          </span>
         </div>
       </div>
 
@@ -450,6 +474,12 @@ const gwanHangLabel = computed(() => {
   const gName = getCategoryName(g);
   const hName = getCategoryName(h);
   return [gName, hName].filter(Boolean).join(" / ");
+});
+
+const hangLabel = computed(() => {
+  const h = props.report?.selectedHang ?? props.report?.items?.[0]?.hang;
+  if (!h) return "";
+  return getCategoryName(h);
 });
 
 // ✅ 모바일/PC 확대·축소 (가로 맞춤 + 사용자 조절)
