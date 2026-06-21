@@ -2,46 +2,44 @@
   <div class="space-y-6 font-nanum">
     <h2 class="text-xl font-bold text-gray-800">💸 지출내역 입력</h2>
 
-    <div class="text-sm text-gray-600">☞ 관/항을 선택하면 해당 범위 기준으로 예산/지출/잔액이 계산되고, 아래에서 목부터 입력할 수 있습니다.</div>
 
     <!-- ✅ 상단: 관/항 선택 (입력 테이블에서는 관/항 컬럼 숨김) -->
     <div class="bg-white border rounded-xl shadow-sm p-4">
-      <div class="flex items-center justify-between mb-3">
-        <div class="text-sm font-semibold text-gray-800">계정 선택</div>
-        <!--div class="text-sm text-gray-500">관/항을 선택해야 금액이 계산됩니다.</div> -->
-      </div>
+      <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+        <div class="text-sm font-semibold text-gray-800 whitespace-nowrap w-20">계정 선택</div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- 관 -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-2">관</label>
-          <div class="relative">
-            <select
-              v-model="selectedGwan"
-              data-testid="select-gwan"
-              class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            >
-              <option disabled value="">관 선택</option>
-              <option v-for="g in getGwans" :key="g.category_id" :value="g.category_id">{{ g.category_name }}</option>
-            </select>
-            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">▾</span>
+        <div class="flex flex-1 flex-col sm:flex-row items-center gap-4 md:gap-8">
+          <!-- 관 -->
+          <div class="flex flex-1 w-full items-center gap-3">
+            <label class="text-xs font-semibold text-gray-600 whitespace-nowrap">관</label>
+            <div class="relative flex-1">
+              <select
+                v-model="selectedGwan"
+                data-testid="select-gwan"
+                class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              >
+                <option disabled value="">관 선택</option>
+                <option v-for="g in getGwans" :key="g.category_id" :value="g.category_id">{{ g.category_name }}</option>
+              </select>
+              <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">▾</span>
+            </div>
           </div>
-        </div>
 
-        <!-- 항 -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-600 mb-2">항</label>
-          <div class="relative">
-            <select
-              v-model="selectedHang"
-              :disabled="!selectedGwan"
-              data-testid="select-hang"
-              class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:bg-gray-100 disabled:text-gray-400"
-            >
-              <option disabled value="">항 선택</option>
-              <option v-for="h in hangsForSelectedGwan" :key="h.category_id" :value="h.category_id">{{ h.category_name }}</option>
-            </select>
-            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">▾</span>
+          <!-- 항 -->
+          <div class="flex flex-1 w-full items-center gap-3">
+            <label class="text-xs font-semibold text-gray-600 whitespace-nowrap">항</label>
+            <div class="relative flex-1">
+              <select
+                v-model="selectedHang"
+                :disabled="!selectedGwan"
+                data-testid="select-hang"
+                class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:bg-gray-100 disabled:text-gray-400"
+              >
+                <option disabled value="">항 선택</option>
+                <option v-for="h in hangsForSelectedGwan" :key="h.category_id" :value="h.category_id">{{ h.category_name }}</option>
+              </select>
+              <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">▾</span>
+            </div>
           </div>
         </div>
       </div>
