@@ -320,6 +320,7 @@ const openPreview = async (id) => {
       date: res.data.request_date,
       totalAmount: res.data.total_amount,
       comment: res.data.comment,
+      remarks: res.data.remarks,
       aliasName: res.data.aliasName,
       accountInfo: res.data.accountInfo,
       requesterPhone: res.data.requesterPhone,

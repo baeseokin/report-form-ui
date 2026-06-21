@@ -207,6 +207,13 @@
                 <span v-if="item.amount">{{ formatAmount(item.amount) }} 원</span>
               </td>
             </tr>
+            <!-- 특이사항 렌더링 -->
+            <tr v-if="report?.remarks" class="bg-gray-50/50">
+              <td colspan="4" class="border text-left p-3">
+                <span class="font-bold text-gray-700 mr-2">📝 특이사항:</span>
+                <span class="text-gray-800 whitespace-pre-wrap">{{ report.remarks }}</span>
+              </td>
+            </tr>
             <tr class="bg-blue-100 font-bold">
               <td colspan="3" class="border text-center">합 계</td>
               <td
@@ -982,9 +989,11 @@ const paddedItems = computed(() => {
     amount: i.amount,
   }));
 
-  return items.length >= 8
+  const maxRows = props.report?.remarks ? 6 : 8;
+
+  return items.length >= maxRows
     ? items
-    : [...items, ...Array(8 - items.length).fill({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })];
+    : [...items, ...Array(maxRows - items.length).fill({ gwan: "", hang: "", mok: "", semok: "", detail: "", amount: null })];
 });
 
 

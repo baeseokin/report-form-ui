@@ -159,6 +159,17 @@
       </div>
     </div>
 
+    <!-- ✅ 특이사항 (Remarks) -->
+    <div class="mt-4">
+      <label class="block text-sm font-semibold text-gray-800 mb-2">📝 지출내역 특이사항 <span class="text-xs text-gray-500 font-normal">(선택)</span></label>
+      <textarea
+        v-model="localRemarks"
+        rows="3"
+        placeholder="지출내역에 대한 전체적인 특이사항을 입력하세요..."
+        class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y"
+      ></textarea>
+    </div>
+
     <!-- 버튼 -->
     <div class="flex justify-between mt-6">
       <div>
@@ -215,6 +226,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  remarks: {
+    type: String,
+    default: "",
+  },
   deptData: {
     type: Object,
     default: () => ({}),
@@ -233,10 +248,15 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang", "update:selectedDept"]);
+const emits = defineEmits(["update:items", "update:remarks", "prev", "next", "update:selectedGwan", "update:selectedHang", "update:selectedDept"]);
 
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
+
+const localRemarks = computed({
+  get: () => props.remarks,
+  set: (val) => emits('update:remarks', val)
+});
 
 // ✅ 합계
 const totalAmount = computed(() =>

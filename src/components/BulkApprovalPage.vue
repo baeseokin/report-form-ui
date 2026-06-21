@@ -362,6 +362,7 @@ const openPreview = async (row) => {
       date: data.request_date,
       totalAmount: data.total_amount,
       comment: data.comment,
+      remarks: data.remarks,
       aliasName: data.aliasName,
       items: data.items || [],
       attachedFiles: data.attachedFiles || [],
@@ -746,7 +747,8 @@ function buildReportHTML(detail, signatureDataURL) {
     detail: i.detail === "__custom__" ? (i.customDetail || "") : (i.detail || ""),
     amount: i.amount,
   }));
-  while (items.length < 8) items.push({ mok: "", semok: "", detail: "", amount: null });
+  const maxRows = detail.remarks ? 6 : 8;
+  while (items.length < maxRows) items.push({ mok: "", semok: "", detail: "", amount: null });
 
   const totalAmount = Number(detail.total_amount || 0).toLocaleString("ko-KR");
   const requestDate = detail.request_date ? (() => {
@@ -876,6 +878,13 @@ function buildReportHTML(detail, signatureDataURL) {
     </thead>
     <tbody>
       ${itemRowsHtml}
+      ${detail.remarks ? `
+      <tr style="background:#f9fafb;">
+        <td colspan="4" style="text-align:left; padding:12px;">
+          <span style="font-weight:bold; color:#374151; margin-right:8px;">📝 특이사항:</span>
+          <span style="color:#1f2937; white-space:pre-wrap;">${escHtml(detail.remarks)}</span>
+        </td>
+      </tr>` : ''}
       <tr class="total-row">
         <td colspan="3" style="text-align:center">합 계</td>
         <td class="amount-col">${totalAmount} 원</td>

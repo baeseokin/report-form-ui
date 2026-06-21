@@ -232,6 +232,17 @@
         </div>
       </div>
 
+      <!-- ✅ 특이사항 (Remarks) -->
+      <div class="mt-4 pb-2">
+        <label class="block text-sm font-semibold text-gray-800 mb-2">📝 지출내역 특이사항 <span class="text-xs text-gray-500 font-normal">(선택)</span></label>
+        <textarea
+          v-model="localRemarks"
+          rows="3"
+          placeholder="지출내역에 대한 전체적인 특이사항을 입력하세요..."
+          class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y"
+        ></textarea>
+      </div>
+
       <!-- ✅ 하단 행추가/삭제 버튼 추가 (상단과 동일한 스타일 적용) -->
       <div v-if="isSelectionReady && formattedItems.length > 0" class="flex justify-end gap-2 pt-1 pb-3">
         <button
@@ -304,12 +315,21 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  remarks: {
+    type: String,
+    default: "",
+  },
 });
 
-const emits = defineEmits(["update:items", "prev", "next", "update:selectedGwan", "update:selectedHang", "update:selectedDept"]);
+const emits = defineEmits(["update:items", "update:remarks", "prev", "next", "update:selectedGwan", "update:selectedHang", "update:selectedDept"]);
 
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => props.selectedDept || user.value?.deptName || "");
+
+const localRemarks = computed({
+  get: () => props.remarks,
+  set: (val) => emits('update:remarks', val)
+});
 
 // ✅ 마운트 상태 추적 (비동기 업데이트 방지)
 const isMountedRef = ref(false);

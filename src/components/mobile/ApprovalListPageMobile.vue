@@ -208,6 +208,7 @@ const openDetail = async (row) => {
     accountInfo: data.accountInfo,
     requesterPhone: data.requesterPhone,
     comment: data.comment,
+    remarks: data.remarks,
     aliasName: data.aliasName,
     items: data.items || [],
     attachedFiles: data.attachedFiles || [],

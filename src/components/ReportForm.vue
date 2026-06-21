@@ -48,6 +48,7 @@
         v-if="activeTab === '지출내역'"
         :key="selectedDept || 'expense'"
         v-model:items="items"
+        v-model:remarks="remarks"
         v-model:selected-gwan="selectedGwan"
         v-model:selected-hang="selectedHang"        
         v-model:selected-dept="selectedDept"
@@ -82,6 +83,7 @@
         :requester-phone="requesterPhone"
         :update-dept-account-info="updateDeptAccountInfo"
         v-model:comment="comment"
+        :remarks="remarks"
         :attached-files="attachedFiles"
         @prev="goPrevTab"
         @generate="generateReport"
@@ -179,6 +181,7 @@ const allCategories = ref([]); // ✅ 전체 계정과목 (이름 변환용)
 const items = ref([
   { selected: true, gwan: "", hang: "", mok: "", semok: "", detail: "", amount: 0 },
 ]);
+const remarks = ref("");
 const comment = ref("");
 const report = ref(null);
 const attachedFiles = ref([]);
@@ -322,6 +325,7 @@ onMounted(async () => {
       requesterPhone.value = data.requesterPhone || "";
       selectedGwan.value = data.selectedGwan;
       selectedHang.value = data.selectedHang;
+      remarks.value = data.remarks || "";
 
       items.value = (data.items || []).map(resolveItemForEdit);
 
@@ -486,6 +490,7 @@ const generateReport = (previewData) => {
     accountInfo: accountInfo.value,
     requesterPhone: requesterPhone.value,
     aliasName: aliasName.value,
+    remarks: remarks.value,
     items: JSON.parse(JSON.stringify(itemsForConfirm.value)),
     comment: comment.value,
     attachedFiles: attachedFiles.value || [],
