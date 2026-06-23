@@ -35,7 +35,6 @@
       </div>
 
       <div class="relative w-full max-w-[420px] bg-white px-8 py-12 sm:px-10 sm:py-16 shadow-[20px_40px_80px_rgba(0,0,0,0.1)] rounded-[2.5rem] border border-gray-100/50 backdrop-blur-sm animate-slideUp">
-      <h2 class="text-2xl font-bold mb-6 text-center">🔐 로그인</h2>
 
       <div class="mb-3">
         <button
@@ -117,6 +116,14 @@
         <div v-if="loading.departments">· 부서 목록 불러오는 중…</div>
         <div v-if="loading.roles">· 역할 목록 불러오는 중…</div>
         <div v-if="loading.users">· 사용자 목록 불러오는 중…</div>
+      </div>
+
+      <!-- 모바일 접속용 QR 코드 (작은 화면에서는 숨김) -->
+      <div class="hidden sm:flex mt-8 flex-col items-center justify-center border-t border-gray-100 pt-6">
+        <p class="text-sm text-gray-500 mb-3 font-medium">📱 스마트폰으로 간편하게 접속하세요</p>
+        <div class="p-2 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://www.woncheonfinance.co.kr/" alt="모바일 접속 QR코드" class="w-24 h-24" />
+        </div>
       </div>
       </div>
 
