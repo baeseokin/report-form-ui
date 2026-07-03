@@ -97,6 +97,10 @@ const routes = [
   { path: "/userManagement", component: UserManagement, meta: { menuName: "사용자 관리" } },
   { path: "/roleAccess", component: RoleAccess, meta: { menuName: "권한 관리" } },
   { path: "/approval-lines", component: ApprovalLineManagement, meta: { menuName: "결재선 관리" } },
+  
+  // 가청구건 등록
+  { path: "/initialExpenseInput", component: () => import("../components/InitialExpenseInput.vue"), meta: { menuName: "가청구건 등록" } },
+
 
   // ✅ 재정부 전용 일괄결재
   { path: "/bulkApproval", component: BulkApprovalPage, meta: { menuName: "재정부 일괄결재" } },
@@ -148,8 +152,7 @@ router.beforeEach(async (to, from, next) => {
 
   // ✅ 메뉴 접근 권한 체크 (로그인된 경우에만 실행됨)
   if (userStore.user && to.meta.menuName && !to.meta.publicMenu) {
-    // 권한 목록이 로드되기 전(race condition)에 체크되는 것을 방지하기 위해 userStore.access가 로드되었는지 확인
-    const hasAccess = userStore.access.some(
+    let hasAccess = userStore.access.some(
       (a) => a.menu_name === to.meta.menuName && a.access_type === "all"
     );
 

@@ -237,6 +237,7 @@ const allMenus = [
   { label: "사용자 관리", path: "/userManagement", icon: "👤" },
   { label: "결재선 관리", path: "/approval-lines", icon: "📄" },
   { label: "권한 관리", path: "/roleAccess", icon: "🔑" },
+  { label: "가청구건 등록", path: "/initialExpenseInput", icon: "➕" },
   { label: "이메일 테스트", path: "/email-test", icon: "🔑" },
   
 ];

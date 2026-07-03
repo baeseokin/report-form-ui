@@ -80,22 +80,20 @@ const allowedMenus = computed(() => {
     { label: "예산 관리", path: "/budgets" },
     { label: "예산집행 현황", path: "/budgetStatus" },
     { label: "부서 예산집행 현황", path: "/deptBudgetStatus" },
+    { label: "가청구건 등록", path: "/initialExpenseInput" },
   ];
 
   // ✅ role_access 테이블에 access_type = 'all' 등록된 메뉴만 표시
   // 🔍 디버깅 로그 추가
-  console.log("✅ allMenus:", allMenus);
-  console.log("✅ userStore.access:", userStore.access);
-
-  const result = allMenus.filter((m) =>
-    userStore.access.some((a) => {
+  const result = allMenus.filter((m) => {
+    return userStore.access.some((a) => {
       const match = a.menu_name === m.label && a.access_type === "all";
       if (match) {
         console.log(`✅ 메뉴 허용됨: ${m.label}`);
       }
       return match;
-    })
-  );
+    });
+  });
 
   console.log("👉 최종 allowedMenus:", result);
   return result;
