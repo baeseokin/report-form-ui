@@ -99,8 +99,13 @@ const routes = [
   { path: "/approval-lines", component: ApprovalLineManagement, meta: { menuName: "결재선 관리" } },
   
   // 가청구건 등록
-  { path: "/initialExpenseInput", component: () => import("../components/InitialExpenseInput.vue"), meta: { menuName: "가청구건 등록" } },
-
+  { 
+    path: "/initialExpenseInput", 
+    component: () => isMobile() 
+      ? import("../components/mobile/InitialExpenseInputMobile.vue")
+      : import("../components/InitialExpenseInput.vue"), 
+    meta: { menuName: "가청구건 등록" } 
+  },
 
   // ✅ 재정부 전용 일괄결재
   { path: "/bulkApproval", component: BulkApprovalPage, meta: { menuName: "재정부 일괄결재" } },
