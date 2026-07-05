@@ -1231,9 +1231,22 @@ async function generateAndSavePDF(bodyHTML, fileName) {
 
       const img = canvas.toDataURL("image/jpeg", 0.98);
       const pdfW = pdf.internal.pageSize.getWidth();
+      const pdfH = pdf.internal.pageSize.getHeight();
       const imgH = (canvas.height * pdfW) / canvas.width;
       if (i > 0) pdf.addPage();
-      pdf.addImage(img, "JPEG", 0, 0, pdfW, imgH);
+      
+      let position = 0;
+      let heightLeft = imgH;
+
+      pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
+      heightLeft -= pdfH;
+
+      while (heightLeft > 0) {
+        position = position - pdfH;
+        pdf.addPage();
+        pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
+        heightLeft -= pdfH;
+      }
     }
 
     pdf.save(`${fileName}.pdf`);

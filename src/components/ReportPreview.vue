@@ -1237,10 +1237,24 @@ const generatePDF = async () => {
 
     const img = canvas.toDataURL("image/jpeg", 0.98);
     const pdfW = pdf.internal.pageSize.getWidth();
+    const pdfH = pdf.internal.pageSize.getHeight();
     const imgH = (canvas.height * pdfW) / canvas.width;
 
     if (i > 0) pdf.addPage();
-    pdf.addImage(img, "JPEG", 0, 0, pdfW, imgH);
+    
+    let position = 0;
+    let heightLeft = imgH;
+
+    pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
+    heightLeft -= pdfH;
+
+    // 이미지가 한 페이지(A4) 길이를 초과하면 다음 페이지를 생성하여 잘린 부분 출력
+    while (heightLeft > 0) {
+      position = position - pdfH;
+      pdf.addPage();
+      pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
+      heightLeft -= pdfH;
+    }
   }
   return pdf;
 };
@@ -1333,10 +1347,34 @@ body {
     font-family: "Nanum Barun Gothic", "Malgun Gothic", "Apple SD Gothic Neo", "AppleGothic", "Noto Sans KR", sans-serif !important;
   }
   .page {
-    border: none;
-    box-shadow: none;
-    page-break-after: always;
-    padding: 20mm 10mm;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10mm 5mm !important;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+  
+  /* 모달 래퍼 및 컨테이너들의 레이아웃 제한(스크롤, 고정 높이)을 풀어야 다중 페이지 인쇄가 가능함 */
+  .fixed, .absolute {
+    position: static !important;
+  }
+  .h-screen, .h-full, .min-h-full, .overflow-y-auto, .overflow-x-hidden {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  .report-pan-wrapper {
+    transform: none !important;
+  }
+  
+  /* 테이블 행 단위로 페이지가 나뉘도록 설정 */
+  table {
+    page-break-inside: auto !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
   }
 }
 .report-content { font-size: 14pt; }
