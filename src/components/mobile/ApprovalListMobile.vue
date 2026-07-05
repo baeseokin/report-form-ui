@@ -62,6 +62,28 @@
             </select>
           </div>
 
+          <!-- 관 -->
+          <div>
+            <label class="block text-sm mb-1">관</label>
+            <select v-model="filters.selectedGwan" @change="filters.selectedHang = ''; fetchApprovals(1)" class="mobile-form-control mobile-form-control-select w-full">
+              <option value="">전체</option>
+              <option v-for="g in gwans" :key="g.category_id" :value="g.category_id">
+                {{ g.category_name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- 항 -->
+          <div>
+            <label class="block text-sm mb-1">항</label>
+            <select v-model="filters.selectedHang" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-select w-full">
+              <option value="">전체</option>
+              <option v-for="h in hangs" :key="h.category_id" :value="h.category_id">
+                {{ h.category_name }}
+              </option>
+            </select>
+          </div>
+
           <!-- 청구 시작일자 -->
           <div>
             <label class="block text-sm mb-1">청구 시작일자</label>
@@ -115,10 +137,11 @@
         </div>
 
         <p class="text-gray-700 text-sm"><strong>부서:</strong> {{ a.dept_name }}</p>
-        <p class="text-gray-700 text-sm"><strong>작성자:</strong> {{ a.author }}</p>
-        <p class="text-gray-700 text-sm"><strong>별칭:</strong> {{ a.aliasName }}</p>
+        <!-- <p class="text-gray-700 text-sm"><strong>작성자:</strong> {{ a.author }}</p> -->
+        <p class="text-gray-700 text-sm"><strong>관/항:</strong> {{ (a.gwanName || a.selectedGwan) ? (a.gwanName || a.selectedGwan) + ((a.hangName || a.selectedHang) ? ' / ' + (a.hangName || a.selectedHang) : '') : '-' }}</p>
         <p class="text-gray-700 text-sm"><strong>일자:</strong> {{ formatDate(a.request_date) }}</p>
         <p class="text-gray-700 text-sm"><strong>총액:</strong> {{ formatAmount(a.total_amount) }}</p>
+        <p class="text-gray-700 text-sm truncate" :title="a.aliasName"><strong>별칭:</strong> {{ a.aliasName }}</p>
 
         <!-- 액션 버튼 -->
         <div class="flex justify-end space-x-3 mt-3">
@@ -224,6 +247,8 @@ const filters = ref({
   endDate: formatDateValue(today),
   status: "",
   keyword: "",
+  selectedGwan: "",
+  selectedHang: "",
 });
 
 // ✅ 검색조건 펼침/접힘 (기본: 접힌 상태)
@@ -261,12 +286,47 @@ const departmentOptions = computed(() => {
   return mine ? [mine] : [{ id: null, dept_name: deptName }];
 });
 
+const allCategories = ref([]);
+
+const gwans = computed(() => {
+  const list = allCategories.value.filter(c => c.level === '관');
+  const unique = [];
+  const map = new Map();
+  for (const item of list) {
+    if (!map.has(item.category_id)) {
+      map.set(item.category_id, true);
+      unique.push(item);
+    }
+  }
+  return unique;
+});
+
+const hangs = computed(() => {
+  if (!filters.value.selectedGwan) return [];
+  const gwan = gwans.value.find(g => String(g.category_id) === String(filters.value.selectedGwan));
+  if (!gwan) return [];
+  const list = allCategories.value.filter(c => c.level === '항' && c.parent_id === gwan.id);
+  const unique = [];
+  const map = new Map();
+  for (const item of list) {
+    if (!map.has(item.category_id)) {
+      map.set(item.category_id, true);
+      unique.push(item);
+    }
+  }
+  return unique;
+});
+
 onMounted(async () => {
   try {
-    const res = await axios.get("/api/departments");
-    departments.value = res.data || [];
+    const [deptRes, catRes] = await Promise.all([
+      axios.get("/api/departments"),
+      axios.get("/api/accountCategories")
+    ]);
+    departments.value = deptRes.data || [];
+    allCategories.value = catRes.data.categories || [];
   } catch (e) {
-    console.error("부서 목록 로드 실패", e);
+    console.error("데이터 로드 실패", e);
   }
   if (user.value?.deptName) {
     filters.value.deptName = user.value.deptName;

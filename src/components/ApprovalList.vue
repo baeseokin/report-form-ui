@@ -51,8 +51,33 @@
         <input type="date" v-model="filters.endDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
       </div>
 
+      <!-- 줄바꿈 (화면 너비에 따라 관/항이 아래로 내려가게 유도) -->
+      <div class="w-full hidden lg:block border-b border-gray-100 my-1"></div>
+
+      <!-- 관 -->
+      <div class="flex flex-col w-32">
+        <label class="font-semibold text-gray-600 mb-1 text-sm">관</label>
+        <select v-model="filters.selectedGwan" @change="filters.selectedHang = ''; fetchApprovals(1)" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
+          <option value="">전체</option>
+          <option v-for="g in gwans" :key="g.category_id" :value="g.category_id">
+            {{ g.category_name }}
+          </option>
+        </select>
+      </div>
+
+      <!-- 항 -->
+      <div class="flex flex-col w-32">
+        <label class="font-semibold text-gray-600 mb-1 text-sm">항</label>
+        <select v-model="filters.selectedHang" @change="fetchApprovals(1)" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
+          <option value="">전체</option>
+          <option v-for="h in hangs" :key="h.category_id" :value="h.category_id">
+            {{ h.category_name }}
+          </option>
+        </select>
+      </div>
+
       <!-- 검색어 -->
-      <div class="flex flex-col w-48">
+      <div class="flex flex-col w-96">
         <label class="font-semibold text-gray-600 mb-1 text-sm">검색어 (별칭/작성자/지출내역)</label>
         <input
           type="text"
@@ -81,11 +106,12 @@
           <tr class="bg-purple-100 text-gray-700">
             <th class="border p-3 text-center">청구 유형</th>
             <th class="border p-3 text-center">부서명</th>
-            <th class="border p-3 text-center">작성자</th>
-            <th class="border p-3 text-center">청구요청 별칭</th>
+            <!-- <th class="border p-3 text-center">작성자</th> -->
+            <th class="border p-3 text-center">관/항</th>
             <th class="border p-3 text-center">청구일자</th>
             <th class="border p-3 text-center">총액</th>
             <th class="border p-3 text-center">진행상태</th>
+            <th class="border p-3 text-center">청구요청 별칭</th>
             <th class="border p-3 text-center">상세</th>
           </tr>
         </thead>
@@ -93,11 +119,16 @@
           <tr v-for="(a, index) in approvals" :key="a.id" class="hover:bg-purple-50 transition text-sm h-10">
             <td class="border p-3 text-center">{{ a.document_type }}</td>
             <td class="border p-3 text-center">{{ a.dept_name }}</td>
-            <td class="border p-3 text-center">{{ a.author }}</td>
-            <td class="border p-3 text-center">{{ a.aliasName }}</td>
+            <!-- <td class="border p-3 text-center">{{ a.author }}</td> -->
+            <td class="border p-3 text-center">
+              {{ (a.gwanName || a.selectedGwan) ? (a.gwanName || a.selectedGwan) + ((a.hangName || a.selectedHang) ? ' / ' + (a.hangName || a.selectedHang) : '') : '-' }}
+            </td>
             <td class="border p-3 text-center">{{ formatDate(a.request_date) }}</td>
             <td class="border p-3 text-right">{{ formatAmount(a.total_amount) }}</td>
             <td class="border p-3 text-center">{{ a.status }}</td>
+            <td class="border p-3 text-center">
+              <div class="truncate max-w-[150px] mx-auto" :title="a.aliasName">{{ a.aliasName }}</div>
+            </td>
             <td class="border p-3 text-center items-center space-x-3">
               <button
                 @click="openPreview(a.id)"
@@ -231,6 +262,8 @@ const filters = ref({
   endDate: formatDateValue(today),
   status: "",
   keyword: "",
+  selectedGwan: "",
+  selectedHang: "",
 });
 
 // ✅ 권한 체크: 재정부 or 관리자만 부서 변경 가능
@@ -251,12 +284,47 @@ const departmentOptions = computed(() => {
   return mine ? [mine] : [{ id: null, dept_name: deptName }];
 });
 
+const allCategories = ref([]);
+
+const gwans = computed(() => {
+  const list = allCategories.value.filter(c => c.level === '관');
+  const unique = [];
+  const map = new Map();
+  for (const item of list) {
+    if (!map.has(item.category_id)) {
+      map.set(item.category_id, true);
+      unique.push(item);
+    }
+  }
+  return unique;
+});
+
+const hangs = computed(() => {
+  if (!filters.value.selectedGwan) return [];
+  const gwan = gwans.value.find(g => String(g.category_id) === String(filters.value.selectedGwan));
+  if (!gwan) return [];
+  const list = allCategories.value.filter(c => c.level === '항' && c.parent_id === gwan.id);
+  const unique = [];
+  const map = new Map();
+  for (const item of list) {
+    if (!map.has(item.category_id)) {
+      map.set(item.category_id, true);
+      unique.push(item);
+    }
+  }
+  return unique;
+});
+
 onMounted(async () => {
   try {
-    const res = await axios.get("/api/departments");
-    departments.value = res.data || [];
+    const [deptRes, catRes] = await Promise.all([
+      axios.get("/api/departments"),
+      axios.get("/api/accountCategories")
+    ]);
+    departments.value = deptRes.data || [];
+    allCategories.value = catRes.data.categories || [];
   } catch (e) {
-    console.error("부서 목록 로드 실패", e);
+    console.error("데이터 로드 실패", e);
   }
   if (user.value?.deptName) {
     filters.value.deptName = user.value.deptName;
