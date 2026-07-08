@@ -628,7 +628,7 @@ const PDF_CSS = `
   }
   .approval-table-left th, .approval-table-left td,
   .approval-table-right th, .approval-table-right td {
-    border: 1px solid #d1d5db;
+    border: 1px solid #6b7280;
     vertical-align: middle;
     text-align: center;
     padding: 0 4px;
@@ -658,7 +658,7 @@ const PDF_CSS = `
     margin-bottom: 16px;
   }
   .info-table td {
-    border: 1px solid #d1d5db;
+    border: 1px solid #6b7280;
     padding: 5px 12px;
     height: 2.6rem;
     vertical-align: middle;
@@ -680,7 +680,7 @@ const PDF_CSS = `
     margin-bottom: 16px;
   }
   .expense-table th, .expense-table td {
-    border: 1px solid #d1d5db;
+    border: 1px solid #6b7280;
     padding: 3px 5px;
     height: 2.6rem;
     vertical-align: middle;
@@ -1232,20 +1232,24 @@ async function generateAndSavePDF(bodyHTML, fileName) {
       const img = canvas.toDataURL("image/jpeg", 0.98);
       const pdfW = pdf.internal.pageSize.getWidth();
       const pdfH = pdf.internal.pageSize.getHeight();
-      const imgH = (canvas.height * pdfW) / canvas.width;
+      const margin = 10; // 여백 (mm)
+      const printW = pdfW - (margin * 2);
+      const printH = pdfH - (margin * 2);
+      const imgH = (canvas.height * printW) / canvas.width;
+      
       if (i > 0) pdf.addPage();
       
       let position = 0;
       let heightLeft = imgH;
 
-      pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
-      heightLeft -= pdfH;
+      pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
+      heightLeft -= printH;
 
       while (heightLeft > 0) {
-        position = position - pdfH;
+        position = position - printH;
         pdf.addPage();
-        pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
-        heightLeft -= pdfH;
+        pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
+        heightLeft -= printH;
       }
     }
 

@@ -209,7 +209,7 @@
             </tr>
             <!-- 특이사항 렌더링 -->
             <tr v-if="report?.remarks" class="bg-gray-50/50">
-              <td colspan="4" class="border text-left p-3">
+              <td colspan="4" class="border text-left p-3 expense-remarks">
                 <span class="font-bold text-gray-700 mr-2">📝 특이사항:</span>
                 <span class="text-gray-800 whitespace-pre-wrap">{{ report.remarks }}</span>
               </td>
@@ -1125,6 +1125,11 @@ const generatePDF = async () => {
       table-layout: fixed !important; 
       border-collapse: collapse !important; 
     }
+    .report-content table,
+    .report-content table th,
+    .report-content table td {
+      border-color: #6b7280 !important; /* PDF 출력 시 더 진한 테두리 */
+    }
     /* 지출 내역 및 부서명 테이블은 100% */
     .report-content table:not(.approval-table) { 
       width: 100% !important; 
@@ -1168,6 +1173,10 @@ const generatePDF = async () => {
     .report-content table.expense-table td.text-right {
       text-align: right !important;
       padding-right: 12px !important;
+    }
+    .report-content table td.expense-remarks {
+      text-align: left !important;
+      padding-left: 12px !important;
     }
 
     .report-content .no-print { display: none !important; }
@@ -1238,22 +1247,25 @@ const generatePDF = async () => {
     const img = canvas.toDataURL("image/jpeg", 0.98);
     const pdfW = pdf.internal.pageSize.getWidth();
     const pdfH = pdf.internal.pageSize.getHeight();
-    const imgH = (canvas.height * pdfW) / canvas.width;
+    const margin = 10; // 여백 (mm)
+    const printW = pdfW - (margin * 2);
+    const printH = pdfH - (margin * 2);
+    const imgH = (canvas.height * printW) / canvas.width;
 
     if (i > 0) pdf.addPage();
     
     let position = 0;
     let heightLeft = imgH;
 
-    pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
-    heightLeft -= pdfH;
+    pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
+    heightLeft -= printH;
 
-    // 이미지가 한 페이지(A4) 길이를 초과하면 다음 페이지를 생성하여 잘린 부분 출력
+    // 이미지가 한 페이지 출력 가능 영역을 초과하면 다음 페이지를 생성
     while (heightLeft > 0) {
-      position = position - pdfH;
+      position = position - printH;
       pdf.addPage();
-      pdf.addImage(img, "JPEG", 0, position, pdfW, imgH);
-      heightLeft -= pdfH;
+      pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
+      heightLeft -= printH;
     }
   }
   return pdf;
@@ -1384,13 +1396,25 @@ body {
 .report-content table,
 .report-content table th,
 .report-content table td {
-  border-color: #d1d5db !important; /* gray-300 */
+  border-color: #d1d5db !important; /* 기본은 gray-300 */
+}
+
+/* 프린트 시 테이블 테두리를 진하게 설정 */
+@media print {
+  .report-content table,
+  .report-content table th,
+  .report-content table td {
+    border-color: #6b7280 !important; /* 인쇄 시 gray-500 */
+  }
 }
 table td, table th {
   height: 3rem;
   vertical-align: middle !important;
   text-align: center;
   padding: 0 10px;
+}
+table td.expense-remarks {
+  text-align: left !important;
 }
 .signature-img {
   height: 80px;               /* ✅ 고정 높이 */
