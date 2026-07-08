@@ -449,7 +449,7 @@ const isApprovalPage = computed(() => {
 });
 // ✅ 공통 설정
 const A4_WIDTH = 650;   // 가로
-const A4_HEIGHT = 1500; // 세로
+const A4_HEIGHT = 1000; // 세로 (PDF A4 비율에 맞춰 축소, 페이지 잘림 방지)
 
 const props = defineProps(["report"]);
 const emit = defineEmits(["close", "refreshList"]);
@@ -1074,13 +1074,13 @@ const getImageStyle = (file, rowLength, siblings = []) => {
   if (rowLength === 1) {
     const width = file.width || 800;
     const scale = Math.min(1, A4_WIDTH / width);
-    return { maxWidth: `${width * scale}px`, maxHeight: "1000px", objectFit: "contain" };
+    return { maxWidth: `${width * scale}px`, maxHeight: "900px", objectFit: "contain" };
   } else if (rowLength === 2 && siblings.length === 2) {
     const w1 = siblings[0].width || 600;
     const w2 = siblings[1].width || 600;
     const sum = w1 + w2;
     const scale = Math.min(1, A4_WIDTH / sum);
-    return { maxWidth: `${(file.width || 600) * scale}px`, maxHeight: "900px", objectFit: "contain" };
+    return { maxWidth: `${(file.width || 600) * scale}px`, maxHeight: "800px", objectFit: "contain" };
   }
   return {};
 };
