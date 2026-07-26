@@ -189,6 +189,24 @@ const attachedFiles = ref([]);
 const route = useRoute();
 const { user } = storeToRefs(useUserStore());
 
+// ✅ 특정 부서의 계정과목만 동적으로 로드 (Lazy Loading)
+const loadCategoriesForDept = async (deptName) => {
+  if (!deptName || deptData.value[deptName]) return;
+  const deptInfo = departmentsRef.value.find(d => d.dept_name === deptName);
+  if (!deptInfo) return;
+
+  try {
+    const catRes = await axios.get(`/api/accountCategories/${deptInfo.id}`, {
+      params: { date: new Date().toISOString().split("T")[0] },
+    });
+    // Vue 반응성을 위해 객체 복사 후 할당
+    deptData.value = { ...deptData.value, [deptName]: catRes.data.categories || [] };
+  } catch (err) {
+    console.error(`Failed to load categories for dept: ${deptName}`, err);
+    deptData.value = { ...deptData.value, [deptName]: [] };
+  }
+};
+
 // ✅ 부서 + 계정과목 데이터 불러오기
 onMounted(async () => {
   let deptMap = {};
@@ -223,15 +241,8 @@ onMounted(async () => {
       console.error("전체 계정과목 로드 실패", e);
     }
 
-    deptMap = {};
-    for (const dept of depts) {
-      const catRes = await axios.get(`/api/accountCategories/${dept.id}`, {
-        params: { date: new Date().toISOString().split("T")[0] },
-      });
-      deptMap[dept.dept_name] = catRes.data.categories || [];
-    }
-
-    deptData.value = deptMap;
+    // (루프 삭제) deptData 초기화
+    deptData.value = {};
   } catch (err) {
     console.error("❌ 부서/계정과목 불러오기 실패:", err);
   }
@@ -245,7 +256,10 @@ onMounted(async () => {
 
       const data = res.data;
 
-      const categories = deptMap[data.dept_name] || [];
+      // ✅ 수정/복사 모드일 경우 대상 부서의 계정과목 동적 로드
+      await loadCategoriesForDept(data.dept_name);
+
+      const categories = deptData.value[data.dept_name] || [];
 
       const resolveItemForEdit = (item) => {
         const resolved = {
@@ -351,6 +365,11 @@ onMounted(async () => {
     } catch (err) {
       console.error("❌ 보고서 데이터 불러오기 실패:", err);
     }
+  } else {
+    // ✅ 새 문서 작성일 경우 선택된 부서의 계정과목 동적 로드
+    if (selectedDept.value) {
+      await loadCategoriesForDept(selectedDept.value);
+    }
   }
 });
 
@@ -366,7 +385,7 @@ const hasValidExpense = computed(() => {
 });
 
 // ✅ 부서 변경 시: 관/항 선택 초기화 → 지출내역 탭에서 새 부서 계정으로 다시 선택
-watch(selectedDept, (newDept) => {
+watch(selectedDept, async (newDept) => {
   selectedGwan.value = "";
   selectedHang.value = "";
   // 부서의 기본 계좌번호로 업데이트 (현재 비어있을 경우 또는 수정 모드가 아닐 때)
@@ -376,6 +395,9 @@ watch(selectedDept, (newDept) => {
       accountInfo.value = deptInfo.account_info;
     }
   }
+
+  // ✅ 부서가 변경될 때마다 해당 부서의 계정과목을 동적으로 로드 (이미 있으면 무시됨)
+  await loadCategoriesForDept(newDept);
 });
 
 // ✅ user 데이터가 지연 로딩되는 경우를 대비해 watch로도 처리
