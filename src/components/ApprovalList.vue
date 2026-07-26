@@ -156,8 +156,8 @@
               <button
                 @click="attemptDelete(a)"
                 class="p-2 rounded-lg hover:bg-red-100 transition"
-                :class="{ 'opacity-30 cursor-not-allowed': !(a.author === user?.userName && a.historyCount === 1) }"
-                :title="a.author === user?.userName && a.historyCount === 1 ? '삭제' : '삭제 불가'"
+                :class="{ 'opacity-30 cursor-not-allowed': !canDelete(a) }"
+                :title="canDelete(a) ? '삭제' : '삭제 불가'"
               >
                 <img src="/icons/trash.svg" alt="삭제" class="w-6 h-6" />
               </button>
@@ -429,7 +429,21 @@ function showConfirm(message) {
   });
 }
 
-// ─── 수정 / 삭제 ──────────────────────────────────────────────
+const canDelete = (a) => {
+  if (a.status === '결재완료' || a.status === '재정부이관완료') {
+    return false;
+  }
+
+  const isOwner = a.author === user.value?.userName;
+  const isFinance = user.value?.deptName === '재정부';
+  const isAdmin = user.value?.roles?.some(r => r === '관리자' || r.role_name === '관리자');
+  
+  if (isOwner && a.historyCount === 1) return true;
+  if (isAdmin || isFinance) return true;
+  
+  return false;
+};
+
 const attemptEdit = (a) => {
   if (a.author === user.value?.userName && a.historyCount === 1) {
     editReport(a.id);
@@ -439,13 +453,13 @@ const attemptEdit = (a) => {
 };
 
 const attemptDelete = async (a) => {
-  if (a.author === user.value?.userName && a.historyCount === 1) {
+  if (canDelete(a)) {
     const confirmed = await showConfirm("삭제된 데이터는 복원되지 않습니다.\n정말로 삭제하시겠습니까?");
     if (confirmed) {
       confirmDelete(a.id);
     }
   } else {
-    showAlert("이미 결재가 진행중인 건은 삭제할 수 없습니다.");
+    showAlert("권한이 없거나 이미 결재가 진행중인 건은 삭제할 수 없습니다.");
   }
 };
 
