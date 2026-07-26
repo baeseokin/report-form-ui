@@ -4,7 +4,7 @@ import { ref, readonly } from "vue";
 let installed = false;
 
 export function useAutoLogout({
-  timeoutMs = 5 * 60 * 1000,
+  timeoutMs = 60 * 60 * 1000, // 1 hour
   onLogout,
   excludePaths = ["/login", "/auth/*"],
   getCurrentPath = () => location.pathname,

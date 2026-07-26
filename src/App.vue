@@ -143,7 +143,7 @@ async function projectLogout() {
 }
 
 const { start, stop, reset, remainingMs, isExcluded } = useAutoLogout({
-  timeoutMs: 5 * 60 * 1000,
+  timeoutMs: 60 * 60 * 1000, // 1 hour
   onLogout: projectLogout,
   excludePaths: ["/login", "/auth/*"],
   getCurrentPath: () => router.currentRoute.value.path,
