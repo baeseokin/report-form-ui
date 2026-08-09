@@ -391,10 +391,13 @@ watch(
 function selectDept(dept) {
   selectedDept.value = dept;
   newDeptMode.value = false;
+  const maxOrder = filteredLines.value.length > 0 
+    ? Math.max(...filteredLines.value.map(l => Number(l.order_no) || 0)) 
+    : 0;
   editable.value = {
     ...createBlank(),
     dept_name: dept,
-    order_no: filteredLines.value.length + 1,
+    order_no: maxOrder + 1,
   };
 }
 
@@ -403,10 +406,13 @@ function prepareNewLine(mode = "existing") {
   if (mode === "new") {
     selectedDept.value = "";
   }
+  const maxOrder = selectedDept.value && mode === "existing" && filteredLines.value.length > 0
+    ? Math.max(...filteredLines.value.map(l => Number(l.order_no) || 0)) 
+    : 0;
   editable.value = {
     ...createBlank(),
     dept_name: mode === "existing" ? selectedDept.value : "",
-    order_no: selectedDept.value && mode === "existing" ? filteredLines.value.length + 1 : 1,
+    order_no: maxOrder + 1,
   };
 }
 
