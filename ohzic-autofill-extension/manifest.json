@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "오직솔루션 자동 입력기 (OhZic Auto-fill)",
+  "version": "1.0",
+  "description": "지출결의서 시스템에서 오직솔루션(OhZic)으로 결의 내역을 자동 입력합니다.",
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content_ui.js"]
+    },
+    {
+      "matches": ["https://www.ohjic.com/*"],
+      "js": ["content_ohzic.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

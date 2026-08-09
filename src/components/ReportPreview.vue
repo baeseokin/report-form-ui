@@ -311,6 +311,13 @@
       📄 PDF
     </button>
     <button
+      v-if="userDept === '재정부'"
+      @click="syncToOhZic"
+      class="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold shadow border border-blue-200 hover:bg-blue-100 transition"
+    >
+      🔗 오직솔루션 연동
+    </button>
+    <button
       @click="printReport"
       class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md"
     >
@@ -348,6 +355,13 @@
         class="flex-1 py-2 rounded-lg bg-white/90 text-gray-800 font-semibold shadow hover:bg-gray-200 active:scale-95"
       >
         📄 PDF
+      </button>
+      <button
+        v-if="userDept === '재정부'"
+        @click="syncToOhZic"
+        class="flex-1 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold shadow border border-blue-200 hover:bg-blue-100 active:scale-95"
+      >
+        🔗 연동
       </button>
       <button
         @click="openCommentList"
@@ -1273,6 +1287,25 @@ const generatePDF = async () => {
 
 
 
+
+const syncToOhZic = () => {
+  const r = props.report;
+  if (!r) return;
+
+  const payload = {
+    expenses: (r.expenseDetails || []).map(exp => ({
+      category: exp.category_hang || exp.category_gwan || "",
+      amount: exp.amount,
+      remarks: exp.remarks || exp.description || ""
+    }))
+  };
+
+  // 메시지 발송 (익스텐션의 content_ui.js가 수신)
+  window.postMessage({ type: "OHZIC_SYNC", payload }, "*");
+  
+  // 오직솔루션 창 열기
+  window.open("https://www.ohjic.com/", "_blank");
+};
 
 const downloadPDF = async () => {
   const pdf = await generatePDF();
