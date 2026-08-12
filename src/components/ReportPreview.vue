@@ -311,7 +311,7 @@
       📄 PDF
     </button>
     <button
-      v-if="userDept === '재정부'"
+      v-if="isAdmin"
       @click="syncToOhZic"
       class="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold shadow border border-blue-200 hover:bg-blue-100 transition"
     >
@@ -357,7 +357,7 @@
         📄 PDF
       </button>
       <button
-        v-if="userDept === '재정부'"
+        v-if="isAdmin"
         @click="syncToOhZic"
         class="flex-1 py-2 rounded-lg bg-blue-50 text-blue-700 font-semibold shadow border border-blue-200 hover:bg-blue-100 active:scale-95"
       >
@@ -471,6 +471,7 @@ const emit = defineEmits(["close", "refreshList"]);
 const { user } = storeToRefs(useUserStore());
 const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
 const userName = computed(() => user.value?.userName || props.report?.author || "");
+const isAdmin = computed(() => user.value?.roles?.some(r => r === '관리자' || r.role_name === '관리자'));
 
 // ✅ 계정과목 매핑용
 const categories = ref([]);
