@@ -681,7 +681,6 @@ const sendApprovalRequest = async () => {
   } catch (err) {
     console.error("❌ 결재요청 중 오류:", err);
     alert("❌ 결재요청 실패");
-  } finally {
     isSubmitting.value = false;
   }
 };
