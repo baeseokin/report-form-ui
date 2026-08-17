@@ -265,13 +265,56 @@
               :style="getImageWrapperStyle(row.length)"
             >
               <p class="text-gray-700 font-medium mb-2 text-center break-words">{{ getFileAlias(f) }}</p>
+              
+              <!-- 이미지 파일: 기존 이미지 미리보기 -->
               <img
                 v-if="isImage(f)"
                 :src="getFileUrl(f)"
                 :style="getImageStyle(f, row.length, row)"
                 class="border rounded-lg shadow-md object-contain"
               />
-              <p v-else class="text-sm text-gray-500 italic text-center">(이미지 미리보기를 지원하지 않는 파일 형식입니다)</p>
+              
+              <!-- 문서 파일 (Word, Excel, PPT, PDF, HWP 등): 문서 정보 카드 & 다운로드 버튼 -->
+              <div
+                v-else
+                class="w-full max-w-sm p-5 rounded-2xl border bg-white shadow-sm flex flex-col items-center gap-3 text-center my-3 transition hover:shadow-md"
+                :class="getDocTypeInfo(f).colorClass"
+              >
+                <div class="text-5xl select-none mb-1">
+                  {{ getDocTypeInfo(f).icon }}
+                </div>
+                <div class="space-y-1 w-full px-2">
+                  <span class="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full border mb-1" :class="getDocTypeInfo(f).badgeClass">
+                    {{ getDocTypeInfo(f).label }}
+                  </span>
+                  <p class="text-sm font-bold text-gray-800 break-all line-clamp-2" :title="f.file_name || f.name">
+                    {{ f.file_name || f.name || getFileAlias(f) }}
+                  </p>
+                  <p v-if="f.file_size || f.size" class="text-xs text-gray-500">
+                    {{ formatFileSize(f.file_size || f.size) }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2 mt-1 w-full justify-center no-print">
+                  <button
+                    type="button"
+                    @click="downloadFile(f)"
+                    class="px-4 py-2 text-xs font-bold text-white rounded-lg shadow transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                    :class="getDocTypeInfo(f).btnClass"
+                  >
+                    <span>📥</span>
+                    <span>파일 다운로드 / 열기</span>
+                  </button>
+                  <button
+                    v-if="getDocTypeInfo(f).type === 'pdf'"
+                    type="button"
+                    @click="openInNewTab(f)"
+                    class="px-3 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg shadow-sm transition active:scale-95 cursor-pointer"
+                  >
+                    <span>🔍 새창</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1069,7 +1112,90 @@ const getFileAlias = (f) => {
 };
 
 
-const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif)$/i.test(f.name || f.file_name || ""));
+const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.name || f.file_name || f.file_path || ""));
+
+// ✅ 파일 확장자 추출
+const getFileExt = (f) => {
+  const name = f.file_name || f.name || f.file_path || "";
+  const match = name.match(/\.([a-zA-Z0-9]+)(?:[\?#]|$)/);
+  return match ? match[1].toLowerCase() : "";
+};
+
+// ✅ 문서/파일 종류별 메타 정보 (Word, Excel, PowerPoint, PDF, HWP 등)
+const getDocTypeInfo = (f) => {
+  const ext = getFileExt(f);
+  const mime = (f.mime_type || f.type || "").toLowerCase();
+
+  if (ext === "pdf" || mime.includes("pdf")) {
+    return {
+      type: "pdf",
+      label: "PDF 문서",
+      icon: "📄",
+      colorClass: "border-red-200 bg-red-50/40",
+      badgeClass: "text-red-700 bg-red-100 border-red-200",
+      btnClass: "bg-red-600 hover:bg-red-700",
+    };
+  }
+  if (["xls", "xlsx", "csv"].includes(ext) || mime.includes("excel") || mime.includes("spreadsheet")) {
+    return {
+      type: "excel",
+      label: "Excel 스프레드시트",
+      icon: "📊",
+      colorClass: "border-emerald-200 bg-emerald-50/40",
+      badgeClass: "text-emerald-800 bg-emerald-100 border-emerald-200",
+      btnClass: "bg-emerald-600 hover:bg-emerald-700",
+    };
+  }
+  if (["doc", "docx"].includes(ext) || mime.includes("word") || mime.includes("officedocument.wordprocessingml")) {
+    return {
+      type: "word",
+      label: "Word 문서",
+      icon: "📝",
+      colorClass: "border-blue-200 bg-blue-50/40",
+      badgeClass: "text-blue-800 bg-blue-100 border-blue-200",
+      btnClass: "bg-blue-600 hover:bg-blue-700",
+    };
+  }
+  if (["ppt", "pptx"].includes(ext) || mime.includes("presentation") || mime.includes("powerpoint") || mime.includes("officedocument.presentationml")) {
+    return {
+      type: "ppt",
+      label: "PowerPoint 프레젠테이션",
+      icon: "📽️",
+      colorClass: "border-orange-200 bg-orange-50/40",
+      badgeClass: "text-orange-800 bg-orange-100 border-orange-200",
+      btnClass: "bg-orange-600 hover:bg-orange-700",
+    };
+  }
+  if (["hwp", "hwpx"].includes(ext)) {
+    return {
+      type: "hwp",
+      label: "한글 문서",
+      icon: "📑",
+      colorClass: "border-cyan-200 bg-cyan-50/40",
+      badgeClass: "text-cyan-800 bg-cyan-100 border-cyan-200",
+      btnClass: "bg-cyan-600 hover:bg-cyan-700",
+    };
+  }
+  return {
+    type: "etc",
+    label: `${ext ? ext.toUpperCase() : "일반"} 파일`,
+    icon: "📁",
+    colorClass: "border-gray-200 bg-gray-50/40",
+    badgeClass: "text-gray-700 bg-gray-100 border-gray-200",
+    btnClass: "bg-gray-700 hover:bg-gray-800",
+  };
+};
+
+// ✅ 파일 크기 포맷팅
+const formatFileSize = (bytes) => {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const k = 1024;
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.min(units.length - 1, Math.max(0, Math.floor(Math.log(n) / Math.log(k))));
+  const value = n / Math.pow(k, i);
+  return `${i === 0 ? Math.round(value) : value.toFixed(1)} ${units[i]}`;
+};
 
 const getFileUrl = (f) => {
   if (f.file) {
@@ -1081,6 +1207,41 @@ const getFileUrl = (f) => {
   return "";
 };
 
+// ✅ 파일 다운로드 (PC/모바일 프로그램 연결 지원)
+const downloadFile = (f) => {
+  const fileName = f.file_name || f.name || f.alias_name || "downloaded_file";
+  
+  if (f.file) {
+    const url = URL.createObjectURL(f.file);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return;
+  }
+
+  if (f.file_path) {
+    const downloadUrl = `/api/files/${encodeURIComponent(f.file_path)}?downloadName=${encodeURIComponent(fileName)}`;
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = fileName;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+};
+
+// ✅ 새 창/새 탭에서 열기 (PDF 등 브라우저 뷰어 활용)
+const openInNewTab = (f) => {
+  const url = getFileUrl(f);
+  if (url) {
+    window.open(url, "_blank");
+  }
+};
 
 const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
 
