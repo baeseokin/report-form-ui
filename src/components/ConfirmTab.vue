@@ -211,9 +211,16 @@
           :disabled="isSubmitting"
           @click="sendApprovalRequest"
           data-testid="btn-submit"
-          class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg shadow-md transition disabled:opacity-70 disabled:cursor-not-allowed disabled:pointer-events-none"
+          class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg shadow-md transition disabled:opacity-70 disabled:cursor-not-allowed disabled:pointer-events-none text-sm font-medium"
         >
-          {{ isSubmitting ? "처리 중..." : "📤 결재요청" }}
+          <span v-if="isSubmitting" class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            {{ submitStatusText || "처리 중..." }}
+          </span>
+          <span v-else>📤 결재요청</span>
         </button>
       </div>
     </div>
@@ -560,11 +567,14 @@ const clearCanvas = (skipMark = false) => {
 const showPopup = ref(false);
 /* ✅ 결재요청 중복 방지 */
 const isSubmitting = ref(false);
+const submitStatusText = ref("");
 
 /* ✅ 결재요청 */
 const sendApprovalRequest = async () => {
   if (isSubmitting.value) return;
   isSubmitting.value = true;
+  submitStatusText.value = "결재 정보 확인 중...";
+
   try {
     // 선택한 결재선 옵션에 따른 부서 결정
     const deptNameForLines = selectedOption.value === 'owner' ? ownerDeptName.value : userDept.value;
@@ -573,11 +583,11 @@ const sendApprovalRequest = async () => {
       const lineRes = await axios.get("/api/approval-lines", {
         params: { deptName: deptNameForLines },
         withCredentials: true,
+        timeout: 30000,
       });
       const lines = Array.isArray(lineRes.data) ? lineRes.data : [];
       if (lines.length === 0) {
         alert(`${deptNameForLines} 부서의 결재선 정보가 없습니다. 등록 후 진행하세요.`);
-        isSubmitting.value = false;
         return;
       }
     }
@@ -619,9 +629,11 @@ const sendApprovalRequest = async () => {
     };
 
     // 1) 결재요청 저장 (선택 부서명을 명시적으로 JSON으로 전달)
+    submitStatusText.value = "결재문서 저장 중...";
     const res = await axios.post("/api/approval", data, {
       withCredentials: true,
       headers: { "Content-Type": "application/json" },
+      timeout: 60000,
     });
     if (!res.data.success) throw new Error("서버 저장 실패");
     const requestId = res.data.id;
@@ -631,6 +643,7 @@ const sendApprovalRequest = async () => {
     const existingFileIds = (props.attachedFiles || []).filter(f => f.isExisting).map(f => f.id);
 
     if (newFiles.length > 0 || isEdit) {
+      submitStatusText.value = newFiles.length > 0 ? "파일 업로드 중 (0%)..." : "파일 목록 정리 중...";
       const formData = new FormData();
       const aliasNames = [];
       newFiles.forEach((f) => {
@@ -644,12 +657,19 @@ const sendApprovalRequest = async () => {
       await axios.post(`/api/approval/${requestId}/files`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
+        timeout: 300000, // 5분
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            submitStatusText.value = `파일 업로드 중 (${percent}%)...`;
+          }
+        },
       });
     }
 
     // 3) 결재 이력 + 서명 이미지 업로드 (신규일 때만 또는 이력이 없을 때?)
-    // 수정 시에는 기존 이력을 그대로 두거나 업데이트할 수 있는데, 여기서는 신규로 작성자 이력을 남기지 않음 (이미 있으므로)
     if (user.value && !isEdit) {
+      submitStatusText.value = "서명 등록 중...";
       const formData = new FormData();
       formData.append("requestId", requestId);
       formData.append("approver_role", user.value.roles?.[0]?.role_name || "작성자");
@@ -664,15 +684,11 @@ const sendApprovalRequest = async () => {
       await axios.post("/api/approval/history", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
+        timeout: 60000,
       });
     }
 
     // 4) 현재 서명을 기본서명으로 저장 (서버 PUT)
-    //    ▶ 조회한 기본서명을 수정 없이 그대로 사용하는 경우에는 저장(신규 입력)하지 않음
-    //    ▶ 반드시 X로 지운 뒤 다시 그린 경우, 또는 초기 서명이 없는 상태에서 새로 그린 경우 저장
-    console.log("wasCleared.value :", wasCleared.value);
-    console.log("didRedrawAfterClear.value :", didRedrawAfterClear.value);
-    console.log("hasInitialSignature.value :", hasInitialSignature.value);
     if ((wasCleared.value && didRedrawAfterClear.value) || (!hasInitialSignature.value && didRedrawAfterClear.value)) {
       await saveDefaultSignature();
     }
@@ -680,8 +696,14 @@ const sendApprovalRequest = async () => {
     showPopup.value = true;
   } catch (err) {
     console.error("❌ 결재요청 중 오류:", err);
-    alert("❌ 결재요청 실패");
+    if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
+      alert("❌ 파일 업로드 시간이 초과되었습니다.\n네트워크 상태를 확인 후 다시 시도해 주세요.");
+    } else {
+      alert(`❌ 결재요청 실패: ${err.response?.data?.message || err.message || "서버 오류"}`);
+    }
+  } finally {
     isSubmitting.value = false;
+    submitStatusText.value = "";
   }
 };
 

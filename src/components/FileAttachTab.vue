@@ -7,17 +7,36 @@
       <div>현재 총 용량: <span class="font-semibold">{{ bytesToStr(totalBytes) }}</span> <br/>
            (파일당 최대: {{ maxFileSizeMB }}MB · 총합 최대: {{ maxTotalSizeMB }}MB)
       </div>
+      <div class="text-xs text-indigo-600 mt-1">
+        💡 사진/이미지 파일은 업로드 속도 향상과 타임아웃 방지를 위해 자동으로 최적화(압축)됩니다.
+      </div>
     </div>
 
     <div class="flex items-center gap-3">
       <label
-          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
-        > 파일선택
-        
-      <input ref="fileInput" type="file" multiple @change="onFileChange" data-testid="file-upload-input" class="hidden"/>
+          class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition cursor-pointer"
+          :class="{ 'opacity-50 pointer-events-none': isCompressing }"
+        >
+        {{ isCompressing ? "최적화 중..." : "파일선택" }}
+        <input
+          ref="fileInput"
+          type="file"
+          multiple
+          :disabled="isCompressing"
+          @change="onFileChange"
+          data-testid="file-upload-input"
+          class="hidden"
+        />
       </label>
       <span class="text-sm text-gray-600">
         {{ modelValue.length ? `선택된 파일 ${modelValue.length}개` : "선택된 파일 없음" }}
+      </span>
+      <span v-if="isCompressing" class="text-xs text-indigo-600 flex items-center gap-1">
+        <svg class="animate-spin h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        {{ compressStatusText }}
       </span>
     </div>
 
@@ -52,8 +71,8 @@
         @click="$emit('next')"
         data-testid="btn-next"
         class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition"
-        :disabled="totalBytes > maxTotalBytes"
-        :class="{'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes}"
+        :disabled="totalBytes > maxTotalBytes || isCompressing"
+        :class="{'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes || isCompressing}"
         title="총 용량이 제한을 초과하면 다음 단계로 진행할 수 없습니다."
       >
         다음 →
@@ -64,6 +83,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { compressFilesSequentially } from "@/utils/imageCompressor";
 
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
@@ -76,6 +96,8 @@ const emit = defineEmits(["update:modelValue", "prev", "next", "invalid"]);
 
 const warnMsg = ref("");
 const fileInput = ref(null);
+const isCompressing = ref(false);
+const compressStatusText = ref("");
 
 const maxFileSizeBytes = computed(() => props.maxFileSizeMB * 1024 * 1024);
 const maxTotalBytes = computed(() => props.maxTotalSizeMB * 1024 * 1024);
@@ -95,58 +117,78 @@ const bytesToStr = (bytes) => {
   return `${i === 0 ? Math.round(value) : value.toFixed(1)} ${units[i]}`;
 };
 
-const onFileChange = (e) => {
+const onFileChange = async (e) => {
   warnMsg.value = "";
-  const picked = Array.from(e.target.files).map((f) => ({
-    file: f,
-    name: f.name,
-    size: f.size,
-    aliasName: "",
-  }));
+  const input = e.target;
+  const rawFiles = input.files ? Array.from(input.files) : [];
+  if (rawFiles.length === 0) return;
 
-  const current = [...props.modelValue];
-  const skipped = [];
-  const duplicates = [];
+  isCompressing.value = true;
+  compressStatusText.value = "이미지 최적화 준비 중...";
 
-  // 중복 제외 + 파일당 용량 체크 + 총합 체크
-  for (const f of picked) {
-    // 중복 체크(이름/크기 기준)
-    if (current.some((uf) => uf.name === f.name && uf.size === f.size)) {
-      duplicates.push(`- ${f.name} (중복)`);
-      continue;
+  try {
+    const optimizedFiles = await compressFilesSequentially(
+      rawFiles,
+      { maxWidth: 1600, maxHeight: 1600, quality: 0.8 },
+      (current, total, currentName) => {
+        compressStatusText.value = `이미지 최적화 중... (${current}/${total}) ${currentName}`;
+      }
+    );
+
+    const picked = optimizedFiles.map((f) => ({
+      file: f,
+      name: f.name,
+      size: f.size,
+      aliasName: "",
+    }));
+
+    const current = [...props.modelValue];
+    const skipped = [];
+    const duplicates = [];
+
+    // 중복 제외 + 파일당 용량 체크 + 총합 체크
+    for (const f of picked) {
+      // 중복 체크(이름/크기 기준)
+      if (current.some((uf) => uf.name === f.name && uf.size === f.size)) {
+        duplicates.push(`- ${f.name} (중복)`);
+        continue;
+      }
+
+      // 파일당 용량 제한
+      if (f.size > maxFileSizeBytes.value) {
+        skipped.push(`- ${f.name} (${bytesToStr(f.size)}): 파일당 ${props.maxFileSizeMB}MB 초과`);
+        continue;
+      }
+
+      // 총합 제한(미리 검증)
+      const nextTotal = current.reduce((s, x) => s + x.size, 0) + f.size;
+      if (nextTotal > maxTotalBytes.value) {
+        skipped.push(`- ${f.name} (${bytesToStr(f.size)}): 총합 ${props.maxTotalSizeMB}MB 초과`);
+        continue;
+      }
+
+      current.push(f);
     }
 
-    // 파일당 용량 제한
-    if (f.size > maxFileSizeBytes.value) {
-      skipped.push(`- ${f.name} (${bytesToStr(f.size)}): 파일당 ${props.maxFileSizeMB}MB 초과`);
-      continue;
-    }
+    // 결과 반영
+    emit("update:modelValue", current);
 
-    // 총합 제한(미리 검증)
-    const nextTotal = current.reduce((s, x) => s + x.size, 0) + f.size;
-    if (nextTotal > maxTotalBytes.value) {
-      skipped.push(`- ${f.name} (${bytesToStr(f.size)}): 총합 ${props.maxTotalSizeMB}MB 초과`);
-      continue;
+    // 안내 메시지
+    const msgs = [];
+    if (duplicates.length) msgs.push(`다음 파일은 중복으로 제외되었습니다:\n${duplicates.join("\n")}`);
+    if (skipped.length) msgs.push(`용량 제한으로 제외된 파일:\n${skipped.join("\n")}`);
+    if (msgs.length) {
+      warnMsg.value = msgs.join("\n\n");
+      emit("invalid", { duplicates, skipped, limit: { perFileMB: props.maxFileSizeMB, totalMB: props.maxTotalSizeMB } });
     }
-
-    current.push(f);
+  } catch (err) {
+    console.error("파일 처리 중 오류:", err);
+    warnMsg.value = "파일을 처리하는 도중 문제가 발생했습니다.";
+  } finally {
+    isCompressing.value = false;
+    compressStatusText.value = "";
+    input.value = "";
   }
-
-  // 결과 반영
-  emit("update:modelValue", current);
-
-  // 안내 메시지
-  const msgs = [];
-  if (duplicates.length) msgs.push(`다음 파일은 중복으로 제외되었습니다:\n${duplicates.join("\n")}`);
-  if (skipped.length) msgs.push(`용량 제한으로 제외된 파일:\n${skipped.join("\n")}`);
-  if (msgs.length) {
-    warnMsg.value = msgs.join("\n\n");
-    // 상위 단계에서 별도 처리하고 싶다면 이벤트 발행
-    emit("invalid", { duplicates, skipped, limit: { perFileMB: props.maxFileSizeMB, totalMB: props.maxTotalSizeMB } });
-  }
-
-  // 같은 파일 다시 선택 가능하도록 초기화
-  e.target.value = "";
 };
 
 const removeFile = (index) => {
@@ -158,3 +200,4 @@ const removeFile = (index) => {
 // 외부에서도 쓸 수 있게 export (선택)
 defineExpose({ bytesToStr, totalBytes });
 </script>
+
