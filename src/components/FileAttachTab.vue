@@ -23,6 +23,7 @@
           type="file"
           multiple
           :disabled="isCompressing"
+          accept="image/*"
           @change="onFileChange"
           data-testid="file-upload-input"
           class="hidden"
@@ -122,6 +123,13 @@ const onFileChange = async (e) => {
   const input = e.target;
   const rawFiles = input.files ? Array.from(input.files) : [];
   if (rawFiles.length === 0) return;
+
+  const nonImageFiles = rawFiles.filter(f => !f.type.startsWith('image/'));
+  if (nonImageFiles.length > 0) {
+    warnMsg.value = "문서파일은 이미지로 업로드 하세요.";
+    input.value = "";
+    return;
+  }
 
   isCompressing.value = true;
   compressStatusText.value = "이미지 최적화 준비 중...";
