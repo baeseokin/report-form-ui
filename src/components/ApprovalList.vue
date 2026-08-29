@@ -104,6 +104,7 @@
       <table class="w-full border-collapse text-sm">
         <thead>
           <tr class="bg-purple-100 text-gray-700">
+            <th class="border p-3 text-center w-12"></th>
             <th class="border p-3 text-center">청구 유형</th>
             <th class="border p-3 text-center">부서명</th>
             <!-- <th class="border p-3 text-center">작성자</th> -->
@@ -117,6 +118,9 @@
         </thead>
         <tbody>
           <tr v-for="(a, index) in approvals" :key="a.id" class="hover:bg-purple-50 transition text-sm h-10">
+            <td class="border p-3 text-center">
+              <span v-if="a.fileCount > 0" title="첨부파일 있음" class="text-lg">📎</span>
+            </td>
             <td class="border p-3 text-center">{{ a.document_type }}</td>
             <td class="border p-3 text-center">{{ a.dept_name }}</td>
             <!-- <td class="border p-3 text-center">{{ a.author }}</td> -->
@@ -127,12 +131,12 @@
             <td class="border p-3 text-right">{{ formatAmount(a.total_amount) }}</td>
             <td class="border p-3 text-center">{{ a.status }}</td>
             <td class="border p-3 text-center">
-              <div class="truncate max-w-[150px] mx-auto" :title="a.aliasName">{{ a.aliasName }}</div>
+              <div class="truncate max-w-[250px] mx-auto" :title="a.aliasName">{{ a.aliasName }}</div>
             </td>
-            <td class="border p-3 text-center items-center space-x-3">
+            <td class="border p-2 text-center items-center space-x-2">
               <button
                 @click="openPreview(a.id)"
-                class="p-2 rounded-lg hover:bg-green-100 transition"
+                class="p-1 rounded-lg hover:bg-green-100 transition"
                 title="상세보기"
                 :data-testid="'row-view-btn-' + index"
               >
@@ -140,7 +144,7 @@
               </button>
               <button
                 @click="attemptEdit(a)"
-                class="p-2 rounded-lg hover:bg-blue-100 transition"
+                class="p-1 rounded-lg hover:bg-blue-100 transition"
                 :class="{ 'opacity-30 cursor-not-allowed': !(a.author === user?.userName && a.historyCount === 1) }"
                 :title="a.author === user?.userName && a.historyCount === 1 ? '수정' : '수정 불가'"
               >
@@ -148,14 +152,14 @@
               </button>
               <button
                 @click="goToReport(a.id)"
-                class="p-2 rounded-lg hover:bg-purple-100 transition"
+                class="p-1 rounded-lg hover:bg-purple-100 transition"
                 title="복사하기"
               >
                 <img src="/icons/copy.svg" alt="복사하기" class="w-6 h-6" />
               </button>
               <button
                 @click="attemptDelete(a)"
-                class="p-2 rounded-lg hover:bg-red-100 transition"
+                class="p-1 rounded-lg hover:bg-red-100 transition"
                 :class="{ 'opacity-30 cursor-not-allowed': !canDelete(a) }"
                 :title="canDelete(a) ? '삭제' : '삭제 불가'"
               >
@@ -164,7 +168,7 @@
             </td>
           </tr>
           <tr v-if="approvals.length === 0">
-            <td colspan="10" class="text-center p-6 text-gray-500">데이터가 없습니다.</td>
+            <td colspan="11" class="text-center p-6 text-gray-500">데이터가 없습니다.</td>
           </tr>
         </tbody>
       </table>

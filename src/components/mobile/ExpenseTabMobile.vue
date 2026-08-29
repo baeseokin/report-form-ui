@@ -234,12 +234,13 @@
 
       <!-- ✅ 특이사항 (Remarks) -->
       <div class="mt-4 pb-2">
-        <label class="block text-sm font-semibold text-gray-800 mb-2">📝 지출내역 특이사항 <span class="text-xs text-gray-500 font-normal">(선택)</span></label>
+        <label class="block text-sm font-semibold text-gray-800 mb-2">📝 지출내역 특이사항 <span class="text-xs text-gray-500 font-normal">(선택, 최대 50자)</span></label>
         <textarea
           v-model="localRemarks"
-          rows="3"
+          rows="2"
+          maxlength="50"
           placeholder="지출내역에 대한 전체적인 특이사항을 입력하세요..."
-          class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y"
+          class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
         ></textarea>
       </div>
 
@@ -877,6 +878,10 @@ const onSelect = (idx, field, value) => {
 
 // ✅ 행추가 (선택은 기본 false)
 const addRow = () => {
+  if ((props.items || []).length >= 14) {
+    alert("지출내역은 최대 14개까지만 추가할 수 있습니다.");
+    return;
+  }
   const newItems = [...(props.items || [])];
   newItems.push({
     selected: false,

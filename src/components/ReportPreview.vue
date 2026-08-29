@@ -992,19 +992,20 @@ const getApprovedAt = (role, idx) => getHistoryRecord(role, idx)?.approved_at ||
  * @param {number} maxWeightedLen 줄바꿈 없이 들어갈 수 있는 최대 가중치 길이 (한글 2, 영문 1)
  */
 const getShrinkStyle = (text, maxWeightedLen) => {
-  if (!text) return { whiteSpace: "nowrap" };
+  if (!text) return { whiteSpace: "nowrap", overflow: "hidden" };
   let weightedLen = 0;
   for (let i = 0; i < text.length; i++) {
     weightedLen += text.charCodeAt(i) > 255 ? 2 : 1;
   }
-  if (weightedLen <= maxWeightedLen) return { whiteSpace: "nowrap" };
+  if (weightedLen <= maxWeightedLen) return { whiteSpace: "nowrap", overflow: "hidden" };
 
   const ratio = maxWeightedLen / weightedLen;
-  const fontSizeFactor = Math.max(0.65, ratio); // 너무 작아지지 않게 최소 0.65 (약 9pt)
+  const fontSizeFactor = ratio; // 최소 크기 제한 없음
   return {
     fontSize: `${fontSizeFactor * 0.875}em`, // 0.875em이 기본 폰트 크기
     whiteSpace: "nowrap",
-    textOverflow: "clip",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   };
 };
 
@@ -1047,7 +1048,7 @@ const paddedItems = computed(() => {
     amount: i.amount,
   }));
 
-  const maxRows = props.report?.remarks ? 6 : 8;
+  const maxRows = 14;
 
   return items.length >= maxRows
     ? items
@@ -1273,9 +1274,9 @@ const generatePDF = async () => {
   // Wait for all fonts to make sure styling isn't broken
   try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
 
-  const ROW_PX = 45;
+  const ROW_PX = 36; // 10줄을 안전하게 넣기 위해 축소
   const SIGN_ROW_PX = 160;
-  const SIGN_ROW_PX_PDF = 100;
+  const SIGN_ROW_PX_PDF = 80; // 서명란 높이 축소
 
   // CSS injects to style the PDF clone.
   const pdfOnlyCSS = `
@@ -1293,10 +1294,17 @@ const generatePDF = async () => {
     }
     .report-content { 
       width: 794px !important; 
-      padding: 40px !important; 
+      padding: 10px 40px 40px 40px !important; /* 상단 여백 대폭 축소 */
       background: white !important;
       box-sizing: border-box !important;
     }
+    /* PDF 생성 시 간격(Margin) 축소 */
+    .report-content .mt-4 { margin-top: 4px !important; }
+    .report-content .mb-6 { margin-bottom: 12px !important; }
+    .report-content .mb-4 { margin-bottom: 8px !important; }
+    .report-content .my-4 { margin-top: 8px !important; margin-bottom: 8px !important; }
+    .report-content .mt-10 { margin-top: 20px !important; }
+    .report-content .leading-loose { line-height: 1.5 !important; }
     .report-content table { 
       table-layout: fixed !important; 
       border-collapse: collapse !important; 
@@ -1546,8 +1554,20 @@ body {
   .page { margin-top: 1rem !important; }
 }
 @media print {
+  @page {
+    margin: 5mm 5mm 5mm 5mm; /* 브라우저 기본 여백 축소 */
+  }
   .no-print { display: none !important; }
   .report-page-gap { height: 0; }
+  
+  /* 프린트 시 여백 축소 */
+  .mt-4 { margin-top: 0.25rem !important; }
+  .mb-6 { margin-bottom: 0.75rem !important; }
+  .mb-4 { margin-bottom: 0.5rem !important; }
+  .my-4 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+  .mt-10 { margin-top: 1rem !important; }
+  .leading-loose { line-height: 1.5 !important; }
+
   .page,
   .report-content,
   .report-content * {
@@ -1556,7 +1576,7 @@ body {
   .page {
     border: none !important;
     box-shadow: none !important;
-    padding: 10mm 5mm !important;
+    padding: 0 5mm !important;
     min-height: auto !important;
     height: auto !important;
     margin: 0 !important;
@@ -1627,6 +1647,14 @@ table td.expense-remarks {
 .report-content table.expense-table th,
 .report-content table.expense-table td {
   font-size: 0.875em; /* 14pt 기준 한 단계 축소 */
+  height: 2.25rem; /* 10줄을 안전하게 넣기 위해 높이 축소 */
+}
+@media print {
+  .report-content table.expense-table th,
+  .report-content table.expense-table td {
+    height: 1.8rem !important; /* 프린트 시 10줄 무조건 들어가도록 높이 더 축소 */
+    padding: 0 4px !important;
+  }
 }
 .report-content table.expense-table th.expense-col-detail,
 .report-content table.expense-table td.expense-col-detail {
