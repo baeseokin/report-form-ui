@@ -234,6 +234,7 @@
 </template>
 
 <script setup>
+import { generatePdfFromPages, printPdfBlob, savePdf } from "@/utils/printUtils";
 import { ref, computed, reactive, onMounted, defineAsyncComponent, nextTick } from "vue";
 import { useUserStore } from "@/store/userStore";
 import axios from "axios";
@@ -334,6 +335,10 @@ const isAllSelected = computed(
 
 function toggleSelect(id) {
   const s = new Set(selectedIds.value);
+  if (!s.has(id) && s.size >= 10) {
+    alert("한 번에 최대 10건까지만 선택할 수 있습니다.");
+    return;
+  }
   s.has(id) ? s.delete(id) : s.add(id);
   selectedIds.value = s;
 }
@@ -342,7 +347,11 @@ function toggleSelectAll() {
   if (isAllSelected.value) {
     selectedIds.value = new Set();
   } else {
-    selectedIds.value = new Set(rows.value.map(r => r.id));
+    const ids = rows.value.map(r => r.id);
+    if (ids.length > 10) {
+      alert("한 번에 최대 10건까지만 선택할 수 있습니다. 처음 10건만 선택됩니다.");
+    }
+    selectedIds.value = new Set(ids.slice(0, 10));
   }
 }
 
@@ -584,7 +593,7 @@ const PDF_CSS = `
   }
   body {
     font-family: "Nanum Barun Gothic", "Malgun Gothic", "Apple SD Gothic Neo", "AppleGothic", "Noto Sans KR", sans-serif;
-    font-size: 14pt;
+    font-size: 14px; /* ReportPreview와 동일한 기본 폰트 사이즈로 수정 */
     color: #111;
     background: #fff;
     -webkit-print-color-adjust: exact !important;
@@ -747,7 +756,7 @@ function buildReportHTML(detail, signatureDataURL) {
     detail: i.detail === "__custom__" ? (i.customDetail || "") : (i.detail || ""),
     amount: i.amount,
   }));
-  const maxRows = detail.remarks ? 6 : 8;
+  const maxRows = 14; // ReportPreview와 동일하게 14줄 고정
   while (items.length < maxRows) items.push({ mok: "", semok: "", detail: "", amount: null });
 
   const totalAmount = Number(detail.total_amount || 0).toLocaleString("ko-KR");
@@ -806,8 +815,8 @@ function buildReportHTML(detail, signatureDataURL) {
     displayLines.push({ approver_role: "재정부" });
   }
 
-  const thCells = displayLines.map(line => {
-    const label = line.approver_role === "회계" ? "담당" : line.approver_role;
+  const thCells = displayLines.map((line, idx) => {
+    const label = (idx === 0 || line.approver_role === "회계") ? "담당" : line.approver_role;
     return `<th>${label}</th>`;
   }).join("");
 
@@ -1131,13 +1140,19 @@ const printProcessedAll = async () => {
   if (lastProcessedItems.value.length === 0) return;
   showToast("⏳ 프린트 준비 중...");
   const bodyHTML = await buildBulkHTML(lastProcessedItems.value);
-  const iframe = await createPrintIframe(bodyHTML, false);
+  const iframe = await createPrintIframe(bodyHTML, true);
   
-  // iframe이 존재하는 동안 프린트 호출
-  await new Promise(r => setTimeout(r, 300));
-  iframe.contentWindow.focus();
-  iframe.contentWindow.print();
-  showToast("🖨️ 프린트 완료!");
+  try {
+    const pages = iframe.contentDocument.querySelectorAll(".page");
+    const pdf = await generatePdfFromPages(pages);
+    printPdfBlob(pdf);
+    showToast("🖨️ 프린트 완료!");
+  } catch (e) {
+    console.error(e);
+    alert("프린트 준비 중 오류가 발생했습니다.");
+  } finally {
+    if (iframe) document.body.removeChild(iframe);
+  }
 };
 
 const downloadProcessedPDF = async () => {
@@ -1152,108 +1167,13 @@ const downloadProcessedPDF = async () => {
 async function generateAndSavePDF(bodyHTML, fileName) {
   let iframe = null;
   try {
-    const { default: jsPDF } = await import("jspdf");
-    const { default: html2canvas } = await import("html2canvas-pro");
-
     iframe = await createPrintIframe(bodyHTML, true);
     const iDoc = iframe.contentDocument || iframe.contentWindow.document;
-
     const pages = iDoc.querySelectorAll(".page");
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const ROW_PX = 48; // PDF 보정
-    const SIGN_ROW_PX_PDF = 100;
-
-    const pdfCSS = `
-      .page { width: 794px !important; padding: 40px !important; box-shadow: none !important; border: none !important; }
-      table { table-layout: fixed !important; border-collapse: collapse !important; }
-      table:not(.approval-table) { width: 100% !important; }
-      .approval-table-left { float: left !important; width: calc(var(--left-col-count, 4) * 11%) !important; }
-      .approval-table-right { float: right !important; width: 40% !important; }
-      .approval-wrapper { display: block !important; overflow: hidden !important; }
-      th, td { height: ${ROW_PX}px !important; box-sizing: border-box !important; vertical-align: middle !important; text-align: center !important; padding: 0 5px !important; }
-      .sign-row td { height: ${SIGN_ROW_PX_PDF}px !important; }
-      .detail-col { text-align: left !important; padding-left: 12px !important; }
-      .amount-col { text-align: right !important; padding-right: 12px !important; }
-    `;
-
-    for (let i = 0; i < pages.length; i++) {
-      const canvas = await html2canvas(pages[i], {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 1200,
-        onclone: (doc) => {
-          doc.documentElement.style.width = "1200px";
-          doc.body.style.width = "1200px";
-          doc.body.style.margin = "0";
-          doc.body.style.padding = "0";
-
-          const style = doc.createElement("style");
-          style.textContent = pdfCSS;
-          doc.head.appendChild(style);
-
-          const clonedPage = doc.querySelectorAll(".page")[i];
-          if (clonedPage) {
-            // float clearfix
-            const leftT = clonedPage.querySelector(".approval-table-left");
-            const rightT = clonedPage.querySelector(".approval-table-right");
-            if (leftT && rightT) {
-              const wrapper = clonedPage.querySelector(".approval-wrapper");
-              if (wrapper) {
-                const clear = doc.createElement("div");
-                clear.style.clear = "both";
-                wrapper.appendChild(clear);
-              }
-            }
-            // transform 제거
-            let curr = clonedPage;
-            while (curr && curr !== doc.body) {
-              curr.style.transform = "none";
-              curr.style.position = "static";
-              curr.style.margin = "0";
-              curr.style.padding = "0";
-              curr = curr.parentElement;
-            }
-            clonedPage.style.display = "block";
-            clonedPage.style.width = "794px";
-            clonedPage.style.margin = "0 auto";
-            clonedPage.style.boxShadow = "none";
-
-            // 대상 페이지만 남기기
-            Array.from(doc.body.children).forEach(child => {
-              if (!child.contains(clonedPage)) child.remove();
-            });
-          }
-        },
-      });
-
-      const img = canvas.toDataURL("image/jpeg", 0.98);
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
-      const margin = 10; // 여백 (mm)
-      const printW = pdfW - (margin * 2);
-      const printH = pdfH - (margin * 2);
-      const imgH = (canvas.height * printW) / canvas.width;
-      
-      if (i > 0) pdf.addPage();
-      
-      let position = 0;
-      let heightLeft = imgH;
-
-      pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
-      heightLeft -= printH;
-
-      while (heightLeft > 0) {
-        position = position - printH;
-        pdf.addPage();
-        pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
-        heightLeft -= printH;
-      }
-    }
-
-    pdf.save(`${fileName}.pdf`);
+    
+    const pdf = await generatePdfFromPages(pages);
+    savePdf(pdf, `${fileName}.pdf`);
+    
     showToast("✅ PDF 저장 완료!");
   } catch (e) {
     console.error("PDF 생성 오류:", e);
@@ -1276,11 +1196,19 @@ const printAll = async () => {
   if (selectedIds.value.size === 0) { alert("프린트할 항목을 선택하세요."); return; }
   showToast("⏳ 프린트 준비 중...");
   const bodyHTML = await buildBulkHTML(selectedRows.value);
-  const iframe = await createPrintIframe(bodyHTML, false);
-  await new Promise(r => setTimeout(r, 300));
-  iframe.contentWindow.focus();
-  iframe.contentWindow.print();
-  showToast("🖨️ 프린트 완료!");
+  const iframe = await createPrintIframe(bodyHTML, true);
+  
+  try {
+    const pages = iframe.contentDocument.querySelectorAll(".page");
+    const pdf = await generatePdfFromPages(pages);
+    printPdfBlob(pdf);
+    showToast("🖨️ 프린트 완료!");
+  } catch (e) {
+    console.error(e);
+    alert("프린트 준비 중 오류가 발생했습니다.");
+  } finally {
+    if (iframe) document.body.removeChild(iframe);
+  }
 };
 
 // ─── 마운트 ──────────────────────────────────────────────────

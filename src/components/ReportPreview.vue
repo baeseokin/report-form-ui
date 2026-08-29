@@ -488,10 +488,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-// dynamic import
-// import html2canvas from "html2canvas";
-// dynamic import
-// import jsPDF from "jspdf";
+import { generatePdfFromPages, printPdfBlob, savePdf } from "@/utils/printUtils";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import ApprovalPopup from "./ApprovalPopup.vue";
@@ -1268,191 +1265,7 @@ const getImageWrapperStyle = (rowLength) =>
 
 // ReportPreview.vue
 const generatePDF = async () => {
-  const { default: jsPDF } = await import("jspdf");
-  const { default: html2canvas } = await import("html2canvas-pro");
-
-  // Wait for all fonts to make sure styling isn't broken
-  try { if (document.fonts?.ready) await document.fonts.ready; } catch {}
-
-  const ROW_PX = 36; // 10줄을 안전하게 넣기 위해 축소
-  const SIGN_ROW_PX = 160;
-  const SIGN_ROW_PX_PDF = 80; // 서명란 높이 축소
-
-  // CSS injects to style the PDF clone.
-  const pdfOnlyCSS = `
-    .report-content * {
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans KR", "Malgun Gothic", sans-serif !important;
-      letter-spacing: 0 !important;
-      word-spacing: 0 !important;
-      -webkit-font-smoothing: grayscale !important; /* Ghosting 방지 핵심 */
-      -moz-osx-font-smoothing: grayscale !important;
-      text-rendering: auto !important;
-      text-shadow: none !important;
-      box-shadow: none !important;
-      transition: none !important;
-      animation: none !important;
-    }
-    .report-content { 
-      width: 794px !important; 
-      padding: 10px 40px 40px 40px !important; /* 상단 여백 대폭 축소 */
-      background: white !important;
-      box-sizing: border-box !important;
-    }
-    /* PDF 생성 시 간격(Margin) 축소 */
-    .report-content .mt-4 { margin-top: 4px !important; }
-    .report-content .mb-6 { margin-bottom: 12px !important; }
-    .report-content .mb-4 { margin-bottom: 8px !important; }
-    .report-content .my-4 { margin-top: 8px !important; margin-bottom: 8px !important; }
-    .report-content .mt-10 { margin-top: 20px !important; }
-    .report-content .leading-loose { line-height: 1.5 !important; }
-    .report-content table { 
-      table-layout: fixed !important; 
-      border-collapse: collapse !important; 
-    }
-    .report-content table,
-    .report-content table th,
-    .report-content table td {
-      border-color: #6b7280 !important; /* PDF 출력 시 더 진한 테두리 */
-    }
-    /* 지출 내역 및 부서명 테이블은 100% */
-    .report-content table:not(.approval-table) { 
-      width: 100% !important; 
-    }
-    
-    /* 결재란 양 끝 정렬 강제 */
-    .approval-container {
-      display: block !important;
-      width: 100% !important;
-      margin-bottom: 20px !important;
-      overflow: hidden !important; /* clear-fix */
-    }
-    .approval-table-left { 
-      float: left !important; 
-      width: calc(var(--left-col-count, 4) * 11%) !important; 
-      min-width: calc(var(--left-col-count, 4) * 11%) !important;
-    }
-    .approval-table-right { 
-      float: right !important; 
-      width: 40% !important; 
-    }
-    
-    .report-content table.approval-table tbody tr.sign-row th,
-    .report-content table.approval-table tbody tr.sign-row td {
-      height: ${SIGN_ROW_PX_PDF}px !important;
-    }
-    
-    .report-content table th, .report-content table td {
-      height: ${ROW_PX}px !important;
-      box-sizing: border-box !important;
-      vertical-align: middle !important;
-      text-align: center !important;
-      padding: 0 5px !important;
-    }
-
-    /* 지출내역 상세(좌측정렬), 금액(우측정렬) 보정 */
-    .report-content table.expense-table td.expense-col-detail {
-      text-align: left !important;
-      padding-left: 12px !important;
-    }
-    .report-content table.expense-table td.text-right {
-      text-align: right !important;
-      padding-right: 12px !important;
-    }
-    .report-content table td.expense-remarks {
-      text-align: left !important;
-      padding-left: 12px !important;
-    }
-
-    .report-content .no-print { display: none !important; }
-  `;
-
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pages = document.querySelectorAll(".page");
-
-  for (let i = 0; i < pages.length; i++) {
-    const canvas = await html2canvas(pages[i], {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: "#ffffff",
-      windowWidth: 1200,
-      onclone: (doc) => {
-        // Step 1: Normalize the document environment
-        doc.documentElement.style.width = '1200px';
-        doc.body.style.width = '1200px';
-        doc.body.style.margin = '0';
-        doc.body.style.padding = '0';
-
-        const styleNode = doc.createElement("style");
-        styleNode.textContent = pdfOnlyCSS;
-        doc.head.appendChild(styleNode);
-
-        const clonedPage = doc.querySelectorAll('.page')[i];
-        if (clonedPage) {
-          // Step 2: Fix approval tables alignment (brute force with float)
-          const leftTable = clonedPage.querySelector('.approval-table-left');
-          const rightTable = clonedPage.querySelector('.approval-table-right');
-          if (leftTable && rightTable) {
-             const wrapper = doc.createElement('div');
-             wrapper.className = 'approval-container';
-             leftTable.parentNode.insertBefore(wrapper, leftTable);
-             wrapper.appendChild(leftTable);
-             wrapper.appendChild(rightTable);
-             
-             // Extra safety: clear float after
-             const clear = doc.createElement('div');
-             clear.style.clear = 'both';
-             wrapper.appendChild(clear);
-          }
-
-          // Step 3: Remove all coordinate interference
-          let curr = clonedPage;
-          while (curr && curr !== doc.body) {
-            curr.style.transform = 'none';
-            curr.style.position = 'static';
-            curr.style.margin = '0';
-            curr.style.padding = '0';
-            curr = curr.parentElement;
-          }
-
-          clonedPage.style.display = 'block';
-          clonedPage.style.width = '794px';
-          clonedPage.style.margin = '0 auto';
-          clonedPage.style.boxShadow = 'none';
-          
-          // Step 4: Cleanup body - KEEP ONLY THE TARGET PAGE
-          Array.from(doc.body.children).forEach(child => {
-            if (!child.contains(clonedPage)) child.remove();
-          });
-        }
-      },
-    });
-
-    const img = canvas.toDataURL("image/jpeg", 0.98);
-    const pdfW = pdf.internal.pageSize.getWidth();
-    const pdfH = pdf.internal.pageSize.getHeight();
-    const margin = 10; // 여백 (mm)
-    const printW = pdfW - (margin * 2);
-    const printH = pdfH - (margin * 2);
-    const imgH = (canvas.height * printW) / canvas.width;
-
-    if (i > 0) pdf.addPage();
-    
-    let position = 0;
-    let heightLeft = imgH;
-
-    pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
-    heightLeft -= printH;
-
-    // 이미지가 한 페이지 출력 가능 영역을 초과하면 다음 페이지를 생성
-    while (heightLeft > 0) {
-      position = position - printH;
-      pdf.addPage();
-      pdf.addImage(img, "JPEG", margin, margin + position, printW, imgH);
-      heightLeft -= printH;
-    }
-  }
-  return pdf;
+  return await generatePdfFromPages(document.querySelectorAll('.page'));
 };
 
 
@@ -1480,35 +1293,12 @@ const syncToOhZic = () => {
 const downloadPDF = async () => {
   const pdf = await generatePDF();
   const safeName = `${props.report?.documentType || 'Report'}_${userDept.value}_${props.report?.date || Date.now()}`.replace(/[\/\?<>\\:\*\|":]/g, '-');
-  pdf.save(`${safeName}.pdf`);
+  savePdf(pdf, `${safeName}.pdf`);
 };
 
 const printReport = async () => {
   const pdf = await generatePDF();
-  const blob = pdf.output("blob");
-  const url = URL.createObjectURL(blob);
-
-  // ✅ 숨김 iframe 생성 (한 번만 만들고 계속 유지)
-  let iframe = document.getElementById("pdfPrintFrame");
-  if (!iframe) {
-    iframe = document.createElement("iframe");
-    iframe.id = "pdfPrintFrame";
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
-  }
-
-  iframe.src = url;
-
-  iframe.onload = () => {
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    // ❌ 자동 제거 안 함 → PDF 미리보기 계속 유지
-  };
+  printPdfBlob(pdf);
 };
 
 // ✅ 하단 바 표시 제어 상태
