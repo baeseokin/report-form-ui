@@ -350,8 +350,8 @@ onMounted(async () => {
         date.value = new Date().toISOString().slice(0, 10);
       }
 
-      // ✅ 기존 파일 로드
-      if (data.attachedFiles && data.attachedFiles.length > 0) {
+      // ✅ 기존 파일 로드 (수정 모드일 때만 유지, 복사 시에는 빈 배열)
+      if (route.query.mode === 'edit' && data.attachedFiles && data.attachedFiles.length > 0) {
         attachedFiles.value = data.attachedFiles.map(f => ({
           id: f.id,
           name: f.file_name,
