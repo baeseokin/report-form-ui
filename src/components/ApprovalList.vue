@@ -434,16 +434,17 @@ function showConfirm(message) {
 }
 
 const canDelete = (a) => {
-  if (a.status === '결재완료' || a.status === '재정부이관완료') {
-    return false;
-  }
-
   const isOwner = a.author === user.value?.userName;
   const isFinance = user.value?.deptName === '재정부';
   const isAdmin = user.value?.roles?.some(r => r === '관리자' || r.role_name === '관리자');
   
-  if (isOwner && a.historyCount === 1) return true;
   if (isAdmin || isFinance) return true;
+  
+  if (a.status === '결재완료' || a.status === '재정부이관완료') {
+    return false;
+  }
+
+  if (isOwner && a.historyCount === 1) return true;
   
   return false;
 };
@@ -458,7 +459,11 @@ const attemptEdit = (a) => {
 
 const attemptDelete = async (a) => {
   if (canDelete(a)) {
-    const confirmed = await showConfirm("삭제된 데이터는 복원되지 않습니다.\n정말로 삭제하시겠습니까?");
+    let confirmMsg = "삭제된 데이터는 복원되지 않습니다.\n정말로 삭제하시겠습니까?";
+    if (a.status === '재정부이관완료') {
+      confirmMsg = "진짜로 삭제하시겠습니까? 반드시 오직솔루션에서도 해당 청구건을 삭제해야 합니다.";
+    }
+    const confirmed = await showConfirm(confirmMsg);
     if (confirmed) {
       confirmDelete(a.id);
     }
