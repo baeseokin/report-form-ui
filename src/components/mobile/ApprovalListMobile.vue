@@ -132,7 +132,10 @@
         class="bg-white rounded-lg shadow-md p-4 border"
       >
         <div class="flex justify-between items-center mb-2">
-          <h3 class="font-bold text-purple-700">{{ a.document_type }}</h3>
+          <h3 class="font-bold text-purple-700 flex items-center gap-1">
+            {{ a.document_type }}
+            <span v-if="a.fileCount > 0" title="첨부파일 있음" class="text-base">📎</span>
+          </h3>
           <span class="text-sm px-2 py-1 rounded bg-gray-100">{{ a.status }}</span>
         </div>
 
