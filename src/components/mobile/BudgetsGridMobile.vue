@@ -44,19 +44,13 @@
             <input
               type="number"
               v-model="year"
+              @change="fetchCategories"
               min="2000"
               max="2100"
               class="mobile-form-control w-full"
             />
           </div>
           <div class="flex gap-2">
-            <button
-              type="button"
-              @click="fetchCategories"
-              class="flex-1 py-2.5 text-sm font-medium rounded-lg bg-purple-600 text-white shadow-sm hover:bg-purple-700 active:bg-purple-800 transition touch-manipulation"
-            >
-              조회
-            </button>
             <button
               type="button"
               @click="downloadExcel"

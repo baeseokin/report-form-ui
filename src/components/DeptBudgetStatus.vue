@@ -6,6 +6,7 @@
         <label class="font-semibold text-gray-600 mb-1 text-sm">부서 선택</label>
         <select
           v-model="selectedDeptId"
+          @change="fetchData"
           class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-44 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
           :disabled="!canChangeDept"
         >
@@ -22,19 +23,13 @@
         <input
           type="number"
           v-model="year"
+          @change="fetchData"
           min="2000"
           max="2100"
           class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-28 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
         />
       </div>
 
-      <button
-        type="button"
-        @click="fetchData"
-        class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
-      >
-        조회
-      </button>
     </div>
 
     <!-- 계정 목록 Grid -->
