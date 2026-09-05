@@ -99,6 +99,13 @@
           <div class="flex items-center gap-2 flex-1">
             <h3 class="font-bold text-lg text-blue-800 whitespace-nowrap">🔗 부서 매핑</h3>
             <select
+              v-model="selectedYear"
+              @change="fetchDeptMapping"
+              class="border rounded p-1 text-sm bg-white"
+            >
+              <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
+            </select>
+            <select
               v-model="selectedDeptId"
               @change="fetchDeptMapping"
               class="border rounded p-1 text-sm flex-1 max-w-[200px]"
@@ -260,6 +267,11 @@ import axios from "axios";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
+const selectedYear = ref(new Date().getFullYear());
+const yearOptions = computed(() => {
+  const current = new Date().getFullYear();
+  return [current - 2, current - 1, current, current + 1, current + 2];
+});
 const categories = ref([]);
 const mappedCategoryIds = ref([]); // 우측 화면에서 체크된 ID 목록
 const leftCheckedIds = ref([]);    // 좌측 선택
@@ -363,7 +375,7 @@ const fetchDeptMapping = async () => {
   if (!selectedDeptId.value) return;
   try {
     // 기존 API 활용: 해당 부서에 매핑된 목록만 가져옴
-    const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`);
+    const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}?mode=mapping&year=${selectedYear.value}`);
     const mappedList = res.data.categories || [];
     mappedCategoryIds.value = mappedList.map(c => c.id);
   } catch (err) {
@@ -524,7 +536,8 @@ const saveMapping = async () => {
   if (!selectedDeptId.value) return;
   try {
     await axios.post(`/api/departments/${selectedDeptId.value}/account-mapping`, {
-      categoryIds: mappedCategoryIds.value
+      categoryIds: mappedCategoryIds.value,
+      year: selectedYear.value
     });
     alert("매핑 정보가 저장되었습니다.");
   } catch (err) {

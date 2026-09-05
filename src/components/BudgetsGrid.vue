@@ -9,20 +9,11 @@
           @change="fetchCategories"
           class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-44 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
         >
+          <option value="all">전체</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
             {{ d.dept_name }}
           </option>
         </select>
-      </div>
-
-      <div class="flex flex-col">
-        <label class="font-semibold text-gray-600 mb-1 text-sm">기준일자</label>
-        <input
-          type="date"
-          v-model="baseDate"
-          @change="fetchCategories"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-44 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
-        />
       </div>
 
       <div class="flex flex-col">
@@ -98,7 +89,7 @@
           <td class="border p-2 text-right font-mono">
             <template v-if="isLeafCategory(c.id)">
               <input
-                v-if="c.owner_dept_id === selectedDeptId"
+                v-if="selectedDeptId === 'all' || c.owner_dept_id === selectedDeptId"
                 type="text"
                 class="border rounded p-1 w-40 text-right shadow-sm"
                 :value="formatAmount(budgets[c.category_id] ?? 0)"
@@ -141,9 +132,9 @@ import axios from "axios";
 const departments = ref([]);
 const selectedDeptId = ref(null);
 const categories = ref([]);
-const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
 const budgets = ref({});
+const originalBudgets = ref({});
 
 // ✅ 계층 구조 변환
 const categoriesTree = computed(() => {
@@ -182,7 +173,7 @@ const fetchCategories = async () => {
   try {
     // ✅ 부서별 계정과목 조회
     const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
-      params: { date: baseDate.value },
+      params: { year: year.value },
     });
     categories.value = res.data.categories || [];
 
@@ -192,9 +183,11 @@ const fetchCategories = async () => {
     });
 
     budgets.value = {};
+    originalBudgets.value = {};
     const budgetList = budgetRes.data.budgets || budgetRes.data || [];
     budgetList.forEach((b) => {
       budgets.value[b.category_id] = Number(b.budget_amount) || 0;
+      originalBudgets.value[b.category_id] = Number(b.budget_amount) || 0;
     });
   } catch (err) {
     console.error("❌ 데이터 조회 실패:", err);
@@ -222,14 +215,22 @@ const formatDate = (dateStr) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value
-      .filter((c) => isLeafCategory(c.id) && c.owner_dept_id === selectedDeptId.value)
+      .filter((c) => isLeafCategory(c.id) && (selectedDeptId.value === 'all' || c.owner_dept_id === selectedDeptId.value))
+      .filter((c) => {
+        const currentVal = budgets.value[c.category_id] ?? 0;
+        const originalVal = originalBudgets.value[c.category_id] ?? 0;
+        return currentVal !== originalVal;
+      })
       .map((c) => ({
       category_id: c.category_id, // 문자열 ID 저장
       year: year.value,
-      budget_amount: isLeafCategory(c.id)
-        ? (budgets.value[c.category_id] ?? 0)
-        : sumChildren(c.id),
+      budget_amount: budgets.value[c.category_id] ?? 0,
     }));
+
+    if (payload.length === 0) {
+      alert("변경된 예산 데이터가 없습니다.");
+      return;
+    }
 
     await axios.post("/api/budgets/bulk", { budgets: payload });
     alert("💾 예산이 저장되었습니다.");
@@ -251,12 +252,10 @@ const isLeafCategory = (categoryId) =>
 const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
   return children.reduce((sum, child) => {
-    // Owner 부서가 현재 선택된 부서와 같을 때만 합계에 포함
-    if (child.owner_dept_id !== selectedDeptId.value) {
-      return sum;
-    }
     if (isLeafCategory(child.id)) {
-      sum += Number(budgets.value[child.category_id] ?? 0);
+      if (selectedDeptId.value === 'all' || child.owner_dept_id === selectedDeptId.value) {
+        sum += Number(budgets.value[child.category_id] ?? 0);
+      }
     } else {
       sum += sumChildren(child.id);
     }
@@ -291,7 +290,7 @@ const downloadExcel = async () => {
   const { default: ExcelJS } = await import("exceljs");
 
   const leavesInOrder = categoriesTree.value.filter((c) => isLeafCategory(c.id));
-  const deptName = getDeptName(selectedDeptId.value) || "부서";
+  const deptName = selectedDeptId.value === 'all' ? "전체" : (getDeptName(selectedDeptId.value) || "부서");
 
   const dataRows = [];
   let prevPath = [null, null, null, null];

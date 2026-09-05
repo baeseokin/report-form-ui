@@ -78,6 +78,13 @@
       <label class="block text-sm font-semibold text-gray-700 mb-2">부서 선택</label>
       <div class="flex items-center gap-2">
         <select
+          v-model="selectedYear"
+          @change="fetchDeptMapping"
+          class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2.5 text-base bg-white"
+        >
+          <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
+        </select>
+        <select
           v-model="selectedDeptId"
           @change="fetchDeptMapping"
           class="flex-1 min-w-0 border border-gray-300 rounded-lg px-3 py-2.5 text-base bg-white"
@@ -227,6 +234,11 @@ import axios from "axios";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
+const selectedYear = ref(new Date().getFullYear());
+const yearOptions = computed(() => {
+  const current = new Date().getFullYear();
+  return [current - 2, current - 1, current, current + 1, current + 2];
+});
 const categories = ref([]);
 const mappedCategoryIds = ref([]);
 const leftCheckedIds = ref([]);
@@ -343,7 +355,7 @@ const fetchAllCategories = async () => {
 const fetchDeptMapping = async () => {
   if (!selectedDeptId.value) return;
   try {
-    const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`);
+    const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}?mode=mapping&year=${selectedYear.value}`);
     const mappedList = res.data.categories || [];
     mappedCategoryIds.value = mappedList.map(c => c.id);
     mappingExpandedIds.value = new Set(); // 부서 변경 시 트리 접기 상태 초기화
@@ -469,7 +481,10 @@ const deleteCategory = async (row) => {
 const saveMapping = async () => {
   if (!selectedDeptId.value) return;
   try {
-    await axios.post(`/api/departments/${selectedDeptId.value}/account-mapping`, { categoryIds: mappedCategoryIds.value });
+    await axios.post(`/api/departments/${selectedDeptId.value}/account-mapping`, { 
+      categoryIds: mappedCategoryIds.value,
+      year: selectedYear.value
+    });
     alert("매핑 정보가 저장되었습니다.");
   } catch (err) {
     console.error("매핑 저장 실패:", err);

@@ -32,23 +32,13 @@
               @change="fetchCategories"
               class="mobile-form-control mobile-form-control-select w-full"
             >
+              <option value="all">전체</option>
               <option v-for="d in departments" :key="d.id" :value="d.id">
                 {{ d.dept_name }}
               </option>
             </select>
           </div>
-          <div>
-            <label class="block text-sm mb-1">기준일자</label>
-            <div class="mobile-form-control-date-wrap">
-              <input
-                type="date"
-                v-model="baseDate"
-                @change="fetchCategories"
-                class="mobile-form-control mobile-form-control-date"
-              />
-              <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
-            </div>
-          </div>
+
           <div>
             <label class="block text-sm mb-1">회계연도</label>
             <input
@@ -129,7 +119,7 @@
             <!-- 2줄: 예산금액 (입력 또는 합계 표시) -->
             <div class="mt-2 ml-9">
               <template v-if="isLeafCategory(c.id)">
-                <template v-if="c.owner_dept_id === selectedDeptId">
+                <template v-if="selectedDeptId === 'all' || c.owner_dept_id === selectedDeptId">
                   <label class="block text-xs text-gray-600 mb-1">예산금액</label>
                   <input
                     type="text"
@@ -175,19 +165,18 @@ import axios from "axios";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
-const categories = ref([]);
-const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
 const budgets = ref({});
+const originalBudgets = ref({});
+const categories = ref([]);
 
 const searchExpanded = ref(false);
 const collapsedIds = ref(new Set());
 
 const searchConditionSummary = computed(() => {
   const dept = departments.value.find((d) => d.id === selectedDeptId.value);
-  const deptName = dept ? dept.dept_name : "-";
-  const dateStr = baseDate.value ? baseDate.value.replace(/-/g, ".") : "-";
-  return `${deptName} · ${dateStr} · ${year.value}년`;
+  const deptName = dept ? dept.dept_name : "전체";
+  return `[${deptName}] · ${year.value}년`;
 });
 
 const categoriesTree = computed(() => {
@@ -242,7 +231,7 @@ const fetchCategories = async () => {
   if (!selectedDeptId.value) return;
   try {
     const res = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
-      params: { date: baseDate.value },
+      params: { year: year.value },
     });
     categories.value = res.data.categories || [];
 
@@ -250,9 +239,11 @@ const fetchCategories = async () => {
       params: { year: year.value },
     });
     budgets.value = {};
+    originalBudgets.value = {};
     const budgetList = budgetRes.data.budgets || budgetRes.data || [];
     budgetList.forEach((b) => {
       budgets.value[b.category_id] = Number(b.budget_amount) || 0;
+      originalBudgets.value[b.category_id] = Number(b.budget_amount) || 0;
     });
     collapsedIds.value = new Set();
   } catch (err) {
@@ -271,9 +262,10 @@ const isLeafCategory = (categoryId) =>
 const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
   return children.reduce((sum, child) => {
-    if (child.owner_dept_id !== selectedDeptId.value) return sum;
     if (isLeafCategory(child.id)) {
-      sum += Number(budgets.value[child.category_id] ?? 0);
+      if (selectedDeptId.value === 'all' || child.owner_dept_id === selectedDeptId.value) {
+        sum += Number(budgets.value[child.category_id] ?? 0);
+      }
     } else {
       sum += sumChildren(child.id);
     }
@@ -296,12 +288,22 @@ const onBudgetInput = (e, category) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value
-      .filter((c) => isLeafCategory(c.id) && c.owner_dept_id === selectedDeptId.value)
+      .filter((c) => isLeafCategory(c.id) && (selectedDeptId.value === 'all' || c.owner_dept_id === selectedDeptId.value))
+      .filter((c) => {
+        const currentVal = budgets.value[c.category_id] ?? 0;
+        const originalVal = originalBudgets.value[c.category_id] ?? 0;
+        return currentVal !== originalVal;
+      })
       .map((c) => ({
         category_id: c.category_id,
         year: year.value,
         budget_amount: budgets.value[c.category_id] ?? 0,
       }));
+
+    if (payload.length === 0) {
+      alert("변경된 예산 데이터가 없습니다.");
+      return;
+    }
 
     await axios.post("/api/budgets/bulk", { budgets: payload });
     alert("💾 예산이 저장되었습니다.");
@@ -328,7 +330,7 @@ const downloadExcel = async () => {
   const { default: ExcelJS } = await import("exceljs");
 
   const leavesInOrder = categoriesTree.value.filter((c) => isLeafCategory(c.id));
-  const deptName = getDeptName(selectedDeptId.value) || "부서";
+  const deptName = selectedDeptId.value === 'all' ? "전체" : (getDeptName(selectedDeptId.value) || "부서");
 
   const dataRows = [];
   let prevPath = [null, null, null, null];

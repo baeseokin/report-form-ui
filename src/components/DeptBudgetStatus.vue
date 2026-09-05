@@ -15,14 +15,7 @@
         </select>
       </div>
 
-      <div class="flex flex-col">
-        <label class="font-semibold text-gray-600 mb-1 text-sm">기준일자</label>
-        <input
-          type="date"
-          v-model="baseDate"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-44 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
-        />
-      </div>
+
 
       <div class="flex flex-col">
         <label class="font-semibold text-gray-600 mb-1 text-sm">회계연도</label>
@@ -118,7 +111,7 @@ const { user } = storeToRefs(userStore);
 const departments = ref([]);
 const selectedDeptId = ref(null);
 const categories = ref([]);
-const baseDate = ref(new Date().toISOString().split("T")[0]);
+
 const year = ref(new Date().getFullYear());
 const budgets = ref({});
 const expenses = ref([]); // approval_items raw data
@@ -203,7 +196,7 @@ const fetchData = async () => {
   try {
     // 1. 계정과목 조회
     const catRes = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
-      params: { date: baseDate.value },
+      params: { year: year.value },
     });
     const rawCategories = catRes.data.categories || [];
     

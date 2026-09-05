@@ -41,17 +41,7 @@
 
           <!-- 기준일자 / 회계연도 -->
           <div class="flex gap-3 items-end">
-            <div class="flex-1 min-w-0">
-              <label class="block text-sm mb-1">기준일자</label>
-              <div class="mobile-form-control-date-wrap">
-                <input
-                  type="date"
-                  v-model="baseDate"
-                  class="mobile-form-control mobile-form-control-date"
-                />
-                <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
-              </div>
-            </div>
+
             <div class="w-24 shrink-0">
               <label class="block text-sm mb-1">회계연도</label>
               <input
@@ -158,7 +148,6 @@ const { user } = storeToRefs(userStore);
 const departments = ref([]);
 const selectedDeptId = ref(null);
 const categories = ref([]);
-const baseDate = ref(new Date().toISOString().split("T")[0]);
 const year = ref(new Date().getFullYear());
 const budgets = ref({});
 const expenses = ref([]); // approval_items raw data
@@ -170,8 +159,7 @@ const searchExpanded = ref(false);
 const searchConditionSummary = computed(() => {
   const dept = departments.value.find((d) => d.id === selectedDeptId.value);
   const deptName = dept ? dept.dept_name : "-";
-  const dateStr = baseDate.value ? baseDate.value.replace(/-/g, ".") : "-";
-  return `${deptName} · ${dateStr} · ${year.value}년`;
+  return `${deptName} · ${year.value}년`;
 });
 
 // ✅ 부서 선택 권한 (관리자 or 재정부)
@@ -264,7 +252,7 @@ const fetchData = async () => {
   try {
     // 1. 계정과목 조회
     const catRes = await axios.get(`/api/accountCategories/${selectedDeptId.value}`, {
-      params: { date: baseDate.value },
+      params: { year: year.value },
     });
     const rawCategories = catRes.data.categories || [];
 
