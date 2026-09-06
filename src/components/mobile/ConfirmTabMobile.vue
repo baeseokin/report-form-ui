@@ -60,15 +60,20 @@
           
           <div class="flex flex-col gap-2">
             <template v-if="displayLines1.length > 0">
-              <div v-for="(line, idx) in displayLines1" :key="idx" class="flex flex-col">
-                <div class="flex items-center gap-3 transition-opacity duration-300" :class="{ 'opacity-30 grayscale': line.isPastOrCurrent }">
+              <div v-for="(group, idx) in displayLines1" :key="idx" class="flex flex-col">
+                <div class="flex items-center gap-3 transition-opacity duration-300" :class="{ 'opacity-30 grayscale': group[0].isPastOrCurrent }">
                   <div class="relative flex flex-col items-center">
-                     <div class="w-1.5 h-1.5 rounded-full shadow-sm" :class="[line.isPastOrCurrent ? 'bg-gray-400' : 'bg-indigo-500 ring-2 ring-indigo-100']"></div>
-                     <div v-if="idx < displayLines1.length - 1" class="absolute top-1.5 w-0.5 h-6" :class="[line.isPastOrCurrent ? 'bg-gray-200' : 'bg-indigo-100']"></div>
+                     <div class="w-1.5 h-1.5 rounded-full shadow-sm" :class="[group[0].isPastOrCurrent ? 'bg-gray-400' : 'bg-indigo-500 ring-2 ring-indigo-100']"></div>
+                     <div v-if="idx < displayLines1.length - 1" class="absolute top-1.5 w-0.5 h-6" :class="[group[0].isPastOrCurrent ? 'bg-gray-200' : 'bg-indigo-100']"></div>
                   </div>
-                  <span class="text-[12px] text-gray-800" :class="{ 'font-bold': !line.isPastOrCurrent }">
-                    <span class="text-gray-400 mr-1 text-[10px]">{{ line.approver_role }}</span> {{ line.approver_user_name }}
-                  </span>
+                  <div class="flex flex-wrap gap-x-2 gap-y-1 items-center">
+                    <template v-for="(line, lIdx) in group" :key="line.approver_user_id">
+                      <span class="text-[12px] text-gray-800 flex items-center" :class="{ 'font-bold': !line.isPastOrCurrent }">
+                        <span class="text-gray-400 mr-1 text-[10px]">{{ line.approver_role }}</span> {{ line.approver_user_name }}
+                      </span>
+                      <span v-if="lIdx < group.length - 1" class="text-[9px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded-sm font-bold">OR</span>
+                    </template>
+                  </div>
                 </div>
               </div>
             </template>
@@ -100,15 +105,20 @@
           
           <div class="flex flex-col gap-2">
             <template v-if="displayLines2.length > 0">
-              <div v-for="(line, idx) in displayLines2" :key="idx" class="flex flex-col">
-                <div class="flex items-center gap-3 transition-opacity duration-300" :class="{ 'opacity-30 grayscale': line.isPastOrCurrent }">
+              <div v-for="(group, idx) in displayLines2" :key="idx" class="flex flex-col">
+                <div class="flex items-center gap-3 transition-opacity duration-300" :class="{ 'opacity-30 grayscale': group[0].isPastOrCurrent }">
                   <div class="relative flex flex-col items-center">
-                     <div class="w-1.5 h-1.5 rounded-full shadow-sm" :class="[line.isPastOrCurrent ? 'bg-gray-400' : 'bg-purple-500 ring-2 ring-purple-100']"></div>
-                     <div v-if="idx < displayLines2.length - 1" class="absolute top-1.5 w-0.5 h-6" :class="[line.isPastOrCurrent ? 'bg-gray-200' : 'bg-purple-100']"></div>
+                     <div class="w-1.5 h-1.5 rounded-full shadow-sm" :class="[group[0].isPastOrCurrent ? 'bg-gray-400' : 'bg-purple-500 ring-2 ring-purple-100']"></div>
+                     <div v-if="idx < displayLines2.length - 1" class="absolute top-1.5 w-0.5 h-6" :class="[group[0].isPastOrCurrent ? 'bg-gray-200' : 'bg-purple-100']"></div>
                   </div>
-                  <span class="text-[12px] text-gray-800" :class="{ 'font-bold': !line.isPastOrCurrent }">
-                    <span class="text-gray-400 mr-1 text-[10px]">{{ line.approver_role }}</span> {{ line.approver_user_name }}
-                  </span>
+                  <div class="flex flex-wrap gap-x-2 gap-y-1 items-center">
+                    <template v-for="(line, lIdx) in group" :key="line.approver_user_id">
+                      <span class="text-[12px] text-gray-800 flex items-center" :class="{ 'font-bold': !line.isPastOrCurrent }">
+                        <span class="text-gray-400 mr-1 text-[10px]">{{ line.approver_role }}</span> {{ line.approver_user_name }}
+                      </span>
+                      <span v-if="lIdx < group.length - 1" class="text-[9px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded-sm font-bold">OR</span>
+                    </template>
+                  </div>
                 </div>
               </div>
             </template>
@@ -262,31 +272,63 @@ const ownerDeptName = computed(() => {
 const hasMultipleOptions = computed(() => ownerDeptName.value && ownerDeptName.value !== userDept.value);
 
 const displayLines1 = computed(() => {
-  const result = approvalLines1.value.map(line => {
-    const myLine = approvalLines1.value.find(l => l.approver_user_id === user.value?.userId);
-    return {
+  const myLine = approvalLines1.value.find(l => l.approver_user_id === user.value?.userId);
+  
+  const groups = {};
+  approvalLines1.value.forEach(line => {
+    if (myLine && line.order_no < myLine.order_no) return;
+
+    if (!groups[line.order_no]) groups[line.order_no] = [];
+    groups[line.order_no].push({
       ...line,
-      isPastOrCurrent: myLine ? line.order_no <= myLine.order_no : false
-    };
+      isPastOrCurrent: myLine ? line.order_no === myLine.order_no : false
+    });
   });
-  return result;
+
+  return Object.values(groups).map(group => {
+    if (group.length > 0) {
+      if (myLine && group[0].order_no === myLine.order_no) {
+        const me = group.find(l => l.approver_user_id === user.value?.userId);
+        return me ? [me] : [group[0]];
+      } else if (!myLine && group[0].order_no === 1) {
+        const me = group.find(l => l.approver_user_id === user.value?.userId);
+        return me ? [me] : [group[0]];
+      }
+    }
+    return group;
+  });
 });
 
 const displayLines2 = computed(() => {
-  if (ownerDeptName.value && ownerDeptName.value !== userDept.value) {
-    return approvalLines2.value.map(line => ({
+  const myLine = approvalLines2.value.find(l => l.approver_user_id === user.value?.userId);
+  const isOwnerDifferent = ownerDeptName.value && ownerDeptName.value !== userDept.value;
+
+  const groups = {};
+  approvalLines2.value.forEach(line => {
+    // 다른 부서 승인요청이 아닌 경우에만 이전 단계 제외
+    if (!isOwnerDifferent && myLine && line.order_no < myLine.order_no) return;
+
+    if (!groups[line.order_no]) groups[line.order_no] = [];
+    groups[line.order_no].push({
       ...line,
-      isPastOrCurrent: line.approver_role !== "위원장"
-    }));
-  }
-  const result = approvalLines2.value.map(line => {
-    const myLine = approvalLines2.value.find(l => l.approver_user_id === user.value?.userId);
-    return {
-      ...line,
-      isPastOrCurrent: myLine ? line.order_no <= myLine.order_no : false
-    };
+      isPastOrCurrent: isOwnerDifferent 
+        ? line.approver_role !== "위원장" 
+        : (myLine ? line.order_no === myLine.order_no : false)
+    });
   });
-  return result;
+
+  return Object.values(groups).map(group => {
+    if (!isOwnerDifferent && group.length > 0) {
+      if (myLine && group[0].order_no === myLine.order_no) {
+        const me = group.find(l => l.approver_user_id === user.value?.userId);
+        return me ? [me] : [group[0]];
+      } else if (!myLine && group[0].order_no === 1) {
+        const me = group.find(l => l.approver_user_id === user.value?.userId);
+        return me ? [me] : [group[0]];
+      }
+    }
+    return group;
+  });
 });
 
 const fetchApprovalLines = async (deptName, targetRef) => {
