@@ -86,48 +86,40 @@
         <p v-if="filteredLines.length === 0" class="text-sm text-gray-500 py-6 text-center">
           결재선이 없습니다. 아래 폼에서 추가해 주세요.
         </p>
-        <ul v-else class="space-y-2">
+        <ul v-else class="space-y-4">
           <li
-            v-for="line in filteredLines"
-            :key="line.id"
-            class="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2"
+            v-for="group in groupedLines"
+            :key="group.order_no"
+            class="rounded-lg border border-purple-200 bg-white overflow-hidden shadow-sm"
           >
-            <div class="flex items-center justify-between gap-2">
-              <span class="font-mono text-sm font-semibold text-purple-700">#{{ line.order_no }}</span>
-              <span class="text-sm text-gray-700">{{ line.approver_role }}</span>
-              <span class="text-sm text-gray-600 truncate">{{ getDisplayName(line) }}</span>
+            <div class="bg-purple-50 px-3 py-2 border-b border-purple-100 font-bold text-purple-800 text-sm">
+              {{ group.order_no }}차 결재
             </div>
-            <div class="flex flex-wrap gap-1.5 justify-end">
-              <button
-                type="button"
-                class="px-2 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 active:bg-gray-100 touch-manipulation disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="line.order_no === 1"
-                @click.stop="move(line, -1)"
-              >
-                ▲ 위로
-              </button>
-              <button
-                type="button"
-                class="px-2 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 active:bg-gray-100 touch-manipulation disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="line.order_no === filteredLines.length"
-                @click.stop="move(line, 1)"
-              >
-                ▼ 아래로
-              </button>
-              <button
-                type="button"
-                class="px-2 py-1.5 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 active:bg-purple-800 touch-manipulation"
-                @click.stop="editExisting(line)"
-              >
-                수정
-              </button>
-              <button
-                type="button"
-                class="px-2 py-1.5 text-xs bg-rose-500 text-white rounded hover:bg-rose-600 active:bg-rose-700 touch-manipulation"
-                @click.stop.prevent="removeLine(line.id)"
-              >
-                삭제
-              </button>
+            <div class="p-3 flex flex-col gap-2">
+              <template v-for="(line, idx) in group.approvers" :key="line.id">
+                <!-- OR Badge -->
+                <div v-if="idx > 0" class="flex items-center justify-center py-1">
+                  <span class="bg-gray-100 text-gray-400 text-[10px] font-bold px-2 py-0.5 rounded-full">OR</span>
+                </div>
+                
+                <!-- Approver Item -->
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
+                  <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded self-start">
+                      {{ line.approver_role }}
+                    </span>
+                    <span class="text-sm font-medium text-gray-800">{{ getDisplayName(line) }}</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button type="button" class="text-xs bg-white border border-gray-300 rounded px-2 py-1 text-gray-600 hover:text-purple-600" @click.stop="editExisting(line)">
+                      수정
+                    </button>
+                    <button type="button" class="text-xs bg-white border border-gray-300 rounded px-2 py-1 text-rose-500 hover:text-rose-700" @click.stop.prevent="removeLine(line.id)">
+                      삭제
+                    </button>
+                  </div>
+                </div>
+              </template>
             </div>
           </li>
         </ul>
@@ -189,12 +181,12 @@
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 mb-1">결재 순서</label>
-            <input
+            <select
               v-model.number="editable.order_no"
-              type="number"
-              min="1"
-              class="w-full mobile-form-control"
-            />
+              class="w-full mobile-form-control mobile-form-control-select"
+            >
+              <option v-for="n in maxOrderOptions" :key="n" :value="n">{{ n }}차</option>
+            </select>
           </div>
         </div>
         <div class="flex flex-wrap gap-2 pt-2">
@@ -299,6 +291,42 @@ const filteredLines = computed(() => {
   return lines.value
     .filter((l) => l.dept_name === selectedDept.value)
     .sort((a, b) => a.order_no - b.order_no);
+});
+
+const groupedLines = computed(() => {
+  if (!selectedDept.value) return [];
+  const groups = {};
+  lines.value
+    .filter((l) => l.dept_name === selectedDept.value)
+    .forEach((line) => {
+      if (!groups[line.order_no]) groups[line.order_no] = [];
+      groups[line.order_no].push(line);
+    });
+  
+  return Object.keys(groups)
+    .sort((a, b) => Number(a) - Number(b))
+    .map(key => ({
+      order_no: Number(key),
+      approvers: groups[key]
+    }));
+});
+
+const maxOrderOptions = computed(() => {
+  const maxOrder = filteredLines.value.length > 0 
+    ? Math.max(...filteredLines.value.map(l => Number(l.order_no) || 0)) 
+    : 0;
+  
+  const options = [];
+  for (let i = 1; i <= Math.max(1, maxOrder + 1); i++) {
+    options.push(i);
+  }
+  
+  if (editable.value.order_no && !options.includes(editable.value.order_no)) {
+    options.push(editable.value.order_no);
+    options.sort((a,b) => a - b);
+  }
+  
+  return options;
 });
 
 const isValid = computed(() => {
@@ -513,32 +541,7 @@ async function removeLine(id) {
   };
 }
 
-async function move(line, direction) {
-  const deptLines = filteredLines.value;
-  const index = deptLines.findIndex((l) => l.id === line.id);
-  const target = deptLines[index + direction];
-  if (!target) return;
 
-  const updated = [
-    { ...line, order_no: target.order_no },
-    { ...target, order_no: line.order_no },
-  ];
-
-  try {
-    await Promise.all(
-      updated.map((item) =>
-        axios.put(`/api/approval-lines/${item.id}`, item)
-      )
-    );
-    lines.value = lines.value.map((orig) => {
-      const changed = updated.find((u) => u.id === orig.id);
-      return changed ? { ...orig, order_no: changed.order_no } : orig;
-    });
-  } catch (err) {
-    console.error(err);
-    error.value = "순서 변경에 실패했습니다.";
-  }
-}
 </script>
 
 <style scoped>

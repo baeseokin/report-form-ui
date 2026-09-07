@@ -126,12 +126,12 @@
 
           <label class="block text-sm font-semibold text-gray-700">
             결재 순서
-            <input
+            <select
               v-model.number="editable.order_no"
-              type="number"
-              min="1"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
-            />
+              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+            >
+              <option v-for="n in maxOrderOptions" :key="n" :value="n">{{ n }}차</option>
+            </select>
           </label>
 
           <div class="md:col-span-2 flex flex-wrap gap-2">
@@ -155,63 +155,69 @@
           </div>
         </div>
 
-        <!-- Table -->
+        <!-- Grouped Lines Layout -->
         <div class="overflow-hidden border rounded-lg">
           <table class="w-full text-sm">
             <thead class="bg-purple-50 text-purple-900">
               <tr>
-                <th class="px-3 py-2 border">순서</th>
-                <th class="px-3 py-2 border">결재 역할</th>
-                <th class="px-3 py-2 border">결재자</th>
-                <th class="px-3 py-2 border">비고</th>
+                <th class="px-4 py-3 border-b text-center font-semibold w-24">순서</th>
+                <th class="px-4 py-3 border-b text-left font-semibold">결재자 (같은 차수는 동시 결재)</th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="line in filteredLines"
-                :key="line.id"
-                class="hover:bg-purple-50"
+                v-for="group in groupedLines"
+                :key="group.order_no"
+                class="hover:bg-purple-50/50 transition-colors"
               >
-                <td class="px-3 py-2 border text-center font-mono">{{ line.order_no }}</td>
-                <td class="px-3 py-2 border">{{ line.approver_role }}</td>
-                <td class="px-3 py-2 border">{{ getDisplayName(line) }}</td>
-                <td class="px-3 py-2 border">
-                  <div class="flex flex-wrap gap-2 justify-end">
-                    <button
-                      type="button"
-                      class="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
-                      @click.stop="move(line, -1)"
-                      :disabled="line.order_no === 1"
-                    >
-                      ▲ 위로
-                    </button>
-                    <button
-                      type="button"
-                      class="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
-                      @click.stop="move(line, 1)"
-                      :disabled="line.order_no === filteredLines.length"
-                    >
-                      ▼ 아래로
-                    </button>
-                    <button
-                      type="button"
-                      class="px-2 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700"
-                      @click.stop="editExisting(line)"
-                    >
-                      수정
-                    </button>
-                    <button
-                      type="button"
-                      class="px-2 py-1 text-xs bg-rose-500 text-white rounded hover:bg-rose-600"
-                      @click.stop.prevent="removeLine(line.id)"
-                    >
-                      삭제
-                    </button>
+                <td class="px-4 py-4 border-b text-center font-bold text-gray-700 bg-gray-50/50">
+                  {{ group.order_no }}차
+                </td>
+                <td class="px-4 py-4 border-b">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <template v-for="(line, idx) in group.approvers" :key="line.id">
+                      <!-- OR Badge for parallel approvers -->
+                      <div v-if="idx > 0" class="flex items-center justify-center bg-gray-100 text-gray-400 text-[10px] font-bold px-2 py-1 rounded-full shadow-inner">
+                        OR
+                      </div>
+                      
+                      <!-- Approver Card -->
+                      <div class="flex flex-col bg-white border border-gray-200 rounded-lg p-3 shadow-sm min-w-[140px] hover:border-purple-300 transition-colors">
+                        <div class="flex justify-between items-start mb-2 gap-2">
+                          <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
+                            {{ line.approver_role }}
+                          </span>
+                          <div class="flex items-center gap-1">
+                            <button
+                              type="button"
+                              class="text-gray-400 hover:text-purple-600 transition-colors"
+                              @click.stop="editExisting(line)"
+                              title="수정"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                            <button
+                              type="button"
+                              class="text-gray-400 hover:text-rose-600 transition-colors"
+                              @click.stop.prevent="removeLine(line.id)"
+                              title="삭제"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                          </div>
+                        </div>
+                        <span class="font-medium text-gray-800 text-sm line-clamp-1" :title="getDisplayName(line)">
+                          {{ getDisplayName(line) }}
+                        </span>
+                      </div>
+                    </template>
                   </div>
                 </td>
               </tr>
-              <tr v-if="filteredLines.length === 0">
-                <td colspan="4" class="text-center text-gray-500 px-3 py-6">결재선이 없습니다. 추가 버튼을 눌러 등록하세요.</td>
+              <tr v-if="groupedLines.length === 0">
+                <td colspan="2" class="text-center text-gray-500 px-4 py-8 bg-gray-50/50">
+                  결재선이 없습니다. 위에서 결재자를 추가해주세요.
+                </td>
               </tr>
             </tbody>
           </table>
@@ -299,6 +305,42 @@ const filteredLines = computed(() => {
   return lines.value
     .filter((l) => l.dept_name === selectedDept.value)
     .sort((a, b) => a.order_no - b.order_no);
+});
+
+const groupedLines = computed(() => {
+  if (!selectedDept.value) return [];
+  const groups = {};
+  lines.value
+    .filter((l) => l.dept_name === selectedDept.value)
+    .forEach((line) => {
+      if (!groups[line.order_no]) groups[line.order_no] = [];
+      groups[line.order_no].push(line);
+    });
+  
+  return Object.keys(groups)
+    .sort((a, b) => Number(a) - Number(b))
+    .map(key => ({
+      order_no: Number(key),
+      approvers: groups[key]
+    }));
+});
+
+const maxOrderOptions = computed(() => {
+  const maxOrder = filteredLines.value.length > 0 
+    ? Math.max(...filteredLines.value.map(l => Number(l.order_no) || 0)) 
+    : 0;
+  
+  const options = [];
+  for (let i = 1; i <= Math.max(1, maxOrder + 1); i++) {
+    options.push(i);
+  }
+  
+  if (editable.value.order_no && !options.includes(editable.value.order_no)) {
+    options.push(editable.value.order_no);
+    options.sort((a,b) => a - b);
+  }
+  
+  return options;
 });
 
 const isValid = computed(() => {
@@ -516,32 +558,7 @@ async function removeLine(id) {
   };
 }
 
-async function move(line, direction) {
-  const deptLines = filteredLines.value;
-  const index = deptLines.findIndex((l) => l.id === line.id);
-  const target = deptLines[index + direction];
-  if (!target) return;
 
-  const updated = [
-    { ...line, order_no: target.order_no },
-    { ...target, order_no: line.order_no },
-  ];
-
-  try {
-    await Promise.all(
-      updated.map((item) =>
-        axios.put(`/api/approval-lines/${item.id}`, item)
-      )
-    );
-    lines.value = lines.value.map((orig) => {
-      const changed = updated.find((u) => u.id === orig.id);
-      return changed ? { ...orig, order_no: changed.order_no } : orig;
-    });
-  } catch (err) {
-    console.error(err);
-    error.value = "순서 변경에 실패했습니다.";
-  }
-}
 </script>
 
 <style scoped>
