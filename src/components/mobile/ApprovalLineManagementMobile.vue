@@ -93,7 +93,7 @@
             class="rounded-lg border border-purple-200 bg-white overflow-hidden shadow-sm"
           >
             <div class="bg-purple-50 px-3 py-2 border-b border-purple-100 font-bold text-purple-800 text-sm">
-              {{ group.order_no }}차 결재
+              {{ group.order_no }}차
             </div>
             <div class="p-3 flex flex-col gap-2">
               <template v-for="(line, idx) in group.approvers" :key="line.id">
