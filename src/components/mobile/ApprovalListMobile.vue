@@ -124,6 +124,19 @@
       </div>
     </div>
 
+    <!-- ✅ 목록 상단 우측 요약 정보 (청구 건수, 합계금액) -->
+    <div class="flex justify-end items-center mb-2 px-1 text-xs text-gray-600 gap-2">
+      <div>
+        <span>청구 건수:</span>
+        <strong class="font-bold text-gray-900 ml-0.5">{{ Number(totalCount || 0).toLocaleString() }}</strong>건
+      </div>
+      <span class="text-gray-300">|</span>
+      <div>
+        <span>합계금액:</span>
+        <strong class="font-bold text-purple-700 ml-0.5">{{ Number(totalAmount || 0).toLocaleString() }}</strong>원
+      </div>
+    </div>
+
     <!-- ✅ 카드 리스트 -->
     <div class="space-y-4">
       <div
@@ -227,6 +240,8 @@ const { user } = storeToRefs(useUserStore());
 const approvals = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
+const totalCount = ref(0);
+const totalAmount = ref(0);
 const previewReport = ref(null);
 const departments = ref([]);
 
@@ -347,9 +362,13 @@ const fetchApprovals = async (page = 1) => {
     });
     approvals.value = res.data.rows;
     totalPages.value = res.data.totalPages;
+    totalCount.value = res.data.totalCount ?? 0;
+    totalAmount.value = res.data.totalAmount ?? 0;
   } catch (err) {
     console.error(err);
     approvals.value = [];
+    totalCount.value = 0;
+    totalAmount.value = 0;
   }
 };
 
