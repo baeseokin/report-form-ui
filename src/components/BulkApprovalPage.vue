@@ -223,9 +223,15 @@
       </Transition>
     </Teleport>
 
-    <!-- ✅ ReportPreview 모달 — 닫힐 때 목록 재조회 -->
+    <!-- ✅ ReportPreview / BudgetReportPreview 모달 — 닫힐 때 목록 재조회 -->
+    <BudgetReportPreview
+      v-if="previewReport && (previewReport.documentType === '예산편성서' || previewReport.document_type === '예산편성서')"
+      :report="previewReport"
+      @close="previewReport = null; fetchList()"
+      @refreshList="fetchList"
+    />
     <ReportPreview
-      v-if="previewReport"
+      v-else-if="previewReport"
       :report="previewReport"
       @close="previewReport = null; fetchList()"
       @refreshList="fetchList"
@@ -239,8 +245,9 @@ import { ref, computed, reactive, onMounted, defineAsyncComponent, nextTick } fr
 import { useUserStore } from "@/store/userStore";
 import axios from "axios";
 
-// ✅ ReportPreview — 비동기 로드
+// ✅ ReportPreview / BudgetReportPreview — 비동기 로드
 const ReportPreview = defineAsyncComponent(() => import("@/components/ReportPreview.vue"));
+const BudgetReportPreview = defineAsyncComponent(() => import("@/components/BudgetReportPreview.vue"));
 
 // ─── 권한 체크 ──────────────────────────────────────────────────
 const userStore = useUserStore();

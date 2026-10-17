@@ -52,6 +52,7 @@
         v-model:selected-gwan="selectedGwan"
         v-model:selected-hang="selectedHang"        
         v-model:selected-dept="selectedDept"
+        :date="date"
         :dept-data="deptData"
         @prev="goPrevTab"
         @next="goNextTab"

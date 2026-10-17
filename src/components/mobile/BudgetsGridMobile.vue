@@ -257,7 +257,7 @@ const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
   return children.reduce((sum, child) => {
     if (isLeafCategory(child.id)) {
-      if (selectedDeptId.value === 'all' || child.owner_dept_id === selectedDeptId.value) {
+      if (selectedDeptId.value === 'all' || child.owner_dept_id == selectedDeptId.value) {
         sum += Number(budgets.value[child.category_id] ?? 0);
       }
     } else {
@@ -282,7 +282,7 @@ const onBudgetInput = (e, category) => {
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value
-      .filter((c) => isLeafCategory(c.id) && (selectedDeptId.value === 'all' || c.owner_dept_id === selectedDeptId.value))
+      .filter((c) => isLeafCategory(c.id) && (selectedDeptId.value === 'all' || c.owner_dept_id == selectedDeptId.value))
       .filter((c) => {
         const currentVal = budgets.value[c.category_id] ?? 0;
         const originalVal = originalBudgets.value[c.category_id] ?? 0;

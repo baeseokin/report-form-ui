@@ -133,6 +133,7 @@ watch(
 function isMenuActive(m) {
   if (route.path === m.path) return true;
   if (m.path === "/reportForm" && route.path.startsWith("/report")) return true;
+  if (m.path === "/budgetReportForm" && route.path.startsWith("/budgetReport")) return true;
   return false;
 }
 
@@ -226,6 +227,7 @@ const allMenus = [
   { label: "공지사항", path: "/notices", icon: "📢", alwaysShow: true },
   { label: "게시판", path: "/boards", icon: "💬", alwaysShow: true },
   { label: "지출결의서 작성", path: "/reportForm", icon: "📝" },
+  { label: "예산편성서 작성", path: "/budgetReportForm", icon: "📋" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
   { label: "재정부 일괄결재", path: "/bulkApproval", icon: "🗂️" },

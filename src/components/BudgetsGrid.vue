@@ -84,7 +84,7 @@
           <td class="border p-2 text-right font-mono">
             <template v-if="isLeafCategory(c.id)">
               <input
-                v-if="selectedDeptId === 'all' || c.owner_dept_id === selectedDeptId"
+                v-if="selectedDeptId === 'all' || c.owner_dept_id == selectedDeptId"
                 type="text"
                 class="border rounded p-1 w-40 text-right shadow-sm"
                 :value="formatAmount(budgets[c.category_id] ?? 0)"
@@ -203,14 +203,22 @@ const getDeptName = (deptId) => {
 // 날짜 포맷
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
-  return new Date(dateStr).toISOString().split("T")[0];
+  if (typeof dateStr === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    return dateStr.substring(0, 10);
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 };
 
 // 일괄 저장
 const saveAllBudgets = async () => {
   try {
     const payload = categories.value
-      .filter((c) => isLeafCategory(c.id) && (selectedDeptId.value === 'all' || c.owner_dept_id === selectedDeptId.value))
+      .filter((c) => isLeafCategory(c.id) && (selectedDeptId.value === 'all' || c.owner_dept_id == selectedDeptId.value))
       .filter((c) => {
         const currentVal = budgets.value[c.category_id] ?? 0;
         const originalVal = originalBudgets.value[c.category_id] ?? 0;
@@ -248,7 +256,7 @@ const sumChildren = (parentId) => {
   const children = categories.value.filter((c) => c.parent_id === parentId);
   return children.reduce((sum, child) => {
     if (isLeafCategory(child.id)) {
-      if (selectedDeptId.value === 'all' || child.owner_dept_id === selectedDeptId.value) {
+      if (selectedDeptId.value === 'all' || child.owner_dept_id == selectedDeptId.value) {
         sum += Number(budgets.value[child.category_id] ?? 0);
       }
     } else {

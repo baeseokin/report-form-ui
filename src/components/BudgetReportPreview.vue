@@ -1,0 +1,1590 @@
+<template>
+  <div class="fixed flex items-center justify-center inset-0 bg-black bg-opacity-50 z-50 font-nanum">
+    <!-- 닫기 버튼 -->
+    <button
+      @click="$emit('close')"
+      class="fixed top-4 right-4 z-50 text-gray-500 hover:text-black text-2xl bg-white rounded-full w-10 h-10 flex items-center justify-center shadow"
+    >
+      ✕
+    </button>
+    <!-- 확대/축소 (드래그하여 위치 이동 가능) -->
+    <div
+      ref="zoomBarEl"
+      class="fixed z-50 flex items-center gap-1 bg-white/95 rounded-lg shadow-lg border border-gray-200 px-2 py-1.5 no-print select-none touch-none cursor-grab active:cursor-grabbing"
+      :style="{ top: zoomBarPos.top + 'px', left: zoomBarPos.left + 'px' }"
+      @pointerdown="onZoomBarPointerDown"
+    >
+      <button
+        type="button"
+        aria-label="축소"
+        @click="zoomOut"
+        class="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg leading-none pointer-events-auto"
+      >−</button>
+      <span class="text-xs font-medium text-gray-600 min-w-[3rem] text-center">{{ Math.round(scaleValue * 100) }}%</span>
+      <button
+        type="button"
+        aria-label="확대"
+        @click="zoomIn"
+        class="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-lg leading-none pointer-events-auto"
+      >+</button>
+      <button
+        type="button"
+        aria-label="가로 맞춤"
+        @click="fitToWidth"
+        class="ml-1 px-2 py-1 text-xs font-medium rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 pointer-events-auto"
+      >맞춤</button>
+    </div>
+    <div
+      class="bg-white rounded-2xl w-full sm:max-w-[52rem] h-screen sm:h-[calc(100vh-5rem)] sm:mb-16 p-0 relative overflow-y-auto overflow-x-hidden border-t-8 border-purple-500 flex justify-center sm:shadow-2xl"
+    >
+      <!-- 보고서: 한 번에 scale → 페이지 간격이 확대/축소에 따라 변하지 않음 -->
+      <div class="flex flex-col items-center min-h-full w-full sm:pb-32">
+        <div
+          ref="reportPanEl"
+          :style="scaleWrapperStyle"
+          class="flex flex-col items-center report-pan-wrapper"
+          :class="{ 'report-pan-dragging': reportPanDrag.active }"
+          @pointerdown="onReportPanDown"
+        >
+        <div
+          v-if="report"
+          class="page report-content break-before-page shrink-0"
+          ref="reportContent"
+          :style="pageContentStyle"
+        >
+        <h2 class="title-lg text-center mb-6 text-gray-800 mt-4">{{ report.documentType }}</h2>
+
+        <!-- ✅ 결재 서명란 (조회 전용) -->
+        <div class="flex justify-between mb-6">
+          <!-- 좌측 결재란: 결재선 개수만큼 td, 각 td 폭(11% of container) -->
+          <table
+            class="border text-center table-fixed approval-table approval-table-left"
+            :style="{ '--left-col-count': leftTableColumns.length || 4 }"
+          >
+            <thead class="bg-purple-100 text-gray-700">
+              <tr>
+                <th
+                  v-for="(line, idx) in leftTableColumns"
+                  :key="`h-${line.id || line.approver_role}`"
+                  class="border"
+                >
+                  {{ (idx === 0 || line.approver_role === "회계") ? "담당" : line.approver_role }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="sign-row">
+                <td
+                  v-for="(line, idx) in leftTableColumns"
+                  :key="`c-${line.id || line.approver_role}`"
+                  class="border relative"
+                >
+                  <div class="flex flex-col items-center justify-center">
+                    <!-- ✅ 서명 이미지 -->
+                    <img
+                      v-if="getSignature(line.approver_role, idx)"
+                      :src="getSignatureUrl(line.approver_role, idx)"
+                      class="signature-img"
+                    />
+                    <!-- ✅ 상태 뱃지 -->
+                    <div class="inline-flex items-center mt-2">
+                      <span
+                        v-if="getStatus(line.approver_role, idx)"
+                        :class="[
+                          'status-badge no-print inline-flex items-center justify-center',
+                          getStatus(line.approver_role, idx) === '이관' ? 'status-badge-transfer' : ''
+                        ]"
+                      >
+                        <img
+                          v-if="getStatus(line.approver_role, idx) === '기안'"
+                          src="/icons/draft.svg"
+                          alt="Draft"
+                          class="h-6 w-auto"
+                        />
+                        <span
+                          v-else-if="getStatus(line.approver_role, idx) === '이관'"
+                          class="inline-flex items-center justify-center text-xs font-semibold leading-none"
+                        >이관</span>
+                        <img
+                          v-else-if="getStatus(line.approver_role, idx) === '승인'"
+                          src="/icons/approved.svg"
+                          alt="Approved"
+                          class="h-6 w-auto"
+                        />
+                        <img
+                          v-else-if="getStatus(line.approver_role, idx) === '반려'"
+                          src="/icons/rejected.svg"
+                          alt="Rejected"
+                          class="h-6 w-auto"
+                        />
+                      </span>
+                    </div>
+                    <!-- ✅ 결재 시간 (PDF/프린트 시 숨김) -->
+                    <small v-if="getApprovedAt(line.approver_role, idx)" class="no-print text-gray-500 text-[10px] mt-1">
+                      {{ formatDateTime(getApprovedAt(line.approver_role, idx)) }}
+                    </small>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 오른쪽 결재란 -->
+          <table class="w-2/5 border text-center table-fixed approval-table approval-table-right">
+            <thead class="bg-purple-100 text-gray-700">
+              <tr>
+                <th class="border w-1/4">담당</th>
+                <th class="border w-1/4">부장</th>
+                <th class="border w-1/4">위원장</th>
+                <th class="border w-1/4">당회장</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="sign-row">
+                <td class="border"></td>
+                <td class="border"></td>
+                <td class="border"></td>
+                <td class="border"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 📌 [예산편성서 전용 양식] -->
+        <table class="w-full border text-center mb-4">
+          <tbody>
+            <tr>
+              <td class="border w-64 bg-purple-100 font-bold">신청부서</td>
+              <td
+                class="border text-center px-3 py-2 font-medium cursor-pointer select-none hover:bg-purple-50 active:bg-purple-100 transition-colors"
+                @click.stop="() => copyDetailToClipboard(report.deptName || report.dept_name)"
+                @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(report.deptName || report.dept_name); }"
+              >
+                {{ report.deptName || report.dept_name }}
+              </td>
+            </tr>
+            <tr>
+              <td class="border w-64 bg-purple-100 font-bold">회계연도</td>
+              <td class="border text-center px-3 py-2">{{ fiscalYearText }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="title-md flex items-center mb-3">📊 <span class="ml-2">예산 편성 명세서</span></h3>
+        <table class="w-full border mb-4 text-center text-sm table-fixed">
+          <thead class="bg-purple-100 text-gray-800 font-bold">
+            <tr>
+              <th class="border p-2 text-center w-44">계정명</th>
+              <th class="border p-2 text-center w-14">단계</th>
+              <th class="border p-2 text-center w-24">전년 예산</th>
+              <th class="border p-2 text-center w-28">편성 요청</th>
+              <th class="border p-2 text-center w-28 whitespace-nowrap">증감</th>
+              <th class="border p-2 text-center">산출 근거 / 비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="it in displayBudgetPlanItems"
+              :key="it.id || it.category_id"
+              :class="{
+                'bg-blue-50/70 font-bold': it.level === '관',
+                'bg-purple-50/40 font-semibold': it.level === '항',
+                'bg-green-50/40 font-medium': it.level === '목',
+                'bg-white': it.level === '세목'
+              }"
+            >
+              <!-- 계정명 -->
+              <td class="border p-2 text-left overflow-hidden" :title="it.category_name || it.detail">
+                <div
+                  class="flex items-center flex-nowrap gap-1 w-full overflow-hidden"
+                  :style="{
+                    paddingLeft: `${((it.depth || (it.level === '관' ? 1 : (it.level === '항' ? 2 : (it.level === '목' ? 3 : 4)))) - 1) * 20}px`
+                  }"
+                >
+                  <span
+                    v-if="(it.depth ? it.depth > 1 : it.level !== '관')"
+                    class="text-gray-400 mr-1 text-xs select-none shrink-0"
+                  >└</span>
+                  <span
+                    :class="it.is_leaf ? 'font-normal text-gray-800' : 'font-bold text-gray-900'"
+                    :style="getCategoryShrinkStyle(it)"
+                    class="truncate inline-block"
+                  >
+                    {{ it.category_name || it.detail }}
+                  </span>
+
+                </div>
+              </td>
+              <!-- 단계 -->
+              <td class="border p-2 text-center">
+                <span v-if="it.level === '관'" class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">관</span>
+                <span v-else-if="it.level === '항'" class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold">항</span>
+                <span v-else-if="it.level === '목'" class="text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-bold">목</span>
+                <span v-else class="text-[10px] bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-medium">세목</span>
+              </td>
+              <td class="border p-2 text-right font-mono text-gray-600">
+                {{ Number(it.prev_amount || 0).toLocaleString() }}
+              </td>
+              <td class="border p-2 text-right font-mono font-bold text-gray-900">
+                {{ Number(it.request_amount || it.amount || 0).toLocaleString() }}
+              </td>
+              <td class="border p-2 text-right font-mono text-xs">
+                <span
+                  :class="(it.diff_amount || 0) > 0 ? 'text-emerald-700 font-bold' : ((it.diff_amount || 0) < 0 ? 'text-blue-700 font-bold' : 'text-gray-400')"
+                >
+                  {{ (it.diff_amount || 0) > 0 ? '+' : '' }}{{ Number(it.diff_amount || 0).toLocaleString() }}
+                </span>
+              </td>
+              <td class="border p-2 text-left text-xs text-gray-600 overflow-hidden" :title="it.calc_basis || ''">
+                <div :style="getCalcBasisShrinkStyle(it.calc_basis)" class="truncate">
+                  {{ it.calc_basis || '-' }}
+                </div>
+              </td>
+            </tr>
+
+            <!-- 총괄 합계 행 -->
+            <tr class="bg-purple-100 font-bold">
+              <td colspan="2" class="border p-2 text-center">총 편성 요청액</td>
+              <td class="border p-2 text-right font-mono text-gray-700">
+                {{ totalPrevAmount ? totalPrevAmount.toLocaleString() : '-' }}
+              </td>
+              <td class="border p-2 text-right font-mono font-bold text-gray-900">
+                {{ totalRequestAmount.toLocaleString() }}
+              </td>
+              <td class="border p-2 text-right font-mono text-xs">
+                <span
+                  :class="totalDiffAmount > 0 ? 'text-emerald-700 font-bold' : (totalDiffAmount < 0 ? 'text-blue-700 font-bold' : 'text-gray-400')"
+                >
+                  {{ totalDiffAmount > 0 ? '+' : '' }}{{ totalDiffAmount.toLocaleString() }}
+                </span>
+              </td>
+              <td class="border p-2"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- 기안 의견 -->
+        <div v-if="report.comment || report.remarks" class="border p-3.5 rounded-lg bg-gray-50/70 mb-4 text-sm">
+          <span class="font-bold text-gray-800 mr-2">📌 기안 의견:</span>
+          <span class="text-gray-700 whitespace-pre-wrap">{{ report.comment || report.remarks }}</span>
+        </div>
+
+        <!-- 📌 기안 상신 문구 -->
+        <div class="mt-10 text-right text-xl leading-loose">
+          위와 같이 예산안을 상신합니다.<br />
+          {{ formatDate(report.date || report.request_date) }}<br />
+          <span
+            class="cursor-pointer select-none hover:text-purple-600 active:text-purple-800 transition-colors"
+            @click.stop="() => copyDetailToClipboard(report.author || report.drafter_name)"
+            @pointerup="(e) => { if (e.pointerType !== 'mouse') copyDetailToClipboard(report.author || report.drafter_name); }"
+          >
+            기안자 성명 : {{ report.author || report.drafter_name }}
+          </span>
+        </div>
+      </div>
+
+        <!-- 페이지 사이 고정 간격 (scale과 함께 줄어들어 비율 유지) -->
+        <div v-if="report && chunkedFiles.length" class="report-page-gap shrink-0" aria-hidden="true" />
+
+      <!-- ✅ 첨부파일 -->
+      <template v-for="(page, pageIdx) in chunkedFiles" :key="'page-'+pageIdx">
+        <div class="page report-content break-before-page shrink-0" :style="pageContentStyle">
+          <h2 class="title-lg text-center mb-6 text-gray-800">
+            📎 첨부파일 ({{ pageIdx + 1 }} / {{ chunkedFiles.length }})
+          </h2>
+
+          <div v-for="(row, rowIdx) in page" :key="'row-'+rowIdx" class="flex justify-center gap-6 mt-8">
+            <div
+              v-for="(f, idx) in row"
+              :key="'file-'+pageIdx+'-'+rowIdx+'-'+idx"
+              class="flex flex-col items-center"
+              :style="getImageWrapperStyle(row.length)"
+            >
+              <p class="text-gray-700 font-medium mb-2 text-center break-words">{{ getFileAlias(f) }}</p>
+              
+              <!-- 이미지 파일: 기존 이미지 미리보기 -->
+              <img
+                v-if="isImage(f)"
+                :src="getFileUrl(f)"
+                :style="getImageStyle(f, row.length, row)"
+                class="border rounded-lg shadow-md object-contain"
+              />
+              
+              <!-- 문서 파일 (Word, Excel, PPT, PDF, HWP 등): 문서 정보 카드 & 다운로드 버튼 -->
+              <div
+                v-else
+                class="w-full max-w-sm p-5 rounded-2xl border bg-white shadow-sm flex flex-col items-center gap-3 text-center my-3 transition hover:shadow-md"
+                :class="getDocTypeInfo(f).colorClass"
+              >
+                <div class="text-5xl select-none mb-1">
+                  {{ getDocTypeInfo(f).icon }}
+                </div>
+                <div class="space-y-1 w-full px-2">
+                  <span class="inline-block px-2.5 py-0.5 text-xs font-semibold rounded-full border mb-1" :class="getDocTypeInfo(f).badgeClass">
+                    {{ getDocTypeInfo(f).label }}
+                  </span>
+                  <p class="text-sm font-bold text-gray-800 break-all line-clamp-2" :title="f.file_name || f.name">
+                    {{ f.file_name || f.name || getFileAlias(f) }}
+                  </p>
+                  <p v-if="f.file_size || f.size" class="text-xs text-gray-500">
+                    {{ formatFileSize(f.file_size || f.size) }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2 mt-1 w-full justify-center no-print">
+                  <button
+                    type="button"
+                    @click="downloadFile(f)"
+                    class="px-4 py-2 text-xs font-bold text-white rounded-lg shadow transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                    :class="getDocTypeInfo(f).btnClass"
+                  >
+                    <span>📥</span>
+                    <span>파일 다운로드 / 열기</span>
+                  </button>
+                  <button
+                    v-if="getDocTypeInfo(f).type === 'pdf'"
+                    type="button"
+                    @click="openInNewTab(f)"
+                    class="px-3 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg shadow-sm transition active:scale-95 cursor-pointer"
+                  >
+                    <span>🔍 새창</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 다음 페이지와의 간격 -->
+        <div v-if="pageIdx < chunkedFiles.length - 1" class="report-page-gap shrink-0" aria-hidden="true" />
+      </template>
+        </div>
+      </div>
+    </div>
+
+<!-- ✅ 하단 고정 Float Bar (모바일은 활동 시 표시, PC는 항상 표시) -->
+<div
+  class="fixed bottom-0 left-0 w-full bg-gradient-to-r from-purple-100 via-pink-100 to-sky-100 border-t border-gray-200 shadow-inner z-50 no-print transition-opacity duration-500 sm:opacity-100 sm:pointer-events-auto"
+  :class="{ 'opacity-0 pointer-events-none': !showActionBar, 'opacity-100': showActionBar }"
+>
+  <!-- PC 레이아웃 -->
+  <div class="hidden sm:flex justify-center items-center gap-x-5 py-3 px-6">
+    <button
+      v-if="isApprovalPage"
+      @click="openApproval('approve')"
+      data-testid="btn-approve"
+      class="px-4 py-2 rounded-lg bg-white/80 text-green-700 font-semibold shadow hover:bg-green-100 transition"
+    >
+      ✅ 승인
+    </button>
+    <button
+      v-if="isApprovalPage"
+      @click="openApproval('reject')"
+      class="px-4 py-2 rounded-lg bg-white/80 text-red-700 font-semibold shadow hover:bg-red-100 transition"
+    >
+      ❌ 반려
+    </button>
+    <button
+      @click="downloadPDF"
+      class="px-4 py-2 rounded-lg bg-white/80 text-gray-700 font-semibold shadow hover:bg-gray-100 transition"
+    >
+      📄 PDF
+    </button>
+    <button
+      @click="printReport"
+      class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white px-5 py-2 rounded-lg shadow-md"
+    >
+      🖨️ 프린트
+    </button>
+    <button
+      @click="openCommentList"
+      data-testid="btn-comment-list"
+      class="px-4 py-2 rounded-lg bg-white/80 text-gray-700 font-semibold shadow hover:bg-gray-100 transition"
+    >
+      💬 결재의견
+    </button>
+  </div>
+
+  <!-- 모바일 레이아웃 -->
+  <div class="flex sm:hidden flex-col gap-3 px-6 py-4">
+    <div class="flex justify-around gap-4" v-if="isApprovalPage">
+      <button
+        @click="openApproval('approve')"
+        data-testid="btn-approve"
+        class="flex-1 py-3 rounded-xl bg-green-500 text-white font-bold shadow hover:bg-green-600 active:scale-95 transition"
+      >
+        ✅ 승인
+      </button>
+      <button
+        @click="openApproval('reject')"
+        class="flex-1 py-3 rounded-xl bg-red-500 text-white font-bold shadow hover:bg-red-600 active:scale-95 transition"
+      >
+        ❌ 반려
+      </button>
+    </div>
+    <div class="flex justify-around gap-4">
+      <button
+        @click="downloadPDF"
+        class="flex-1 py-2 rounded-lg bg-white/90 text-gray-800 font-semibold shadow hover:bg-gray-200 active:scale-95"
+      >
+        📄 PDF
+      </button>
+      <button
+        @click="openCommentList"
+        data-testid="btn-comment-list"
+        class="flex-1 py-2 rounded-lg bg-white/90 text-gray-800 font-semibold shadow hover:bg-gray-200 active:scale-95"
+      >
+        💬 결재의견
+      </button>
+    </div>
+  </div>
+</div>
+
+
+    <!-- ✅ 결재 팝업 -->
+    <ApprovalPopup v-if="showPopup" :report="report" :mode="popupMode" @close="closePopup" @approved="handleApproved" />
+
+    <!-- ✅ 결재 완료 알림 -->
+    <ModalAlert :visible="showModal" title="알림" message="정상적으로 결재되었습니다." @close="handleModalClose" />
+
+    <!-- ✅ 결재의견 목록 팝업 -->
+    <div
+      v-if="showCommentListPopup"
+      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+      @click.self="closeCommentList"
+    >
+      <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+        <div class="p-4 border-b flex justify-between items-center">
+          <h3 class="text-lg font-bold text-gray-800">💬 결재의견</h3>
+          <button
+            type="button"
+            class="p-2 text-gray-500 hover:text-gray-800 rounded-lg"
+            aria-label="닫기"
+            @click="closeCommentList"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="overflow-y-auto flex-1 p-4">
+          <p v-if="sortedApprovalHistory.length === 0" class="text-gray-500 text-center py-8">결재 이력이 없습니다.</p>
+          <ul v-else class="space-y-3">
+            <li
+              v-for="(h, idx) in sortedApprovalHistory"
+              :key="idx"
+              class="border border-gray-200 rounded-lg p-3 bg-gray-50/50"
+            >
+              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <span class="font-mono text-gray-600">{{ formatDateTime(h.approved_at) }}</span>
+                <span class="font-semibold text-gray-800">{{ h.approver_role || '-' }}</span>
+                <span v-if="h.approver_user_name || h.approver_user_id" class="text-gray-700">{{ h.approver_user_name }}{{ h.approver_user_id ? `(${h.approver_user_id})` : '' }}</span>
+                <span
+                  class="px-2 py-0.5 rounded text-xs font-medium"
+                  :class="{
+                    'bg-blue-100 text-blue-800': isFirstApplicantInHistory(h, idx),
+                    'bg-green-500 text-white': !isFirstApplicantInHistory(h, idx) && isApprovedStatus(h.status),
+                    'bg-red-500 text-white': isRejectedStatus(h.status),
+                    'bg-gray-400 text-white': !isFirstApplicantInHistory(h, idx) && !isApprovedStatus(h.status) && !isRejectedStatus(h.status)
+                  }"
+                >
+                  {{ isFirstApplicantInHistory(h, idx) ? '기안' : (isApprovedStatus(h.status) ? '승인' : isRejectedStatus(h.status) ? '반려' : (h.status || '-')) }}
+                </span>
+              </div>
+              <p class="mt-2 text-gray-700 text-sm whitespace-pre-wrap border-t border-gray-100 pt-2">{{ h.comment || '의견 없음' }}</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <!-- 클립보드 복사 말풍선 (body에 렌더링해 항상 맨 위에 표시) -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div
+          v-if="copyToastShow"
+          class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium shadow-lg whitespace-nowrap"
+        >
+          클립보드에 복사되었습니다.
+        </div>
+      </Transition>
+    </Teleport>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { generatePdfFromPages, printPdfBlob, savePdf } from "@/utils/printUtils";
+import { useUserStore } from "../store/userStore";
+import { storeToRefs } from "pinia";
+import ApprovalPopup from "./ApprovalPopup.vue";
+import ModalAlert from "./ModalAlert.vue";
+import axios from "axios";
+import { useRoute } from "vue-router";
+const route = useRoute();
+const isApprovalPage = computed(() => {
+  const result = route.path.startsWith("/approvalStatus");
+  console.log("isApprovalPage:", result, "route:", route.path);
+  return result;
+});
+// ✅ 공통 설정
+const A4_WIDTH = 650;   // 가로
+const A4_HEIGHT = 1000; // 세로 (PDF A4 비율에 맞춰 축소, 페이지 잘림 방지)
+
+const props = defineProps(["report"]);
+const emit = defineEmits(["close", "refreshList"]);
+
+const { user } = storeToRefs(useUserStore());
+const userDept = computed(() => user.value?.deptName || props.report?.deptName || "");
+const userName = computed(() => user.value?.userName || props.report?.author || "");
+const isAdmin = computed(() => user.value?.roles?.some(r => r === '관리자' || r.role_name === '관리자'));
+
+// ✅ 회계연도 ("2027년" 등)
+const fiscalYearText = computed(() => {
+  const alias = props.report?.aliasName || props.report?.alias_name || "";
+  const match = alias.match(/(\d{4})년/);
+  if (match) return `${match[1]}년`;
+  if (props.report?.targetYear) return `${props.report.targetYear}년`;
+  if (props.report?.date || props.report?.request_date) {
+    const d = new Date(props.report.date || props.report.request_date);
+    if (!isNaN(d.getFullYear())) return `${d.getFullYear() + 1}년`;
+  }
+  return "2027년";
+});
+
+// ✅ 세부 항목 바인딩
+const loadedBudgetPlanItems = ref([]);
+const budgetPlanItems = computed(() => {
+  return props.report?.budgetPlanItems?.length
+    ? props.report.budgetPlanItems
+    : loadedBudgetPlanItems.value;
+});
+
+// ✅ 표시용 예산 항목 (depth 정규화)
+const displayBudgetPlanItems = computed(() => {
+  const items = budgetPlanItems.value && budgetPlanItems.value.length
+    ? budgetPlanItems.value
+    : (props.report?.items || []);
+
+  return items.map(it => {
+    const depth = it.depth || (it.level === '관' ? 1 : (it.level === '항' ? 2 : (it.level === '목' ? 3 : 4)));
+    return {
+      ...it,
+      depth
+    };
+  });
+});
+
+// ✅ 총액 집계
+const totalPrevAmount = computed(() => {
+  const items = displayBudgetPlanItems.value || [];
+  const leafItems = items.filter(it => it.is_leaf);
+  if (leafItems.length > 0) {
+    return leafItems.reduce((sum, it) => sum + Number(it.prev_amount || 0), 0);
+  }
+  const gwanItems = items.filter(it => it.level === '관');
+  if (gwanItems.length > 0) {
+    return gwanItems.reduce((sum, it) => sum + Number(it.prev_amount || 0), 0);
+  }
+  return items.reduce((sum, it) => sum + Number(it.prev_amount || 0), 0);
+});
+
+const totalRequestAmount = computed(() => {
+  if (props.report?.totalAmount || props.report?.total_amount) {
+    return Number(props.report.totalAmount || props.report.total_amount);
+  }
+  const items = displayBudgetPlanItems.value || [];
+  const leafItems = items.filter(it => it.is_leaf);
+  if (leafItems.length > 0) {
+    return leafItems.reduce((sum, it) => sum + Number(it.request_amount || it.amount || 0), 0);
+  }
+  const gwanItems = items.filter(it => it.level === '관');
+  if (gwanItems.length > 0) {
+    return gwanItems.reduce((sum, it) => sum + Number(it.request_amount || it.amount || 0), 0);
+  }
+  return 0;
+});
+
+const totalDiffAmount = computed(() => {
+  return totalRequestAmount.value - totalPrevAmount.value;
+});
+
+// ✅ 텍스트 길이에 따른 폰트 축소 (줄바꿈/행밀림 방지)
+const getShrinkStyle = (text, maxWeightedLen) => {
+  if (!text) return { whiteSpace: "nowrap" };
+  let weightedLen = 0;
+  for (let i = 0; i < text.length; i++) {
+    weightedLen += text.charCodeAt(i) > 255 ? 2 : 1;
+  }
+  if (weightedLen <= maxWeightedLen) return { whiteSpace: "nowrap" };
+
+  const ratio = maxWeightedLen / weightedLen;
+  const fontSizeFactor = Math.max(0.55, ratio);
+  return {
+    fontSize: `${fontSizeFactor * 0.9}em`,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    lineHeight: "1.2"
+  };
+};
+
+const getCategoryShrinkStyle = (item) => {
+  const depth = item.depth || (item.level === '관' ? 1 : (item.level === '항' ? 2 : (item.level === '목' ? 3 : 4)));
+  const maxLen = depth === 1 ? 22 : (depth === 2 ? 18 : (depth === 3 ? 14 : 11));
+  return getShrinkStyle(item.category_name || item.detail, maxLen);
+};
+
+const getCalcBasisShrinkStyle = (text) => {
+  return getShrinkStyle(text, 35);
+};
+
+// ✅ 계정과목 매핑용
+const categories = ref([]);
+const fetchCategories = async () => {
+  try {
+    const res = await axios.get("/api/accountCategories");
+    categories.value = res.data.categories || [];
+  } catch (e) {
+    console.error("계정과목 로드 실패", e);
+  }
+};
+const getCategoryName = (code) => {
+  const found = categories.value.find(c => c.category_id === code);
+  return found ? found.category_name : code || "";
+};
+
+// ✅ 관/항 라벨
+const gwanHangLabel = computed(() => {
+  const items = budgetPlanItems.value || [];
+  const gwans = [...new Set(items.filter(it => it.level === '관').map(it => it.category_name).filter(Boolean))];
+  const hangs = [...new Set(items.filter(it => it.level === '항').map(it => it.category_name).filter(Boolean))];
+
+  if (gwans.length || hangs.length) {
+    const gwanPart = gwans.join(", ");
+    const hangPart = hangs.join(", ");
+    return [gwanPart, hangPart].filter(Boolean).join(" / ");
+  }
+
+  const g = props.report?.selectedGwan ?? props.report?.items?.[0]?.gwan;
+  const h = props.report?.selectedHang ?? props.report?.items?.[0]?.hang;
+  if (g || h) {
+    const gName = getCategoryName(g);
+    const hName = getCategoryName(h);
+    return [gName, hName].filter(Boolean).join(" / ");
+  }
+
+  return "—";
+});
+
+// ✅ 모바일/PC 확대·축소 (가로 맞춤 + 사용자 조절)
+const PAGE_WIDTH_PX = 794; // 210mm ≈ 794px
+const SCALE_MIN = 0.25;
+const SCALE_MAX = 2;
+const SCALE_STEP = 0.15;
+
+const scaleValue = ref(1);
+const panX = ref(0);
+const panY = ref(0);
+const scaleWrapperStyle = computed(() => ({
+  transform: `translate(${panX.value}px, ${panY.value}px) scale(${scaleValue.value})`,
+  transformOrigin: "top center",
+}));
+const pageContentStyle = { width: "210mm", minHeight: "297mm" };
+
+const reportPanEl = ref(null);
+const reportPanDrag = ref({ active: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
+const pointerCache = ref([]);
+const initialPinchDist = ref(0);
+const initialScale = ref(1);
+const lastPinchCenter = ref({ x: 0, y: 0 });
+const preventCopy = ref(false);
+
+function getPinchDist(p1, p2) {
+  const dx = p1.clientX - p2.clientX;
+  const dy = p1.clientY - p2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function onReportPanDown(e) {
+  if (e.button !== 0 && e.pointerType === "mouse") return;
+  
+  // 마우스인 경우 캐시를 강제로 정리하여 꼬임 방지 (모바일은 멀티터치 가능성 때문에 유지)
+  if (e.pointerType === "mouse") {
+    pointerCache.value = [];
+  }
+
+  // 포인터 캐시에 추가 (중복 방지)
+  if (pointerCache.value.findIndex(p => p.pointerId === e.pointerId) === -1) {
+    pointerCache.value.push(e);
+  }
+  
+  if (pointerCache.value.length === 1) {
+    if (e.pointerType !== "mouse") {
+      e.preventDefault();
+    }
+    preventCopy.value = false;
+    reportPanDrag.value = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      startPanX: panX.value,
+      startPanY: panY.value,
+    };
+    if (e.pointerType !== "mouse" && reportPanEl.value?.setPointerCapture) {
+      reportPanEl.value.setPointerCapture(e.pointerId);
+    }
+    window.addEventListener("pointermove", onReportPanMove, { passive: false });
+    window.addEventListener("pointerup", onReportPanUp);
+    window.addEventListener("pointercancel", onReportPanUp);
+  } else if (pointerCache.value.length === 2) {
+    // 핀치 줌 시작 시점의 거리와 배율 기록
+    initialPinchDist.value = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
+    initialScale.value = scaleValue.value;
+    lastPinchCenter.value = {
+      x: (pointerCache.value[0].clientX + pointerCache.value[1].clientX) / 2,
+      y: (pointerCache.value[0].clientY + pointerCache.value[1].clientY) / 2
+    };
+  }
+}
+
+function onReportPanMove(e) {
+  // 포인터 정보 업데이트
+  const idx = pointerCache.value.findIndex(p => p.pointerId === e.pointerId);
+  if (idx >= 0) {
+    pointerCache.value[idx] = e;
+  }
+
+  if (pointerCache.value.length === 2) {
+    // 핀치 줌 로직
+    e.preventDefault();
+    preventCopy.value = true;
+    const currentDist = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
+    if (initialPinchDist.value > 0) {
+      const zoomFactor = currentDist / initialPinchDist.value;
+      const newScale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, initialScale.value * zoomFactor));
+      
+      const currentCenter = {
+        x: (pointerCache.value[0].clientX + pointerCache.value[1].clientX) / 2,
+        y: (pointerCache.value[0].clientY + pointerCache.value[1].clientY) / 2
+      };
+      
+      if (reportPanEl.value) {
+        const rect = reportPanEl.value.getBoundingClientRect();
+        const oldScale = scaleValue.value;
+        const oldPanX = panX.value;
+        const oldPanY = panY.value;
+        
+        // Transform origin in screen coordinates (invariant point under scale)
+        const O_x = rect.left + rect.width / 2 - oldPanX;
+        const O_y = rect.top - oldPanY;
+        
+        // Calculate new pan to keep the point under the fingers stationary
+        panX.value = currentCenter.x - O_x - (lastPinchCenter.value.x - O_x - oldPanX) * (newScale / oldScale);
+        panY.value = currentCenter.y - O_y - (lastPinchCenter.value.y - O_y - oldPanY) * (newScale / oldScale);
+      }
+      
+      scaleValue.value = newScale;
+      lastPinchCenter.value = currentCenter;
+    }
+  } else if (pointerCache.value.length === 1 && reportPanDrag.value.active) {
+    // 단일 포인터 패닝 로직
+    if (e.pointerType !== "mouse") {
+      e.preventDefault();
+    }
+    const p = pointerCache.value[0];
+    const dx = p.clientX - reportPanDrag.value.startX;
+    const dy = p.clientY - reportPanDrag.value.startY;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      preventCopy.value = true;
+    }
+    panX.value = reportPanDrag.value.startPanX + dx;
+    panY.value = reportPanDrag.value.startPanY + dy;
+  }
+}
+
+function onReportPanUp(e) {
+  // 포인터 캐시에서 제거
+  const idx = pointerCache.value.findIndex(p => p.pointerId === e.pointerId);
+  if (idx >= 0) {
+    pointerCache.value.splice(idx, 1);
+  }
+
+  if (pointerCache.value.length === 0) {
+    // 모든 손가락을 뗌
+    reportPanDrag.value.active = false;
+    window.removeEventListener("pointermove", onReportPanMove);
+    window.removeEventListener("pointerup", onReportPanUp);
+    window.removeEventListener("pointercancel", onReportPanUp);
+  } else if (pointerCache.value.length === 1) {
+    // 한 손가락만 남은 경우: 해당 위치에서 다시 패닝이 시작되도록 상태 초기화
+    const remainingPointer = pointerCache.value[0];
+    reportPanDrag.value = {
+      active: true,
+      startX: remainingPointer.clientX,
+      startY: remainingPointer.clientY,
+      startPanX: panX.value,
+      startPanY: panY.value,
+    };
+    initialPinchDist.value = 0;
+  } else if (pointerCache.value.length === 2) {
+    initialPinchDist.value = getPinchDist(pointerCache.value[0], pointerCache.value[1]);
+    initialScale.value = scaleValue.value;
+    lastPinchCenter.value = {
+      x: (pointerCache.value[0].clientX + pointerCache.value[1].clientX) / 2,
+      y: (pointerCache.value[0].clientY + pointerCache.value[1].clientY) / 2
+    };
+  }
+}
+
+function getFitToWidthScale() {
+  const screenWidth = window.innerWidth;
+  const padding = 24;
+  const w = Math.max(screenWidth - padding, 200);
+  return Math.min(1, w / PAGE_WIDTH_PX);
+}
+
+/** 처음 오픈했을 때와 동일한 배율 계산 */
+function getInitialScale() {
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    return Math.max(SCALE_MIN, Math.min(1, getFitToWidthScale()));
+  }
+  return screenWidth < PAGE_WIDTH_PX ? screenWidth / PAGE_WIDTH_PX : 1;
+}
+
+function fitToWidth() {
+  scaleValue.value = Math.max(SCALE_MIN, Math.min(SCALE_MAX, getInitialScale()));
+  panX.value = 0;
+  panY.value = 0;
+}
+
+function zoomIn() {
+  scaleValue.value = Math.min(SCALE_MAX, scaleValue.value + SCALE_STEP);
+}
+
+function zoomOut() {
+  scaleValue.value = Math.max(SCALE_MIN, scaleValue.value - SCALE_STEP);
+}
+
+// ✅ 확대/축소 바 드래그로 위치 이동
+const ZOOM_BAR_STORAGE_KEY = "report-preview:zoomBarPos";
+const zoomBarEl = ref(null);
+const zoomBarPos = ref(
+  (() => {
+    try {
+      const s = localStorage.getItem(ZOOM_BAR_STORAGE_KEY);
+      if (s) {
+        const p = JSON.parse(s);
+        if (typeof p?.top === "number" && typeof p?.left === "number") return p;
+      }
+    } catch (_) {}
+    return { top: 16, left: 16 };
+  })()
+);
+const zoomBarDrag = ref({ active: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 });
+
+function clampZoomBarPosition(pos) {
+  const el = zoomBarEl.value;
+  const w = el ? el.offsetWidth : 200;
+  const h = el ? el.offsetHeight : 56;
+  return {
+    top: Math.max(0, Math.min(window.innerHeight - h, pos.top)),
+    left: Math.max(0, Math.min(window.innerWidth - w, pos.left)),
+  };
+}
+
+function onZoomBarPointerDown(e) {
+  if (e.target.closest("button")) return;
+  e.preventDefault();
+  zoomBarDrag.value = {
+    active: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    startLeft: zoomBarPos.value.left,
+    startTop: zoomBarPos.value.top,
+  };
+  if (zoomBarEl.value?.setPointerCapture) zoomBarEl.value.setPointerCapture(e.pointerId);
+  window.addEventListener("pointermove", onZoomBarPointerMove, { passive: false });
+  window.addEventListener("pointerup", onZoomBarPointerUp);
+  window.addEventListener("pointercancel", onZoomBarPointerUp);
+}
+
+function onZoomBarPointerMove(e) {
+  if (!zoomBarDrag.value.active) return;
+  e.preventDefault();
+  const dx = e.clientX - zoomBarDrag.value.startX;
+  const dy = e.clientY - zoomBarDrag.value.startY;
+  zoomBarPos.value = clampZoomBarPosition({
+    top: zoomBarDrag.value.startTop + dy,
+    left: zoomBarDrag.value.startLeft + dx,
+  });
+}
+
+function onZoomBarPointerUp() {
+  if (zoomBarDrag.value.active) {
+    try {
+      localStorage.setItem(ZOOM_BAR_STORAGE_KEY, JSON.stringify(zoomBarPos.value));
+    } catch (_) {}
+  }
+  zoomBarDrag.value = { active: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
+  window.removeEventListener("pointermove", onZoomBarPointerMove);
+  window.removeEventListener("pointerup", onZoomBarPointerUp);
+  window.removeEventListener("pointercancel", onZoomBarPointerUp);
+}
+
+onMounted(async () => {
+  await fetchCategories();
+  scaleValue.value = getInitialScale();
+  refreshApprovalData();
+
+  // ✅ 사용자 활동(마우스/터치) 시 하단 바 표시
+  const handler = () => {
+    if (hideTimerId.value) clearTimeout(hideTimerId.value);
+    showActionBar.value = true;
+    hideTimerId.value = setTimeout(() => { showActionBar.value = false; }, 1500);
+  };
+  activityHandler.value = handler;
+  window.addEventListener("mousemove", handler, { passive: true });
+  window.addEventListener("touchstart", handler, { passive: true });
+});
+
+onBeforeUnmount(() => {
+  if (activityHandler.value) {
+    window.removeEventListener("mousemove", activityHandler.value);
+    window.removeEventListener("touchstart", activityHandler.value);
+  }
+  if (hideTimerId.value) clearTimeout(hideTimerId.value);
+  if (zoomBarDrag.value.active) {
+    window.removeEventListener("pointermove", onZoomBarPointerMove);
+    window.removeEventListener("pointerup", onZoomBarPointerUp);
+    window.removeEventListener("pointercancel", onZoomBarPointerUp);
+  }
+  if (reportPanDrag.value.active) {
+    window.removeEventListener("pointermove", onReportPanMove);
+    window.removeEventListener("pointerup", onReportPanUp);
+    window.removeEventListener("pointercancel", onReportPanUp);
+  }
+});
+
+// (승인/반려 로직)
+const showPopup = ref(false);
+const showModal = ref(false);
+const approvalHistory = ref(props.report?.approvalHistory || []);
+const approvalLines = ref(props.report?.approvalLine || []);
+const showCommentListPopup = ref(false);
+const popupMode = ref(null);
+
+const copyToastShow = ref(false);
+let copyToastTimer = null;
+const showCopyToast = () => {
+  copyToastShow.value = true;
+  if (copyToastTimer) clearTimeout(copyToastTimer);
+  copyToastTimer = setTimeout(() => {
+    copyToastShow.value = false;
+    copyToastTimer = null;
+  }, 1000);
+};
+const copyDetailToClipboard = async (text) => {
+  if (preventCopy.value) return;
+  const str = text != null ? String(text).trim() : "";
+  if (!str) return;
+  let copied = false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(str);
+      copied = true;
+    }
+  } catch (e) {
+    console.warn("클립보드 API 실패:", e);
+  }
+  if (!copied) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = str;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, str.length);
+      copied = document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e2) {
+      console.warn("execCommand 복사 실패:", e2);
+    }
+  }
+  if (copied) showCopyToast();
+};
+
+/** 금액 복사: 쉼표·"원" 제외한 숫자만 (예: 50,500 원 → 50500) */
+const amountForClipboard = (amount) => {
+  if (amount == null || amount === "") return "";
+  const num = Number(String(amount).replace(/,/g, ""));
+  if (Number.isNaN(num)) return "";
+  return String(num);
+};
+const copyAmountToClipboard = async (amount) => {
+  const str = amountForClipboard(amount);
+  if (!str) return;
+  await copyDetailToClipboard(str);
+};
+
+const openApproval = (mode) => { popupMode.value = mode; showPopup.value = true; };
+const closePopup = () => { showPopup.value = false; };
+
+const refreshApprovalData = async () => {
+  if (!props.report?.id) return;
+  try {
+    const res = await axios.get(`/api/approval/detail/${props.report.id}`, { withCredentials: true });
+    approvalHistory.value = res.data.approvalHistory || [];
+    approvalLines.value = res.data.approvalLine || [];
+    if (res.data.budgetPlanItems || res.data.request?.budgetPlanItems) {
+      loadedBudgetPlanItems.value = res.data.budgetPlanItems || res.data.request.budgetPlanItems;
+    }
+  } catch (err) { console.error("❌ 결재 이력 갱신 실패:", err); }
+};
+
+const getHistoryRecord = (role, idx) => {
+  const sorted = sortedApprovalHistory.value;
+  if (sorted.length === 0) return null;
+
+  // 1. 첫 번째 결재칸(idx === 0)은 무조건 역사상 첫 번째 기록(기안) 매칭
+  if (idx === 0) return sorted[0];
+
+  // 2. 그 외의 결재칸: 첫 번째 기록을 제외한 나머지 필터링
+  const remainingHistory = sorted.slice(1);
+  // 현재 역할(role)이 기안 칸(idx=0)을 제외하고 몇 번째 순서인지 계산
+  const otherColumns = leftTableColumns.value.slice(1);
+  let roleOccurrenceIndex = -1;
+  let count = 0;
+  for (let i = 0; i < otherColumns.length; i++) {
+    if (otherColumns[i].approver_role === role) {
+      if (i === (idx - 1)) {
+        roleOccurrenceIndex = count;
+        break;
+      }
+      count++;
+    }
+  }
+
+  if (roleOccurrenceIndex === -1) return null;
+
+  // 역사 기록 중에서 해당 역할을 가진 기록들만 추출하여 매칭
+  const sameRoleHistory = remainingHistory.filter(h => h.approver_role === role);
+  return sameRoleHistory[roleOccurrenceIndex] || null;
+};
+
+const handleApproved = async () => { await refreshApprovalData(); showPopup.value = false; showModal.value = true; emit("refreshList"); };
+const handleModalClose = () => { showModal.value = false; emit("close"); };
+
+const openCommentList = () => { showCommentListPopup.value = true; };
+const closeCommentList = () => { showCommentListPopup.value = false; };
+
+const sortedApprovalHistory = computed(() => {
+  const list = [...(approvalHistory.value || [])];
+  return list.sort((a, b) => {
+    const ta = a.approved_at ? new Date(a.approved_at).getTime() : 0;
+    const tb = b.approved_at ? new Date(b.approved_at).getTime() : 0;
+    return ta - tb;
+  });
+});
+
+// ✅ "기안" 뱃지는 시간순 첫 번째 기록일 때 표시
+const isFirstApplicantInHistory = (h, idx) => idx === 0;
+
+const formatAmount = (val) => (!val && val !== 0 ? "" : Number(val).toLocaleString("ko-KR"));
+
+// ✅ 좌측 결재 테이블 컬럼: 재정부 이력이 있으면 결재선 맨 마지막에 "재정부" 컬럼 추가
+const leftTableColumns = computed(() => {
+  const lines = approvalLines.value || [];
+  const history = approvalHistory.value || [];
+  const hasRevenueInHistory = history.some((h) => h.approver_role === "재정부");
+  const alreadyHasRevenue = lines.some((l) => l.approver_role === "재정부");
+  if (!hasRevenueInHistory || alreadyHasRevenue) return lines;
+  return [...lines, { approver_role: "재정부", id: "revenue-dept" }];
+});
+
+// ✅ 기안(첫 번째 칸)은 결재선 역할(담당 등)이 아니라 "재정부"/"작성자"/"회계"로 저장될 수 있음 → 첫 번째 역할일 때 해당 이력도 매칭
+const isApprovedStatus = (s) => s && (String(s).toLowerCase() === "approved" || s === "승인");
+const isRejectedStatus = (s) => s && (String(s).toLowerCase() === "rejected" || s === "반려");
+const getSignature = (role, idx) => getHistoryRecord(role, idx)?.signature_path || null;
+const getComment = (role, idx) => getHistoryRecord(role, idx)?.comment || null;
+const getSignatureUrl = (role, idx) => {
+  const p = getSignature(role, idx);
+  if (!p) return "";
+  let rel = p;
+  try { rel = decodeURIComponent(p); } catch {}
+  return `/api/files/${encodeURIComponent(rel)}`;
+};
+const getApprovedAt = (role, idx) => getHistoryRecord(role, idx)?.approved_at || null;
+
+
+
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+
+  return `${yy}/${mm}/${dd} ${hh}:${min}`;
+};
+
+const getStatus = (role, idx) => {
+  const record = getHistoryRecord(role, idx);
+  if (!record) return null;
+
+  // ✅ 기안: 시간순 첫 번째 기록이고, 첫 번째 결재 칸(idx === 0)인 경우
+  const sorted = sortedApprovalHistory.value;
+  const isFirstAction = sorted.length > 0 && record.approved_at === sorted[0].approved_at && record.approver_user_id === sorted[0].approver_user_id;
+  
+  if (idx === 0 && isFirstAction) return "기안";
+
+  // ✅ 재정부 열에서 승인인 경우 → "이관"으로 표시
+  if (role === "재정부" && isApprovedStatus(record.status)) return "이관";
+
+  return record.status || null;
+};
+
+
+
+
+const filesToPreview = computed(() => props.report?.attachedFiles?.length ? props.report.attachedFiles : props.report?.files || []);
+// ✅ 페이지 분리 + 행(row) 배치
+const chunkedFiles = computed(() => {
+  const files = filesToPreview.value;
+  const pages = [];
+  let currentPage = [];
+  let currentHeight = 0;
+  let currentRow = [];
+  let currentRowWidth = 0;
+  const rowHeight = 800;
+
+  const flushRow = () => {
+    if (currentRow.length) {
+      currentPage.push(currentRow);
+      currentRow = [];
+      currentRowWidth = 0;
+      currentHeight += rowHeight;
+    }
+  };
+
+  const flushPage = () => {
+    if (currentPage.length) {
+      pages.push(currentPage);
+      currentPage = [];
+      currentHeight = 0;
+    }
+  };
+
+  files.forEach((f) => {
+    const isPortrait = (f.height || 1000) > (f.width || 600);
+    const estWidth = isPortrait ? 300 : 700;
+    const estHeight = isImage(f) ? rowHeight : 200;
+
+    if (currentHeight + estHeight > A4_HEIGHT) {
+      flushRow();
+      flushPage();
+    }
+
+    if (currentRowWidth + estWidth > A4_WIDTH) {
+      flushRow();
+    }
+
+    currentRow.push(f);
+    currentRowWidth += estWidth;
+  });
+
+  if (currentRow.length) flushRow();
+  if (currentPage.length) flushPage();
+
+  return pages;
+});
+const getFileAlias = (f) => {
+  const alias = f.alias_name || f.file_name || f.name || "첨부파일";
+  return alias.length > 20 ? alias.slice(0, 17) + "..." : alias;
+};
+
+
+const isImage = (f) => (f.type?.startsWith("image/") || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.name || f.file_name || f.file_path || ""));
+
+// ✅ 파일 확장자 추출
+const getFileExt = (f) => {
+  const name = f.file_name || f.name || f.file_path || "";
+  const match = name.match(/\.([a-zA-Z0-9]+)(?:[\?#]|$)/);
+  return match ? match[1].toLowerCase() : "";
+};
+
+// ✅ 문서/파일 종류별 메타 정보 (Word, Excel, PowerPoint, PDF, HWP 등)
+const getDocTypeInfo = (f) => {
+  const ext = getFileExt(f);
+  const mime = (f.mime_type || f.type || "").toLowerCase();
+
+  if (ext === "pdf" || mime.includes("pdf")) {
+    return {
+      type: "pdf",
+      label: "PDF 문서",
+      icon: "📄",
+      colorClass: "border-red-200 bg-red-50/40",
+      badgeClass: "text-red-700 bg-red-100 border-red-200",
+      btnClass: "bg-red-600 hover:bg-red-700",
+    };
+  }
+  if (["xls", "xlsx", "csv"].includes(ext) || mime.includes("excel") || mime.includes("spreadsheet")) {
+    return {
+      type: "excel",
+      label: "Excel 스프레드시트",
+      icon: "📊",
+      colorClass: "border-emerald-200 bg-emerald-50/40",
+      badgeClass: "text-emerald-800 bg-emerald-100 border-emerald-200",
+      btnClass: "bg-emerald-600 hover:bg-emerald-700",
+    };
+  }
+  if (["doc", "docx"].includes(ext) || mime.includes("word") || mime.includes("officedocument.wordprocessingml")) {
+    return {
+      type: "word",
+      label: "Word 문서",
+      icon: "📝",
+      colorClass: "border-blue-200 bg-blue-50/40",
+      badgeClass: "text-blue-800 bg-blue-100 border-blue-200",
+      btnClass: "bg-blue-600 hover:bg-blue-700",
+    };
+  }
+  if (["ppt", "pptx"].includes(ext) || mime.includes("presentation") || mime.includes("powerpoint") || mime.includes("officedocument.presentationml")) {
+    return {
+      type: "ppt",
+      label: "PowerPoint 프레젠테이션",
+      icon: "📽️",
+      colorClass: "border-orange-200 bg-orange-50/40",
+      badgeClass: "text-orange-800 bg-orange-100 border-orange-200",
+      btnClass: "bg-orange-600 hover:bg-orange-700",
+    };
+  }
+  if (["hwp", "hwpx"].includes(ext)) {
+    return {
+      type: "hwp",
+      label: "한글 문서",
+      icon: "📑",
+      colorClass: "border-cyan-200 bg-cyan-50/40",
+      badgeClass: "text-cyan-800 bg-cyan-100 border-cyan-200",
+      btnClass: "bg-cyan-600 hover:bg-cyan-700",
+    };
+  }
+  return {
+    type: "etc",
+    label: `${ext ? ext.toUpperCase() : "일반"} 파일`,
+    icon: "📁",
+    colorClass: "border-gray-200 bg-gray-50/40",
+    badgeClass: "text-gray-700 bg-gray-100 border-gray-200",
+    btnClass: "bg-gray-700 hover:bg-gray-800",
+  };
+};
+
+// ✅ 파일 크기 포맷팅
+const formatFileSize = (bytes) => {
+  const n = Number(bytes);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const k = 1024;
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.min(units.length - 1, Math.max(0, Math.floor(Math.log(n) / Math.log(k))));
+  const value = n / Math.pow(k, i);
+  return `${i === 0 ? Math.round(value) : value.toFixed(1)} ${units[i]}`;
+};
+
+const getFileUrl = (f) => {
+  if (f.file) {
+    return URL.createObjectURL(f.file);
+  } else if (f.file_path) {
+    // 안전한 파일명(file_path)만 URL에 사용
+    return `/api/files/${encodeURIComponent(f.file_path)}`;
+  }
+  return "";
+};
+
+// ✅ 파일 다운로드 (PC/모바일 프로그램 연결 지원)
+const downloadFile = (f) => {
+  const fileName = f.file_name || f.name || f.alias_name || "downloaded_file";
+  
+  if (f.file) {
+    const url = URL.createObjectURL(f.file);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return;
+  }
+
+  if (f.file_path) {
+    const downloadUrl = `/api/files/${encodeURIComponent(f.file_path)}?downloadName=${encodeURIComponent(fileName)}`;
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = fileName;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+};
+
+// ✅ 새 창/새 탭에서 열기 (PDF 등 브라우저 뷰어 활용)
+const openInNewTab = (f) => {
+  const url = getFileUrl(f);
+  if (url) {
+    window.open(url, "_blank");
+  }
+};
+
+const formatDate = (dateStr) => dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
+
+// ✅ 이미지 스타일
+const getImageStyle = (file, rowLength, siblings = []) => {
+  if (rowLength === 1) {
+    const width = file.width || 800;
+    const scale = Math.min(1, A4_WIDTH / width);
+    return { maxWidth: `${width * scale}px`, maxHeight: "900px", objectFit: "contain" };
+  } else if (rowLength === 2 && siblings.length === 2) {
+    const w1 = siblings[0].width || 600;
+    const w2 = siblings[1].width || 600;
+    const sum = w1 + w2;
+    const scale = Math.min(1, A4_WIDTH / sum);
+    return { maxWidth: `${(file.width || 600) * scale}px`, maxHeight: "800px", objectFit: "contain" };
+  }
+  return {};
+};
+
+// ✅ Wrapper 스타일
+const getImageWrapperStyle = (rowLength) =>
+  rowLength === 1 ? { width: "100%", textAlign: "center" } : { width: "45%" };
+
+// BudgetReportPreview.vue
+const generatePDF = async () => {
+  return await generatePdfFromPages(document.querySelectorAll('.page'));
+};
+
+const downloadPDF = async () => {
+  const pdf = await generatePDF();
+  const safeName = `${props.report?.documentType || 'Report'}_${userDept.value}_${props.report?.date || Date.now()}`.replace(/[\/\?<>\\:\*\|":]/g, '-');
+  savePdf(pdf, `${safeName}.pdf`);
+};
+
+const printReport = async () => {
+  const pdf = await generatePDF();
+  printPdfBlob(pdf);
+};
+
+// ✅ 하단 바 표시 제어 상태
+const showActionBar = ref(false);
+const hideTimerId = ref(null);
+const activityHandler = ref(null);
+
+</script>
+
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 10mm;
+  background: white;
+  /*border: 1px solid #ccc; */
+  box-shadow: 0 0 10px rgba(0,0,0,0.15); 
+  box-sizing: border-box;
+  transform-origin: top center;
+}
+/* 확대 후 터치/드래그로 좌우·상하 이동(패닝) */
+.report-pan-wrapper {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+.report-pan-wrapper.report-pan-dragging {
+  cursor: grabbing;
+}
+
+/* 페이지 사이 고정 간격 (scale 래퍼 안에서 함께 축소되어 비율 유지) */
+.report-page-gap {
+  height: 24px;
+  flex-shrink: 0;
+}
+@media (max-width: 768px) {
+  .page { margin-top: 1rem !important; }
+}
+@media print {
+  @page {
+    margin: 5mm 5mm 5mm 5mm; /* 브라우저 기본 여백 축소 */
+  }
+  .no-print { display: none !important; }
+  .report-page-gap { height: 0; }
+  
+  /* 프린트 시 여백 축소 */
+  .mt-4 { margin-top: 0.25rem !important; }
+  .mb-6 { margin-bottom: 0.75rem !important; }
+  .mb-4 { margin-bottom: 0.5rem !important; }
+  .my-4 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+  .mt-10 { margin-top: 1rem !important; }
+  .leading-loose { line-height: 1.5 !important; }
+
+  .page,
+  .report-content,
+  .report-content * {
+    font-family: "Nanum Barun Gothic", "Malgun Gothic", "Apple SD Gothic Neo", "AppleGothic", "Noto Sans KR", sans-serif !important;
+  }
+  .page {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 5mm !important;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+  
+  /* 모달 래퍼 및 컨테이너들의 레이아웃 제한(스크롤, 고정 높이)을 풀어야 다중 페이지 인쇄가 가능함 */
+  .fixed, .absolute {
+    position: static !important;
+  }
+  .h-screen, .h-full, .min-h-full, .overflow-y-auto, .overflow-x-hidden {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+  .report-pan-wrapper {
+    transform: none !important;
+  }
+  
+  /* 테이블 행 단위로 페이지가 나뉘도록 설정 */
+  table {
+    page-break-inside: auto !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+}
+.report-content { font-size: 14pt; }
+.title-lg { font-size: 20pt; font-weight: 800; }
+.title-md { font-size: 16pt; font-weight: 700; }
+/* ✅ 보고서 테이블 선색: 셀 배경(보라/파랑)에서도 잘 보이도록 옅게 */
+.report-content table,
+.report-content table th,
+.report-content table td {
+  border-color: #d1d5db !important; /* 기본은 gray-300 */
+}
+
+/* 프린트 시 테이블 테두리를 진하게 설정 */
+@media print {
+  .report-content table,
+  .report-content table th,
+  .report-content table td {
+    border-color: #6b7280 !important; /* 인쇄 시 gray-500 */
+  }
+}
+table td, table th {
+  height: 3rem;
+  vertical-align: middle !important;
+  text-align: center;
+  padding: 0 10px;
+}
+table td.expense-remarks {
+  text-align: left !important;
+}
+.signature-img {
+  height: 80px;               /* ✅ 고정 높이 */
+  width: auto;                /* 비율에 맞게 자동 조정 */
+  object-fit: contain;        /* 이미지 비율 유지 */
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
+/* ✅ 지출내역 테이블: 지출내역 열 가로 폭 확대, 폰트 한 단계 축소 */
+.report-content table.expense-table {
+  table-layout: fixed;
+}
+.report-content table.expense-table th,
+.report-content table.expense-table td {
+  font-size: 0.875em; /* 14pt 기준 한 단계 축소 */
+  height: 2.25rem; /* 10줄을 안전하게 넣기 위해 높이 축소 */
+}
+@media print {
+  .report-content table.expense-table th,
+  .report-content table.expense-table td {
+    height: 1.8rem !important; /* 프린트 시 10줄 무조건 들어가도록 높이 더 축소 */
+    padding: 0 4px !important;
+  }
+}
+.report-content table.expense-table th.expense-col-detail,
+.report-content table.expense-table td.expense-col-detail {
+  width: 45%;
+  min-width: 0;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.report-content table.expense-table th.expense-col-detail {
+  text-align: center;
+}
+.report-content table.expense-table td.expense-col-detail {
+  text-align: left;
+}
+.report-content table.expense-table th:not(.expense-col-detail),
+.report-content table.expense-table td:not(.expense-col-detail) {
+  width: auto;
+}
+
+/* ✅ 재정부 열 '이관' 뱃지: 기안 뱃지와 동일한 모양(높이 h-6, 둥근 pill), blue 계열 */
+.report-content .status-badge-transfer {
+  background-color: #3b82f6;
+  color: #fff;
+  border-radius: 9999px;
+  height: 1.5rem;
+  min-width: 3.5rem;
+  padding: 0 0.5rem;
+}
+.report-content .status-badge-transfer span {
+  background: transparent;
+  color: inherit;
+}
+
+/* ✅ 좌측 결재란: 열 개수에 따라 테이블 너비 = N×11%, 각 td = 11% of container */
+.report-content table.approval-table-left {
+  width: calc(var(--left-col-count, 4) * 11%);
+  min-width: calc(var(--left-col-count, 4) * 11%);
+}
+.report-content table.approval-table-left th,
+.report-content table.approval-table-left td {
+  width: calc(100% / var(--left-col-count, 4));
+  min-width: calc(100% / var(--left-col-count, 4));
+  max-width: calc(100% / var(--left-col-count, 4));
+  box-sizing: border-box;
+}
+
+/* ✅ 프린트 시: 서명란에서 상태 뱃지·결재시간 숨김, 서명 행 높이 축소 */
+@media print {
+  .report-content .no-print {
+    display: none !important;
+  }
+  .report-content table.approval-table tbody tr.sign-row th,
+  .report-content table.approval-table tbody tr.sign-row td {
+    height: 100px !important;
+    min-height: 100px !important;
+  }
+}
+
+/* 클립보드 복사 말풍선 전환 */
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.2s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+}
+
+</style>

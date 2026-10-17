@@ -320,6 +320,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  date: {
+    type: String,
+    default: "",
+  },
 });
 
 const emits = defineEmits(["update:items", "update:remarks", "prev", "next", "update:selectedGwan", "update:selectedHang", "update:selectedDept"]);
@@ -337,7 +341,13 @@ const isMountedRef = ref(false);
 onMounted(() => { isMountedRef.value = true; });
 onBeforeUnmount(() => { isMountedRef.value = false; });
 
-const currentYear = new Date().getFullYear();
+const targetYear = computed(() => {
+  if (props.date) {
+    const y = parseInt(props.date.substring(0, 4), 10);
+    if (!isNaN(y)) return y;
+  }
+  return new Date().getFullYear();
+});
 
 // ✅ 상단 선택 상태 (모바일도 상단에서 관/항 먼저 선택)
 const selectedGwan = computed({
@@ -504,8 +514,9 @@ const fetchCategories = async () => {
 
   // 3. 계정과목 조회
   try {
-    // (1) 부서에 매핑된 항목 조회 (부모가 없을 수 있음)
-    const mappedRes = await axios.get(`/api/accountCategories/${targetId}`);
+    const dateParam = props.date ? { date: props.date } : {};
+    // (1) 부서에 매핑된 항목 조회 (결의일자 기준 유효 계정)
+    const mappedRes = await axios.get(`/api/accountCategories/${targetId}`, { params: dateParam });
     let mappedCategories = [];
     if (mappedRes.data && Array.isArray(mappedRes.data.categories)) {
       mappedCategories = mappedRes.data.categories;
@@ -514,7 +525,7 @@ const fetchCategories = async () => {
     }
 
     // (2) 전체 계정 구조 조회 (부모 찾기용)
-    const allRes = await axios.get('/api/accountCategories');
+    const allRes = await axios.get('/api/accountCategories', { params: dateParam });
     const allCategories = allRes.data.categories || [];
 
     // (3) 매핑된 ID 추출 및 부모 노드 추적
@@ -554,8 +565,11 @@ const fetchCategories = async () => {
   }
 };
 
-watch([userDept, user], () => {
+watch([userDept, user, () => props.date], () => {
   fetchCategories();
+  if (isSelectionReady.value) {
+    fetchSummaryForSelectedHang();
+  }
 }, { immediate: true });
 
 watch(() => props.items, (newItems) => {
@@ -683,7 +697,7 @@ const fetchSummaryForSelectedHang = async () => {
     const { data } = await axios.get(`/api/expenses/summaryByCategory`, {
       params: {
         deptId: userDeptId.value,
-        year: currentYear,
+        year: targetYear.value,
         hangCategoryId: hangCat.category_id, // ✅ 코드로 변경 (ACC...)
       },
     });

@@ -172,15 +172,16 @@
           <button
             @click="attemptEdit(a)"
             class="p-2 rounded hover:bg-blue-100"
-            :class="{ 'opacity-30 cursor-not-allowed': !(a.author === user?.userName && a.historyCount === 1) }"
-            :title="a.author === user?.userName && a.historyCount === 1 ? '수정' : '수정 불가'"
+            :class="{ 'opacity-30 cursor-not-allowed': !canEdit(a) }"
+            :title="canEdit(a) ? '수정' : '수정 불가'"
           >
             <img src="/icons/edit.svg" alt="수정" class="w-6 h-6" />
           </button>
           <button
-            @click="goToReport(a.id)"
-            class="p-2 rounded hover:bg-purple-100"
-            title="복사하기"
+            @click="attemptCopy(a)"
+            class="p-2 rounded transition"
+            :class="a.document_type === '예산편성서' ? 'opacity-30 cursor-not-allowed' : 'hover:bg-purple-100'"
+            :title="a.document_type === '예산편성서' ? '복사 불가 (예산편성서)' : '복사하기'"
           >
             <img src="/icons/copy.svg" alt="복사하기" class="w-6 h-6" />
           </button>
@@ -216,8 +217,13 @@
     </div>
 
     <!-- 상세보기 모달 -->
+    <BudgetReportPreview
+      v-if="previewReport && (previewReport.documentType === '예산편성서' || previewReport.document_type === '예산편성서')"
+      :report="previewReport"
+      @close="previewReport = null"
+    />
     <ReportPreview
-      v-if="previewReport"
+      v-else-if="previewReport"
       :report="previewReport"
       @close="previewReport = null"
     />
@@ -230,6 +236,7 @@ import axios from "axios";
 //import ReportPreview from "../ReportPreview.vue";
 import { defineAsyncComponent } from 'vue';
 const ReportPreview = defineAsyncComponent(() => import ("../ReportPreview.vue"));
+const BudgetReportPreview = defineAsyncComponent(() => import ("../BudgetReportPreview.vue"));
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../store/userStore";
 import { storeToRefs } from "pinia";
@@ -409,6 +416,8 @@ const openPreview = async (id) => {
       selectedGwan: res.data.selectedGwan,
       selectedHang: res.data.selectedHang,
       items: res.data.items || [],
+      budgetPlanItems: res.data.budgetPlanItems || [],
+      targetYear: res.data.targetYear || null,
       attachedFiles: res.data.attachedFiles || [],
       approvalHistory: res.data.approvalHistory || []
     };
@@ -422,8 +431,20 @@ const goToReport = (id) => {
   router.push({ name: "ReportForm", params: { id } });
 };
 
-const editReport = (id) => {
-  router.push({ name: "ReportForm", params: { id }, query: { mode: 'edit' } });
+const attemptCopy = (a) => {
+  if (a.document_type === '예산편성서') {
+    alert("예산편성서는 복사 기능을 지원하지 않습니다.");
+    return;
+  }
+  goToReport(a.id);
+};
+
+const editReport = (a) => {
+  if (a.document_type === '예산편성서') {
+    router.push({ name: "BudgetReportForm", params: { id: a.id }, query: { mode: 'edit' } });
+  } else {
+    router.push({ name: "ReportForm", params: { id: a.id }, query: { mode: 'edit' } });
+  }
 };
 
 const canDelete = (a) => {
@@ -441,9 +462,16 @@ const canDelete = (a) => {
   return false;
 };
 
+const canEdit = (a) => {
+  const isOwner = a.author === user.value?.userName;
+  if (!isOwner) return false;
+  if (a.status === '작성중' || a.status === '임시저장') return true;
+  return a.historyCount === 1;
+};
+
 const attemptEdit = (a) => {
-  if (a.author === user.value?.userName && a.historyCount === 1) {
-    editReport(a.id);
+  if (canEdit(a)) {
+    editReport(a);
   } else {
     alert("이미 결재가 진행중인 건은 수정할 수 없습니다.");
   }

@@ -94,8 +94,14 @@
     </div>
 
     <!-- ✅ 상세보기 모달 -->
+    <BudgetReportPreview
+      v-if="previewReport && (previewReport.documentType === '예산편성서' || previewReport.document_type === '예산편성서')"
+      :report="previewReport"
+      @close="previewReport = null"
+      @refreshList="searchList"
+    />
     <ReportPreview
-      v-if="previewReport"
+      v-else-if="previewReport"
       :report="previewReport"
       @close="previewReport = null"
       @refreshList="searchList"
@@ -108,6 +114,7 @@ import { ref, reactive, onMounted } from "vue";
 //import ReportPreview from "@/components/ReportPreview.vue";
 import { defineAsyncComponent } from 'vue';
 const ReportPreview = defineAsyncComponent(() => import('@/components/ReportPreview.vue'));
+const BudgetReportPreview = defineAsyncComponent(() => import('@/components/BudgetReportPreview.vue'));
 import { useUserStore } from "@/store/userStore";
 
 const rows = ref([]);
@@ -193,6 +200,8 @@ const openDetail = async (row) => {
     remarks: data.remarks,
     aliasName: data.aliasName,
     items: data.items || [],
+    budgetPlanItems: data.budgetPlanItems || [],
+    targetYear: data.targetYear || null,
     attachedFiles: data.attachedFiles || [],
     approvalHistory: data.approvalHistory || [] 
   };

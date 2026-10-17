@@ -21,6 +21,12 @@ const PortalHome = () =>
 // 보고서 작성 (PC/모바일 모두 같은 컴포넌트 사용 시)
 const ReportForm = () => import("../components/ReportForm.vue");
 
+// ✅ 예산편성서 작성: 기기별로 필요한 컴포넌트 로드
+const BudgetReportForm = () =>
+  isMobile()
+    ? import("../components/mobile/BudgetReportFormMobile.vue")
+    : import("../components/BudgetReportForm.vue");
+
 // ✅ 청구목록 조회: 기기별로 필요한 컴포넌트만 로드
 const ApprovalList = () =>
   isMobile()
@@ -86,6 +92,8 @@ const routes = [
   // 보고서 관련
   { path: "/reportForm", component: ReportForm, meta: { menuName: "지출결의서 작성" } },
   { path: "/report/:id?", name: "ReportForm", component: ReportForm, props: true, meta: { menuName: "지출결의서 작성" } },
+  { path: "/budgetReportForm", component: BudgetReportForm, meta: { menuName: "예산편성서 작성" } },
+  { path: "/budgetReport/:id?", name: "BudgetReportForm", component: BudgetReportForm, props: true, meta: { menuName: "예산편성서 작성" } },
 
   // ✅ 청구목록 조회 → 모바일/PC 분기 (동적 import로 분리 청크 생성)
   { path: "/approvalList", component: ApprovalList, meta: { menuName: "청구목록 조회" } },
