@@ -137,6 +137,7 @@ import { ref, onMounted, computed, watch } from "vue";
 import axios from "axios";
 import { useUserStore } from "../../store/userStore";
 import { storeToRefs } from "pinia";
+import { getCurrentYear } from "../../utils/dateUtils";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -144,7 +145,7 @@ const { user } = storeToRefs(userStore);
 const departments = ref([]);
 const selectedDeptId = ref(null);
 const categories = ref([]);
-const year = ref(new Date().getFullYear());
+const year = ref(getCurrentYear());
 const budgets = ref({});
 const expenses = ref([]); // approval_items raw data
 

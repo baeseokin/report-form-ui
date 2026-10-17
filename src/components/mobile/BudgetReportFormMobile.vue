@@ -416,6 +416,7 @@ import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import { useUserStore } from "@/store/userStore";
+import { getCurrentYear } from "@/utils/dateUtils";
 
 const router = useRouter();
 const route = useRoute();
@@ -457,7 +458,7 @@ const isItemEditable = (item) => {
   return !!item.is_owner;
 };
 
-const currentYear = new Date().getFullYear();
+const currentYear = getCurrentYear();
 const yearOptions = [currentYear + 1];
 const targetYear = ref(currentYear + 1);
 const baseYear = computed(() => targetYear.value - 1);

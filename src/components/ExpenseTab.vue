@@ -564,10 +564,13 @@ const fetchCategories = async () => {
 
 watch([userDept, user, () => props.date], () => {
   fetchCategories();
+}, { immediate: true });
+
+watch(targetYear, () => {
   if (isSelectionReady.value) {
     fetchSummaryBySelection();
   }
-}, { immediate: true });
+});
 
 watch(() => props.items, (newItems) => {
   const currentCodes = JSON.stringify(newItems.map(i => [i.gwan, i.hang, i.mok, i.semok]));
@@ -596,7 +599,7 @@ const hangsForSelectedGwan = computed(() => {
     .filter(c => c.level === "항" && String(c.parent_id) === String(gwan.id));
 });
 
-const fetchSummaryBySelection = async () => {
+async function fetchSummaryBySelection() {
   if (!userDeptId.value || !isSelectionReady.value) {
     totalBudget.value = 0;
     serverExpense.value = 0;

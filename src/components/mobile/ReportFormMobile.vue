@@ -41,6 +41,7 @@
         v-model:selected-hang="selectedHang"        
         :dept-data="deptData"
         :selected-dept="selectedDept"
+        :date="date"
         @prev="activeStep--"
         @next="activeStep++"
       />
@@ -102,6 +103,7 @@ import FileAttachTabMobile from "./FileAttachTabMobile.vue";
 import ConfirmTabMobile from "./ConfirmTabMobile.vue";
 import ModalAlert from "../ModalAlert.vue";
 import { defineAsyncComponent } from 'vue';
+import { getToday } from "../../utils/dateUtils";
 const ReportPreview = defineAsyncComponent(() => import ("../ReportPreview.vue"));
 
 const tabs = ["기본정보", "지출내역", "파일첨부", "최종 확인"];
@@ -113,7 +115,7 @@ const selectedGwan = ref("");
 const selectedHang = ref("");
 const author = ref("");
 const payee = ref("");
-const date = ref(new Date().toISOString().slice(0, 10));
+const date = ref(getToday());
 const aliasName = ref("");
 const accountInfo = ref("");
 const requesterPhone = ref("");
@@ -148,7 +150,7 @@ onMounted(async () => {
     deptMap = {};
     for (const dept of depts) {
       const catRes = await axios.get(`/api/accountCategories/${dept.id}`, {
-        params: { date: new Date().toISOString().split("T")[0] },
+        params: { date: getToday() },
       });
       deptMap[dept.dept_name] = catRes.data.categories || [];
     }

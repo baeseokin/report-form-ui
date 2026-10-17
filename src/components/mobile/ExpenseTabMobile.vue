@@ -567,10 +567,13 @@ const fetchCategories = async () => {
 
 watch([userDept, user, () => props.date], () => {
   fetchCategories();
+}, { immediate: true });
+
+watch(targetYear, () => {
   if (isSelectionReady.value) {
     fetchSummaryForSelectedHang();
   }
-}, { immediate: true });
+});
 
 watch(() => props.items, (newItems) => {
   const currentCodes = JSON.stringify(newItems.map(i => [i.gwan, i.hang, i.mok, i.semok]));
@@ -679,7 +682,7 @@ const syncSelectionToItems = () => {
   emits("update:items", newItems);
 };
 
-const fetchSummaryForSelectedHang = async () => {
+async function fetchSummaryForSelectedHang() {
   // 관/항 선택 전에는 0으로
   if (!isSelectionReady.value || !userDeptId.value) {
     totalBudget.value = 0;

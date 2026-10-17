@@ -151,6 +151,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/userStore';
+import { getSystemDate } from '@/utils/dateUtils';
 import axios from 'axios';
 
 const router = useRouter();
@@ -167,7 +168,7 @@ const timeOfDay = computed(() => {
 });
 
 const today = computed(() => {
-  return new Date().toLocaleDateString('ko-KR', {
+  return getSystemDate().toLocaleDateString('ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
   });
 });

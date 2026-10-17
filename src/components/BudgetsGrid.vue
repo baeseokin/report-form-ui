@@ -123,11 +123,12 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { getCurrentYear, formatDate } from "../utils/dateUtils";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
 const categories = ref([]);
-const year = ref(new Date().getFullYear());
+const year = ref(getCurrentYear());
 const budgets = ref({});
 const originalBudgets = ref({});
 
@@ -200,19 +201,6 @@ const getDeptName = (deptId) => {
   return d ? d.dept_name : "-";
 };
 
-// 날짜 포맷
-const formatDate = (dateStr) => {
-  if (!dateStr) return "";
-  if (typeof dateStr === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
-    return dateStr.substring(0, 10);
-  }
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
 
 // 일괄 저장
 const saveAllBudgets = async () => {

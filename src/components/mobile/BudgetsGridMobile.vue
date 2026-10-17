@@ -156,10 +156,11 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { getCurrentYear } from "../../utils/dateUtils";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
-const year = ref(new Date().getFullYear());
+const year = ref(getCurrentYear());
 const budgets = ref({});
 const originalBudgets = ref({});
 const categories = ref([]);

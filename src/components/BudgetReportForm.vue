@@ -605,6 +605,7 @@ import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import { useUserStore } from "@/store/userStore";
+import { getCurrentYear, getToday } from "@/utils/dateUtils";
 
 const router = useRouter();
 const route = useRoute();
@@ -657,7 +658,7 @@ const isLevelEligibleForAdd = (item) => {
 };
 
 // 회계연도 옵션 (현재 기준 차기년도만 표시)
-const currentYear = new Date().getFullYear();
+const currentYear = getCurrentYear();
 const yearOptions = [currentYear + 1];
 const targetYear = ref(currentYear + 1);
 const baseYear = computed(() => targetYear.value - 1);
@@ -671,7 +672,7 @@ const sortedDepartmentOptions = computed(() => {
   });
 });
 const selectedDeptName = ref("");
-const todayStr = new Date().toISOString().split("T")[0];
+const todayStr = getToday();
 
 const loading = ref(false);
 const submitting = ref(false);

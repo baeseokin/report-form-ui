@@ -137,6 +137,7 @@ import axios from "axios";
 import { useUserStore } from "../store/userStore";
 import { storeToRefs } from "pinia";
 import { defineAsyncComponent } from "vue";
+import { getToday } from "../utils/dateUtils";
 
 // ✅ 모달/탭 전부 비동기 로드 → 모바일 초기 번들 크기 감소
 const ModalAlert = defineAsyncComponent(() => import("./ModalAlert.vue"));
@@ -171,7 +172,7 @@ const selectedGwan = ref("");
 const selectedHang = ref("");
 const author = ref("");
 const payee = ref("");
-const date = ref(new Date().toISOString().slice(0, 10));
+const date = ref(getToday());
 const aliasName = ref("");
 const accountInfo = ref("");
 const updateDeptAccountInfo = ref(true);

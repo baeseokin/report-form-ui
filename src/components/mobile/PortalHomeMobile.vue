@@ -120,6 +120,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/userStore';
+import { getSystemDate } from '@/utils/dateUtils';
 import axios from 'axios';
 
 const router = useRouter();
@@ -162,7 +163,7 @@ const refinedGreeting = computed(() => {
   return '따뜻하고 편안한 밤 보내세요';
 });
 
-const today = computed(() => new Date().toLocaleDateString('ko-KR', {
+const today = computed(() => getSystemDate().toLocaleDateString('ko-KR', {
   month: 'long', day: 'numeric', weekday: 'long'
 }));
 
