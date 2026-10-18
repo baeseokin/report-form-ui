@@ -24,7 +24,12 @@
         >
           <div class="flex items-start justify-between mb-2">
             <div class="flex-1 pr-2 min-w-0">
-              <span class="font-bold text-gray-900 truncate block leading-snug">{{ n.title }}</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span v-if="n.is_popup" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
+                  📢 팝업공지
+                </span>
+                <span class="font-bold text-gray-900 truncate block leading-snug">{{ n.title }}</span>
+              </div>
             </div>
             <span v-if="isNew(n.created_at)" class="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
               New
@@ -77,7 +82,12 @@
     <div v-else-if="mode === 'view'" class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-4">
       <!-- 헤더 영역 -->
       <div class="px-4 py-4 border-b border-gray-200 bg-gray-50">
-        <h2 class="text-lg font-bold text-gray-900 break-words mb-2 leading-tight">{{ currentNotice.title }}</h2>
+        <div class="flex items-center gap-2 flex-wrap mb-2">
+          <span v-if="currentNotice.is_popup" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 shrink-0">
+            📢 팝업공지
+          </span>
+          <h2 class="text-lg font-bold text-gray-900 break-words leading-tight">{{ currentNotice.title }}</h2>
+        </div>
         <div class="flex flex-wrap items-center text-xs text-gray-500 gap-y-1 gap-x-3 mt-2">
           <div><span class="font-semibold text-gray-700">작성자:</span> {{ currentNotice.author_name }}</div>
           <div><span class="font-semibold text-gray-700">작성일:</span> {{ formatDateTime(currentNotice.created_at) }}</div>
@@ -146,6 +156,20 @@
             class="w-full px-3 py-2 rounded border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 outline-none text-sm"
             placeholder="제목 입력"
           />
+        </div>
+
+        <!-- 팝업 공지 설정 체크박스 -->
+        <div class="flex items-center gap-2 p-3 bg-purple-50/70 rounded-lg border border-purple-200">
+          <input
+            id="is_popup_mobile"
+            type="checkbox"
+            v-model="form.is_popup"
+            class="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-400 cursor-pointer"
+          />
+          <label for="is_popup_mobile" class="text-xs font-bold text-purple-900 cursor-pointer select-none flex items-center gap-1">
+            <span>📢 팝업 공지로 등록</span>
+            <span class="text-[11px] font-normal text-purple-600">(로그인 시 팝업 창 자동 노출)</span>
+          </label>
         </div>
 
         <div>
@@ -269,6 +293,7 @@ const form = ref({
   id: null,
   title: '',
   content: '',
+  is_popup: false,
   existingFiles: [],
   deletedFileIds: [],
   newFiles: [],
@@ -356,6 +381,7 @@ const openForm = (notice = null) => {
       title: notice.title,
       // QuillEditor는 null/undefined 처리에 민감할 수 있으므로
       content: notice.content || '', 
+      is_popup: !!notice.is_popup,
       existingFiles: notice.files ? [...notice.files] : [],
       deletedFileIds: [],
       newFiles: [],
@@ -367,6 +393,7 @@ const openForm = (notice = null) => {
       id: null,
       title: '',
       content: '',
+      is_popup: false,
       existingFiles: [],
       deletedFileIds: [],
       newFiles: [],
@@ -421,6 +448,7 @@ const saveNotice = async () => {
   const formData = new FormData();
   formData.append('title', form.value.title);
   formData.append('content', form.value.content);
+  formData.append('is_popup', form.value.is_popup ? 1 : 0);
   
   if (form.value.deletedFileIds.length > 0) {
     formData.append('deletedFileIds', JSON.stringify(form.value.deletedFileIds));

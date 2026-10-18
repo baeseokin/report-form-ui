@@ -82,6 +82,9 @@
 
       <router-view />
     </main>
+
+    <!-- 📢 로그인 시 팝업 공지사항 모달 -->
+    <NoticePopupModal v-if="!isLoginPage" />
   </div>
 </template>
 
@@ -92,6 +95,7 @@ import { useUserStore } from "./store/userStore";
 import { useAutoLogout } from "@/composables/useAutoLogout";
 import { getHelpForPath } from "@/helpContent";
 import HelpButton from "@/components/HelpButton.vue";
+import NoticePopupModal from "@/components/NoticePopupModal.vue";
 import axios from "axios";
 const showLogoutTimer = true  //자동로그인이 안될 경우에 true 로 변경해서 확인
 
