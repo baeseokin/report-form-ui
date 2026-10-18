@@ -151,47 +151,24 @@
           </div>
         </div>
 
-        <!-- 계층 트리 조작 툴바 및 범례 -->
-        <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
-          <!-- 좌측: 계층 범례 -->
-          <div class="flex items-center gap-2 text-gray-500">
-            <span class="font-semibold text-gray-700">계층 구조:</span>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">
-              관 (대분류)
-            </span>
-            <span class="text-gray-400">›</span>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">
-              항 (중분류)
-            </span>
-            <span class="text-gray-400">›</span>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">
-              목 (소분류)
-            </span>
-            <span class="text-gray-400">›</span>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-medium text-[11px]">
-              세목 (입력)
-            </span>
-          </div>
-
-          <!-- 우측: 모두 펼치기 / 모두 접기 버튼 -->
-          <div class="flex items-center gap-1.5">
-            <button
-              type="button"
-              @click="expandAll"
-              class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-md font-medium transition cursor-pointer shadow-2xs flex items-center gap-1"
-            >
-              <span>➕</span>
-              <span>모두 펼치기</span>
-            </button>
-            <button
-              type="button"
-              @click="collapseAll"
-              class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-md font-medium transition cursor-pointer shadow-2xs flex items-center gap-1"
-            >
-              <span>➖</span>
-              <span>모두 접기</span>
-            </button>
-          </div>
+        <!-- 계층 트리 조작 툴바 -->
+        <div class="flex items-center justify-end gap-1.5 px-1 text-xs">
+          <button
+            type="button"
+            @click="expandAll"
+            class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-md font-medium transition cursor-pointer shadow-2xs flex items-center gap-1"
+          >
+            <span>➕</span>
+            <span>모두 펼치기</span>
+          </button>
+          <button
+            type="button"
+            @click="collapseAll"
+            class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-md font-medium transition cursor-pointer shadow-2xs flex items-center gap-1"
+          >
+            <span>➖</span>
+            <span>모두 접기</span>
+          </button>
         </div>
 
         <!-- 계정별 트리 테이블 -->

@@ -47,64 +47,59 @@
         <thead>
           <tr class="bg-purple-100 text-gray-800">
             <th class="border p-2 text-center">계정명</th>
-          <th class="border p-2 text-center">계정ID</th>
-          <th class="border p-2 text-center">단계</th>
-          <th class="border p-2 text-center">상위 계정</th>
-          <th class="border p-2 text-center">유효기간</th>
-          <th class="border p-2 text-center">Owner부서</th>
-          <th class="border p-2 text-center">예산금액</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="c in categoriesTree"
-          :key="c.id"
-          :class="{
-            'bg-blue-50': c.level === '관',
-            'bg-white': c.level === '항',
-            'bg-green-50': c.level === '목',
-            'bg-white': c.level === '세목'
-          }"
-        >
-          <td class="border p-2">
-            <span :style="{ paddingLeft: `${20 + (c.depth - 1) * 40}px` }">
-              {{ c.category_name }}
-            </span>
-          </td>
-          <td class="border p-2 text-center font-mono">{{ c.category_id || '-' }}</td>
-          <td class="border p-2 text-center">{{ c.level }}</td>
-          <td class="border p-2 text-center">{{ parentName(c.parent_id) }}</td>
-          <td class="border p-2 text-center">
-            {{ formatDate(c.valid_from) }} ~
-            {{ c.valid_to ? formatDate(c.valid_to) : "현재" }}
-          </td>
-          <td class="border p-2 text-center text-xs text-gray-600">
-            {{ getDeptName(c.owner_dept_id) }}
-          </td>
-          <td class="border p-2 text-right font-mono">
-            <template v-if="isLeafCategory(c.id)">
-              <input
-                v-if="selectedDeptId === 'all' || c.owner_dept_id == selectedDeptId"
-                type="text"
-                class="border rounded p-1 w-40 text-right shadow-sm"
-                :value="formatAmount(budgets[c.category_id] ?? 0)"
-                @input="onBudgetInput($event, c)"
-              />
-              <span v-else class="text-gray-400 cursor-not-allowed" title="Owner 부서만 수정 가능">
-                {{ formatAmount(budgets[c.category_id] ?? 0) }}
+            <th class="border p-2 text-center">계정ID</th>
+            <th class="border p-2 text-center">단계</th>
+            <th class="border p-2 text-center">상위 계정</th>
+            <th class="border p-2 text-center">Owner부서</th>
+            <th class="border p-2 text-center">예산금액</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="c in categoriesTree"
+            :key="c.id"
+            :class="{
+              'bg-blue-50': c.level === '관',
+              'bg-white': c.level === '항',
+              'bg-green-50': c.level === '목',
+              'bg-white': c.level === '세목'
+            }"
+          >
+            <td class="border p-2">
+              <span :style="{ paddingLeft: `${20 + (c.depth - 1) * 40}px` }">
+                {{ c.category_name }}
               </span>
-            </template>
-            <template v-else>
-              {{ formatAmount(sumChildren(c.id)) }}
-            </template>
-          </td>
-        </tr>
-        <tr v-if="categoriesTree.length === 0">
-          <td colspan="7" class="text-center p-4 text-gray-500">
-            데이터가 없습니다.
-          </td>
-        </tr>
-      </tbody>
+            </td>
+            <td class="border p-2 text-center font-mono">{{ c.category_id || '-' }}</td>
+            <td class="border p-2 text-center">{{ c.level }}</td>
+            <td class="border p-2 text-center">{{ parentName(c.parent_id) }}</td>
+            <td class="border p-2 text-center text-xs text-gray-600">
+              {{ getDeptName(c.owner_dept_id) }}
+            </td>
+            <td class="border p-2 text-right font-mono">
+              <template v-if="isLeafCategory(c.id)">
+                <input
+                  v-if="selectedDeptId === 'all' || c.owner_dept_id == selectedDeptId"
+                  type="text"
+                  class="border rounded p-1 w-40 text-right shadow-sm"
+                  :value="formatAmount(budgets[c.category_id] ?? 0)"
+                  @input="onBudgetInput($event, c)"
+                />
+                <span v-else class="text-gray-400 cursor-not-allowed" title="Owner 부서만 수정 가능">
+                  {{ formatAmount(budgets[c.category_id] ?? 0) }}
+                </span>
+              </template>
+              <template v-else>
+                {{ formatAmount(sumChildren(c.id)) }}
+              </template>
+            </td>
+          </tr>
+          <tr v-if="categoriesTree.length === 0">
+            <td colspan="6" class="text-center p-4 text-gray-500">
+              데이터가 없습니다.
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
@@ -123,7 +118,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
-import { getCurrentYear, formatDate } from "../utils/dateUtils";
+import { getCurrentYear } from "../utils/dateUtils";
 
 const departments = ref([]);
 const selectedDeptId = ref(null);
