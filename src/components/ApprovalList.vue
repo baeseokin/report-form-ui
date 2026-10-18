@@ -24,6 +24,7 @@
           <option value="청구지출결의서">청구지출결의서</option>
           <option value="정산지출결의서">정산지출결의서</option>
           <option value="가불지출결의서">가불지출결의서</option>
+          <option value="예산편성서">예산편성서</option>
         </select>
       </div>
 
