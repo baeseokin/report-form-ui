@@ -116,12 +116,90 @@
         <div class="text-sm text-gray-500 font-medium">계정과목 및 당해년도 예산 로딩 중...</div>
       </div>
 
-      <!-- 계정별 트리 테이블 -->
-      <div v-else class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
-        <table class="w-full border-collapse text-sm">
+      <!-- 계정별 트리 테이블 및 상단 예산 현황 요약 바 -->
+      <div v-else class="space-y-4">
+        <!-- 실시간 예산 현황 요약 바 (3단 인터랙션) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/70">
+            <div class="text-xs font-semibold text-blue-700 mb-1">
+              당해년도({{ baseYear }}년) 예산 총액
+            </div>
+            <div class="text-xl font-bold font-mono text-blue-900 text-right">
+              {{ formatAmount(totalPrevAmount) }} 원
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-purple-200 bg-purple-50/70">
+            <div class="text-xs font-semibold text-purple-700 mb-1">
+              {{ targetYear }}년도 편성요청 합계
+            </div>
+            <div class="text-xl font-bold font-mono text-purple-900 text-right">
+              {{ formatAmount(totalRequestAmount) }} 원
+            </div>
+          </div>
+
+          <div
+            class="p-4 rounded-xl border"
+            :class="totalDiffAmount >= 0 ? 'border-emerald-200 bg-emerald-50/70' : 'border-blue-200 bg-blue-50/70'"
+          >
+            <div class="text-xs font-semibold mb-1" :class="totalDiffAmount >= 0 ? 'text-emerald-700' : 'text-blue-700'">
+              전년 대비 증감
+            </div>
+            <div class="text-xl font-bold font-mono text-right" :class="totalDiffAmount >= 0 ? 'text-emerald-900' : 'text-blue-900'">
+              {{ formatDiff(totalDiffAmount, totalPrevAmount) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 계층 트리 조작 툴바 및 범례 -->
+        <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
+          <!-- 좌측: 계층 범례 -->
+          <div class="flex items-center gap-2 text-gray-500">
+            <span class="font-semibold text-gray-700">계층 구조:</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[11px]">
+              관 (대분류)
+            </span>
+            <span class="text-gray-400">›</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[11px]">
+              항 (중분류)
+            </span>
+            <span class="text-gray-400">›</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[11px]">
+              목 (소분류)
+            </span>
+            <span class="text-gray-400">›</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-medium text-[11px]">
+              세목 (입력)
+            </span>
+          </div>
+
+          <!-- 우측: 모두 펼치기 / 모두 접기 버튼 -->
+          <div class="flex items-center gap-1.5">
+            <button
+              type="button"
+              @click="expandAll"
+              class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-md font-medium transition cursor-pointer shadow-2xs flex items-center gap-1"
+            >
+              <span>➕</span>
+              <span>모두 펼치기</span>
+            </button>
+            <button
+              type="button"
+              @click="collapseAll"
+              class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-md font-medium transition cursor-pointer shadow-2xs flex items-center gap-1"
+            >
+              <span>➖</span>
+              <span>모두 접기</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 계정별 트리 테이블 -->
+        <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
+          <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="bg-purple-100 text-gray-800 font-bold border-b border-purple-200">
-              <th class="p-3 text-center w-48 sm:w-52">계정명</th>
+              <th class="p-3 text-center w-52 sm:w-60">계정명</th>
               <th class="p-3 text-center w-16 sm:w-20">단계</th>
               <th class="p-3 text-center w-32 sm:w-36">{{ baseYear }} 당해예산</th>
               <th class="p-3 text-center w-40 sm:w-44">{{ targetYear }} 편성요청</th>
@@ -131,21 +209,57 @@
           </thead>
           <tbody>
             <tr
-              v-for="item in flatCategories"
+              v-for="item in visibleCategories"
               :key="item.id"
               :class="getRowClass(item.level)"
-              class="border-b transition hover:bg-purple-50/50"
+              class="border-b transition hover:bg-purple-50/40"
             >
-              <!-- 1. 계정명 (들여쓰기) -->
-              <td class="p-2.5">
-                <div class="flex items-center flex-wrap gap-1" :style="{ paddingLeft: `${(item.depth - 1) * 20}px` }">
+              <!-- 1. 계정명 (들여쓰기 및 트리 구조) -->
+              <td class="p-2.5" :class="{ 'cursor-pointer select-none': item.has_children }" @click="item.has_children && toggleExpand(item.id)">
+                <div class="flex items-center flex-wrap gap-1.5" :style="{ paddingLeft: `${(item.depth - 1) * 22}px` }">
+                  <!-- 폴딩 화살표 토글 버튼 (하위 자식이 있는 경우) -->
+                  <button
+                    v-if="item.has_children"
+                    type="button"
+                    @click.stop="toggleExpand(item.id)"
+                    class="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 transition text-gray-600 font-bold shrink-0 text-xs"
+                    :title="item.is_expanded ? '접기' : '펼치기'"
+                  >
+                    <span class="inline-block transition-transform duration-150" :class="{ 'rotate-90': item.is_expanded }">▶</span>
+                  </button>
+
+                  <!-- 최하위 Leaf 계정 가이드 아이콘 -->
                   <span
-                    v-if="item.depth > 1"
-                    class="text-gray-400 mr-1 text-xs select-none"
-                  >└</span>
-                  <span :class="item.is_leaf ? 'font-normal text-gray-800' : 'font-bold text-gray-900'">
+                    v-else
+                    class="w-5 text-center text-gray-400 text-xs shrink-0 select-none"
+                  >
+                    <span v-if="item.depth > 1">└</span>
+                    <span v-else>•</span>
+                  </span>
+
+                  <!-- 계층별 아이콘 -->
+                  <span class="text-sm shrink-0">
+                    <span v-if="item.level === '관'">🏛️</span>
+                    <span v-else-if="item.level === '항'">{{ item.is_expanded ? '📂' : '📁' }}</span>
+                    <span v-else-if="item.level === '목'">{{ item.is_expanded ? '📂' : '📁' }}</span>
+                    <span v-else>📄</span>
+                  </span>
+
+                  <!-- 계정명 -->
+                  <span :class="getCategoryNameClass(item.level, item.is_leaf)">
                     {{ item.category_name }}
                   </span>
+
+                  <!-- 하위 항목 수 뱃지 -->
+                  <span
+                    v-if="item.has_children"
+                    class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-semibold"
+                    :class="item.is_expanded ? 'bg-gray-200/80 text-gray-600' : 'bg-purple-100 text-purple-700 font-bold'"
+                    :title="`하위 항목 ${item.children_count}개`"
+                  >
+                    {{ item.children_count }}
+                  </span>
+
                   <!-- 🆕 신규신청 뱃지 -->
                   <span
                     v-if="item.is_new_category"
@@ -153,21 +267,23 @@
                   >
                     🆕 신규신청
                   </span>
+
                   <!-- 항 단계인 경우 신규 목 추가 퀵 버튼 -->
                   <button
                     v-if="item.level === '항' && isLevelEligibleForAdd(item)"
                     type="button"
-                    @click="openNewCategoryModal('목', item.id)"
+                    @click.stop="openNewCategoryModal('목', item.id)"
                     class="ml-1 px-1.5 py-0.5 text-[10px] bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded font-medium transition cursor-pointer"
                     title="이 항 하위에 신규 목 추가"
                   >
                     +목추가
                   </button>
+
                   <!-- 목 단계인 경우 신규 세목 추가 퀵 버튼 -->
                   <button
                     v-if="item.level === '목' && isLevelEligibleForAdd(item)"
                     type="button"
-                    @click="openNewCategoryModal('세목', item.id)"
+                    @click.stop="openNewCategoryModal('세목', item.id)"
                     class="ml-1 px-1.5 py-0.5 text-[10px] bg-white hover:bg-green-50 text-green-700 border border-green-200 rounded font-medium transition cursor-pointer"
                     title="이 목 하위에 신규 세목 추가"
                   >
@@ -180,19 +296,19 @@
               <td class="p-2.5 text-center">
                 <span
                   v-if="item.level === '관'"
-                  class="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded font-bold"
+                  class="inline-block px-2.5 py-0.5 text-xs bg-blue-600 text-white rounded-full font-bold shadow-2xs"
                 >관</span>
                 <span
                   v-else-if="item.level === '항'"
-                  class="inline-block px-2 py-0.5 text-xs bg-purple-100 text-purple-800 rounded font-bold"
+                  class="inline-block px-2.5 py-0.5 text-xs bg-purple-600 text-white rounded-full font-bold shadow-2xs"
                 >항</span>
                 <span
                   v-else-if="item.level === '목'"
-                  class="inline-block px-2 py-0.5 text-xs bg-green-100 text-green-800 rounded font-bold"
+                  class="inline-block px-2 py-0.5 text-xs bg-emerald-600 text-white rounded-md font-bold shadow-2xs"
                 >목</span>
                 <span
                   v-else
-                  class="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded font-medium"
+                  class="inline-block px-2 py-0.5 text-xs bg-gray-100 text-gray-700 border border-gray-200 rounded font-medium"
                 >세목</span>
               </td>
 
@@ -212,7 +328,7 @@
                     :value="item.request_amount ? item.request_amount.toLocaleString() : '0'"
                     @input="handleAmountInput(item, $event)"
                     @focus="$event.target.select()"
-                    class="w-36 text-right font-mono border border-gray-300 rounded px-2.5 py-1.5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition"
+                    class="w-36 text-right font-mono border border-gray-300 rounded px-2.5 py-1.5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition bg-white"
                   />
                   <!-- 2) 최하위 Leaf 계정이지만 타 부서 관리 계정인 경우: 수정 불가 잠금 -->
                   <div
@@ -222,12 +338,14 @@
                   >
                     {{ formatAmount(item.request_amount) }}
                   </div>
-                  <!-- 3) 상위 계정: 자동 합산 금액 노출 -->
+                  <!-- 3) 상위 계정: 자동 합산 금액 노출 (소계 강조) -->
                   <div
                     v-else
-                    class="w-36 text-right font-mono border border-transparent px-2.5 py-1.5 text-sm font-bold text-gray-900"
+                    class="w-36 text-right font-mono border border-transparent px-2.5 py-1.5 text-sm font-bold flex items-center justify-end gap-1.5"
+                    :class="item.level === '관' ? 'text-blue-950 font-black' : (item.level === '항' ? 'text-purple-950' : 'text-gray-900')"
                   >
-                    {{ formatAmount(item.request_amount) }}
+                    <span class="text-[10px] text-gray-400 font-normal">소계</span>
+                    <span>{{ formatAmount(item.request_amount) }}</span>
                   </div>
                 </div>
               </td>
@@ -273,45 +391,13 @@
               </td>
             </tr>
 
-            <tr v-if="flatCategories.length === 0">
+            <tr v-if="visibleCategories.length === 0">
               <td colspan="6" class="p-8 text-center text-gray-500">
                 조회된 계정과목이 없습니다.
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
-
-      <!-- 실시간 예산 현황 요약 바 (3단 인터랙션) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-        <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/70">
-          <div class="text-xs font-semibold text-blue-700 mb-1">
-            당해년도({{ baseYear }}년) 예산 총액
-          </div>
-          <div class="text-xl font-bold font-mono text-blue-900">
-            {{ formatAmount(totalPrevAmount) }} 원
-          </div>
-        </div>
-
-        <div class="p-4 rounded-xl border border-purple-200 bg-purple-50/70">
-          <div class="text-xs font-semibold text-purple-700 mb-1">
-            {{ targetYear }}년도 편성요청 합계
-          </div>
-          <div class="text-xl font-bold font-mono text-purple-900">
-            {{ formatAmount(totalRequestAmount) }} 원
-          </div>
-        </div>
-
-        <div
-          class="p-4 rounded-xl border"
-          :class="totalDiffAmount >= 0 ? 'border-emerald-200 bg-emerald-50/70' : 'border-blue-200 bg-blue-50/70'"
-        >
-          <div class="text-xs font-semibold mb-1" :class="totalDiffAmount >= 0 ? 'text-emerald-700' : 'text-blue-700'">
-            전년 대비 증감
-          </div>
-          <div class="text-xl font-bold font-mono" :class="totalDiffAmount >= 0 ? 'text-emerald-900' : 'text-blue-900'">
-            {{ formatDiff(totalDiffAmount, totalPrevAmount) }}
-          </div>
         </div>
       </div>
 
@@ -702,6 +788,7 @@ async function loadDefaultSignature() {
     if (url) {
       await drawImageToCanvas(url);
       hasInitialSignature.value = true;
+      userSignature.value = url;
       return;
     }
   } catch (e) {
@@ -874,9 +961,13 @@ onMounted(async () => {
     }
 
     // 사용자 기본 서명 로드
-    const userRes = await axios.get("/api/users/me");
-    if (userRes.data?.user?.signature_path) {
-      userSignature.value = userRes.data.user.signature_path;
+    try {
+      const { data } = await axios.get("/api/users/me/signature", { withCredentials: true });
+      if (data?.signature) {
+        userSignature.value = data.signature;
+      }
+    } catch {
+      // 기본 서명 없을 시 패스
     }
 
     // 기존 임시저장/수정 건 ID가 넘어온 경우 상세 데이터 로드
@@ -944,6 +1035,7 @@ const loadExistingBudgetPlan = async (id) => {
 
         // 롤업 재계산
         recalculateRollups();
+        collapseAll();
 
         // 2단계(예산편성 입력) 탭으로 바로 이동
         currentTab.value = 1;
@@ -994,6 +1086,7 @@ const loadTemplateAndNext = async () => {
     rawCategories.value = res.data.categories || [];
     // 상위 계정 합계 재계산
     recalculateRollups();
+    collapseAll();
     currentTab.value = 1;
   } catch (err) {
     console.error("예산편성 템플릿 로드 실패:", err);
@@ -1003,8 +1096,33 @@ const loadTemplateAndNext = async () => {
   }
 };
 
-// 트리 계층 평탄화 및 depth 계산 (원본 객체 참조 유지)
-const flatCategories = computed(() => {
+// 폴딩(접기/펼치기) 상태 관리 (기본은 모두 접힘)
+const expandedIds = ref(new Set());
+
+// 토글 함수
+const toggleExpand = (id) => {
+  const next = new Set(expandedIds.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  expandedIds.value = next;
+};
+
+// 모두 펼치기
+const expandAll = () => {
+  const childParentIds = new Set(rawCategories.value.map(c => c.parent_id).filter(Boolean));
+  expandedIds.value = childParentIds;
+};
+
+// 모두 접기 (기본 상태)
+const collapseAll = () => {
+  expandedIds.value = new Set();
+};
+
+// 계층 구조에 따른 노출 항목 계산 (트리 계층 평탄화 및 depth, 자식 여부 계산)
+const visibleCategories = computed(() => {
   if (!rawCategories.value || rawCategories.value.length === 0) return [];
 
   const byParent = {};
@@ -1015,18 +1133,28 @@ const flatCategories = computed(() => {
   });
 
   const result = [];
-  const traverse = (parentId, depth) => {
+  const traverse = (parentId, depth, isVisible) => {
     const children = byParent[parentId] || [];
     children.forEach((c) => {
       c.depth = depth;
-      result.push(c);
-      traverse(c.id, depth + 1);
+      c.children_count = (byParent[c.id] || []).length;
+      c.has_children = c.children_count > 0;
+      c.is_expanded = expandedIds.value.has(c.id);
+
+      if (isVisible) {
+        result.push(c);
+      }
+      // 직계 부모가 보이고, 부모가 펼쳐져 있어야 자식도 보임
+      const childVisible = isVisible && c.is_expanded;
+      traverse(c.id, depth + 1, childVisible);
     });
   };
 
-  traverse(0, 1);
+  traverse(0, 1, true);
   return result;
 });
+
+const flatCategories = visibleCategories;
 
 // 상위 계정 합계 자동 계산 (Roll-up)
 const recalculateRollups = () => {
@@ -1234,6 +1362,7 @@ const confirmAddNewCategory = () => {
 
   rawCategories.value.push(newItem);
   recalculateRollups();
+  expandedIds.value = new Set([...expandedIds.value, parentId]);
   closeNewCategoryModal();
 };
 
@@ -1334,9 +1463,16 @@ const submitBudgetPlan = async (status) => {
       }
 
       alert(status === "결재진행중" ? "📤 예산편성서가 성공적으로 결재 상신되었습니다." : "💾 임시저장되었습니다.");
+
+      if (status === "결재진행중") {
+        router.push("/approvalList");
+      }
     }
   } catch (err) {
     console.error("예산편성서 제출 실패:", err);
+    if (err.response?.data?.message?.includes("foreign key") || err.response?.status === 404) {
+      savedRequestId.value = null;
+    }
     alert(err.response?.data?.message || "예산편성서 제출 중 오류가 발생했습니다.");
   } finally {
     submitting.value = false;
@@ -1373,10 +1509,17 @@ const getDiffClass = (diff) => {
 
 const getRowClass = (level) => {
   switch (level) {
-    case "관": return "bg-blue-50/70 font-bold";
-    case "항": return "bg-purple-50/40 font-semibold";
-    case "목": return "bg-green-50/40 font-medium";
-    default: return "bg-white";
+    case "관": return "bg-blue-50/70 border-l-4 border-l-blue-600 text-blue-950 font-bold";
+    case "항": return "bg-purple-50/45 border-l-4 border-l-purple-500 text-purple-950 font-semibold";
+    case "목": return "bg-emerald-50/35 border-l-4 border-l-emerald-500 text-emerald-950 font-medium";
+    default: return "bg-white border-l-4 border-l-gray-200 hover:border-l-gray-300";
   }
+};
+
+const getCategoryNameClass = (level, isLeaf) => {
+  if (level === "관") return "font-black text-sm text-blue-950 tracking-tight";
+  if (level === "항") return "font-bold text-sm text-purple-950";
+  if (level === "목") return "font-semibold text-sm text-gray-900";
+  return isLeaf ? "font-normal text-sm text-gray-800" : "font-semibold text-sm text-gray-900";
 };
 </script>

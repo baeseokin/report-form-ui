@@ -556,19 +556,71 @@ const budgetPlanItems = computed(() => {
     : loadedBudgetPlanItems.value;
 });
 
-// ✅ 표시용 예산 항목 (depth 정규화)
+// ✅ 표시용 예산 항목 (계층 트리 순서로 정렬 및 depth 부여)
 const displayBudgetPlanItems = computed(() => {
   const items = budgetPlanItems.value && budgetPlanItems.value.length
     ? budgetPlanItems.value
     : (props.report?.items || []);
 
-  return items.map(it => {
-    const depth = it.depth || (it.level === '관' ? 1 : (it.level === '항' ? 2 : (it.level === '목' ? 3 : 4)));
-    return {
-      ...it,
-      depth
-    };
+  if (!items || items.length === 0) return [];
+
+  // 부모-자식 매핑 테이블 구성
+  const byParent = {};
+  items.forEach(it => {
+    const pid = it.parent_id ?? 0;
+    if (!byParent[pid]) byParent[pid] = [];
+    byParent[pid].push(it);
   });
+
+  const parentKeyMap = new Set();
+  items.forEach(it => {
+    if (it.category_id != null) parentKeyMap.add(it.category_id);
+    if (it.id != null) parentKeyMap.add(it.id);
+  });
+
+  // 최상위 항목(관 또는 부모가 현재 목록에 없는 항목) 찾기
+  const roots = items.filter(it => it.level === '관' || !it.parent_id || !parentKeyMap.has(it.parent_id));
+
+  const result = [];
+  const visited = new Set();
+
+  const traverse = (item, depth) => {
+    if (!item || visited.has(item)) return;
+    visited.add(item);
+
+    const calculatedDepth = item.depth || depth;
+    result.push({
+      ...item,
+      depth: calculatedDepth
+    });
+
+    // 자식 항목들: parent_id 가 item.category_id 또는 item.id 인 항목들
+    const c1 = item.category_id != null ? (byParent[item.category_id] || []) : [];
+    const c2 = item.id != null && item.id !== item.category_id ? (byParent[item.id] || []) : [];
+    const children = [...c1];
+    c2.forEach(c => {
+      if (!children.includes(c)) children.push(c);
+    });
+
+    children.forEach(child => {
+      traverse(child, calculatedDepth + 1);
+    });
+  };
+
+  roots.forEach(r => traverse(r, 1));
+
+  // 혹시 트리 순회에 포함되지 않은 항목이 있다면 마지막에 순서대로 포함
+  items.forEach(it => {
+    if (!visited.has(it)) {
+      const depth = it.depth || (it.level === '관' ? 1 : (it.level === '항' ? 2 : (it.level === '목' ? 3 : 4)));
+      result.push({
+        ...it,
+        depth
+      });
+    }
+  });
+
+  return result;
 });
 
 // ✅ 총액 집계

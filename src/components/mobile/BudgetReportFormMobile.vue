@@ -88,47 +88,125 @@
 
 
 
-      <!-- 계정별 카드 목록 -->
-      <div class="space-y-3">
-        <div
-          v-for="item in flatCategories"
-          :key="item.id"
-          class="bg-white rounded-xl border p-3.5 shadow-sm transition"
-          :class="[
-            item.level === '관' ? 'border-blue-300 bg-blue-50/40' : (item.level === '항' ? 'border-purple-200' : 'border-gray-200')
-          ]"
+      <!-- 상단 펼치기/접기 버튼 바 -->
+      <div class="flex justify-end gap-1.5">
+        <button
+          type="button"
+          @click="expandAll"
+          class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 active:bg-gray-200 text-gray-700 border border-gray-200 rounded-lg font-semibold transition shadow-2xs flex items-center gap-1"
         >
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-1.5 flex-1 min-w-0">
-              <span
-                class="px-2 py-0.5 text-[10px] rounded font-bold shrink-0"
-                :class="[
-                  item.level === '관' ? 'bg-blue-100 text-blue-800' :
-                  item.level === '항' ? 'bg-purple-100 text-purple-800' :
-                  item.level === '목' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
-                ]"
-              >{{ item.level }}</span>
-              <span class="text-sm font-bold text-gray-800 truncate">{{ item.category_name }}</span>
-              <span
-                v-if="item.is_new_category"
-                class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200"
-              >
-                신규
+          <span>➕</span>
+          <span>전체펼침</span>
+        </button>
+        <button
+          type="button"
+          @click="collapseAll"
+          class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 active:bg-gray-200 text-gray-700 border border-gray-200 rounded-lg font-semibold transition shadow-2xs flex items-center gap-1"
+        >
+          <span>➖</span>
+          <span>전체접음</span>
+        </button>
+      </div>
+
+      <!-- 계정별 카드 목록 -->
+      <div class="space-y-2.5">
+        <div
+          v-for="item in visibleCategories"
+          :key="item.id"
+          class="rounded-xl border shadow-xs transition overflow-hidden"
+          :class="getMobileCardClass(item)"
+          :style="getMobileIndentStyle(item.depth)"
+        >
+          <!-- 카드 헤더 영역 (부모 계정인 경우 탭하여 접기/펼치기) -->
+          <div
+            class="p-3.5"
+            :class="{ 'cursor-pointer select-none active:bg-black/5': item.has_children }"
+            @click="item.has_children && toggleExpand(item.id)"
+          >
+            <!-- 메인 제목 줄 -->
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                <!-- 폴딩 화살표 토글 버튼 (자식 있을 때) -->
+                <button
+                  v-if="item.has_children"
+                  type="button"
+                  @click.stop="toggleExpand(item.id)"
+                  class="w-6 h-6 flex items-center justify-center rounded-full bg-black/5 text-gray-700 font-bold shrink-0 text-xs transition-transform duration-150"
+                  :class="{ 'rotate-90': item.is_expanded }"
+                >
+                  ▶
+                </button>
+                <span v-else class="text-xs text-gray-400 shrink-0">📄</span>
+
+                <!-- 단계 뱃지 -->
+                <span
+                  class="px-2 py-0.5 text-[10px] rounded-md font-extrabold shrink-0 shadow-2xs"
+                  :class="getMobileBadgeClass(item.level)"
+                >{{ item.level }}</span>
+
+                <!-- 계정명 -->
+                <span :class="getMobileTitleClass(item.level, item.is_leaf)" class="truncate">
+                  {{ item.category_name }}
+                </span>
+
+                <!-- 하위 항목 개수 뱃지 (자식이 있는 경우) -->
+                <span
+                  v-if="item.has_children"
+                  class="px-1.5 py-0.2 rounded-full text-[10px] font-bold shrink-0"
+                  :class="item.is_expanded ? 'bg-black/10 text-gray-600' : 'bg-purple-600 text-white'"
+                >
+                  {{ item.children_count }}
+                </span>
+
+                <!-- 🆕 신규신청 뱃지 -->
+                <span
+                  v-if="item.is_new_category"
+                  class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 shrink-0"
+                >
+                  신규
+                </span>
+              </div>
+
+              <!-- 우측 증감액/증감율 -->
+              <span class="text-xs font-mono font-semibold shrink-0" :class="getDiffClass(item.diff_amount)">
+                {{ formatDiff(item.diff_amount, item.prev_amount) }}
               </span>
             </div>
-            <span class="text-xs font-mono font-semibold" :class="getDiffClass(item.diff_amount)">
-              {{ formatDiff(item.diff_amount, item.prev_amount) }}
-            </span>
+
+            <!-- 당해년도 예산액 및 소계 표시 -->
+            <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
+              <span>당해: <strong class="font-mono text-gray-700">{{ formatAmount(item.prev_amount) }}원</strong></span>
+              <!-- 상위 계정인 경우 소계 강조 -->
+              <span v-if="!item.is_leaf" class="text-xs font-semibold" :class="item.level === '관' ? 'text-blue-900' : 'text-purple-900'">
+                소계: <span class="text-sm font-bold font-mono">{{ formatAmount(item.request_amount) }}원</span>
+              </span>
+            </div>
+
+            <!-- 퀵 버튼 (+목추가, +세목추가) -->
+            <div v-if="isLevelEligibleForAdd(item)" class="flex gap-1.5 mt-2 pt-2 border-t border-black/5" @click.stop>
+              <button
+                v-if="item.level === '항'"
+                type="button"
+                @click="openNewCategoryModal('목', item.id)"
+                class="px-2 py-0.5 text-[11px] bg-white border border-purple-200 text-purple-700 rounded-md font-medium"
+              >
+                + 이 항에 신규 목 추가
+              </button>
+              <button
+                v-if="item.level === '목'"
+                type="button"
+                @click="openNewCategoryModal('세목', item.id)"
+                class="px-2 py-0.5 text-[11px] bg-white border border-green-200 text-green-700 rounded-md font-medium"
+              >
+                + 이 목에 신규 세목 추가
+              </button>
+            </div>
           </div>
 
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
-            <span>당해({{ baseYear }}): {{ formatAmount(item.prev_amount) }}원</span>
-          </div>
-
-          <!-- 최하위 계정: 금액 인풋 및 산출근거 -->
-          <div v-if="item.is_leaf" class="space-y-2 pt-2 border-t border-gray-100">
+          <!-- 최하위 Leaf 계정: 실제 금액 인풋 및 산출근거 입력창 -->
+          <div v-if="item.is_leaf" class="p-3.5 bg-gray-50/70 border-t border-gray-100 space-y-2.5">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-gray-600 shrink-0">편성요청:</span>
+              <span class="text-xs font-bold text-gray-700 shrink-0">편성요청:</span>
               <input
                 v-if="isItemEditable(item)"
                 type="text"
@@ -147,13 +225,14 @@
               </div>
               <span class="text-xs text-gray-600">원</span>
             </div>
-            <!-- 산출근거: 신청부서가 Owner인 경우 입력창, 아닌 경우 Owner 부서 배지 노출 -->
+
+            <!-- 산출근거 -->
             <input
               v-if="isItemEditable(item)"
               type="text"
               v-model="item.calc_basis"
               placeholder="산출 근거 (예: 물가상승 반영)"
-              class="w-full border border-gray-200 rounded-lg p-2 text-xs bg-gray-50/50"
+              class="w-full border border-gray-200 rounded-lg p-2 text-xs bg-white focus:ring-1 focus:ring-purple-300 outline-none"
             />
             <div v-else class="flex items-center gap-1.5 p-1.5 bg-amber-50 rounded-lg border border-amber-200 text-xs">
               <span class="font-bold text-amber-800">🏢 {{ item.owner_dept_name || '타 부서' }}</span>
@@ -171,11 +250,10 @@
               </button>
             </div>
           </div>
-          <!-- 상위 계정: 합계금액 표시 -->
-          <div v-else class="flex justify-between items-center pt-1 border-t border-gray-100 text-xs">
-            <span class="text-gray-500">소계 합계:</span>
-            <span class="font-bold font-mono text-sm text-gray-900">{{ formatAmount(item.request_amount) }}원</span>
-          </div>
+        </div>
+
+        <div v-if="visibleCategories.length === 0" class="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-200">
+          조회된 계정과목이 없습니다.
         </div>
       </div>
 
@@ -458,6 +536,16 @@ const isItemEditable = (item) => {
   return !!item.is_owner;
 };
 
+// 특정 레벨(항 또는 목)에 신규 하위 계정 추가 가능한지 판별
+const isLevelEligibleForAdd = (item) => {
+  if (item.level !== "항" && item.level !== "목") return false;
+  if (hasFinanceRole.value) return true;
+  if (item.owner_dept_name) {
+    return item.owner_dept_name === selectedDeptName.value;
+  }
+  return true;
+};
+
 const currentYear = getCurrentYear();
 const yearOptions = [currentYear + 1];
 const targetYear = ref(currentYear + 1);
@@ -499,6 +587,7 @@ async function loadDefaultSignature() {
     if (url) {
       await drawImageToCanvas(url);
       hasInitialSignature.value = true;
+      userSignature.value = url;
       return;
     }
   } catch (e) {
@@ -662,9 +751,14 @@ onMounted(async () => {
       selectedDeptName.value = userDeptName.value || departmentOptions.value[0]?.dept_name || "";
     }
 
-    const userRes = await axios.get("/api/users/me");
-    if (userRes.data?.user?.signature_path) {
-      userSignature.value = userRes.data.user.signature_path;
+    // 사용자 기본 서명 로드
+    try {
+      const { data } = await axios.get("/api/users/me/signature", { withCredentials: true });
+      if (data?.signature) {
+        userSignature.value = data.signature;
+      }
+    } catch {
+      // 기본 서명 없을 시 패스
     }
 
     const targetId = props.id || route.params.id;
@@ -725,6 +819,7 @@ const loadExistingBudgetPlan = async (id) => {
         });
 
         recalculateRollups();
+        collapseAll();
         currentTab.value = 1;
       }
     }
@@ -771,6 +866,7 @@ const loadTemplateAndNext = async () => {
 
     rawCategories.value = res.data.categories || [];
     recalculateRollups();
+    collapseAll();
     currentTab.value = 1;
   } catch (err) {
     console.error("예산편성 템플릿 로드 실패:", err);
@@ -780,7 +876,33 @@ const loadTemplateAndNext = async () => {
   }
 };
 
-const flatCategories = computed(() => {
+// 폴딩(접기/펼치기) 상태 관리 (기본은 모두 접힘)
+const expandedIds = ref(new Set());
+
+// 토글 함수
+const toggleExpand = (id) => {
+  const next = new Set(expandedIds.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  expandedIds.value = next;
+};
+
+// 모두 펼치기
+const expandAll = () => {
+  const childParentIds = new Set(rawCategories.value.map(c => c.parent_id).filter(Boolean));
+  expandedIds.value = childParentIds;
+};
+
+// 모두 접기 (기본 상태)
+const collapseAll = () => {
+  expandedIds.value = new Set();
+};
+
+// 계층 구조에 따른 노출 항목 계산 (트리 계층 평탄화 및 depth, 자식 여부 계산)
+const visibleCategories = computed(() => {
   if (!rawCategories.value || rawCategories.value.length === 0) return [];
   const byParent = {};
   rawCategories.value.forEach((c) => {
@@ -790,17 +912,28 @@ const flatCategories = computed(() => {
   });
 
   const result = [];
-  const traverse = (parentId, depth) => {
+  const traverse = (parentId, depth, isVisible, parentNames = []) => {
     const children = byParent[parentId] || [];
     children.forEach((c) => {
       c.depth = depth;
-      result.push(c);
-      traverse(c.id, depth + 1);
+      c.children_count = (byParent[c.id] || []).length;
+      c.has_children = c.children_count > 0;
+      c.is_expanded = expandedIds.value.has(c.id);
+      c.breadcrumb = parentNames.join(" › ");
+
+      if (isVisible) {
+        result.push(c);
+      }
+      // 직계 부모가 보이고, 부모가 펼쳐져 있어야 자식도 보임
+      const childVisible = isVisible && c.is_expanded;
+      traverse(c.id, depth + 1, childVisible, [...parentNames, c.category_name]);
     });
   };
-  traverse(0, 1);
+  traverse(0, 1, true, []);
   return result;
 });
+
+const flatCategories = visibleCategories;
 
 const recalculateRollups = () => {
   const items = rawCategories.value;
@@ -999,6 +1132,7 @@ const confirmAddNewCategory = () => {
 
   rawCategories.value.push(newItem);
   recalculateRollups();
+  expandedIds.value = new Set([...expandedIds.value, parentId]);
   closeNewCategoryModal();
 };
 
@@ -1090,9 +1224,16 @@ const submitBudgetPlan = async (status) => {
       }
 
       alert(status === "결재진행중" ? "📤 예산편성서가 성공적으로 결재 상신되었습니다." : "💾 임시저장되었습니다.");
+
+      if (status === "결재진행중") {
+        router.push("/approvalList");
+      }
     }
   } catch (err) {
     console.error("예산편성서 제출 실패:", err);
+    if (err.response?.data?.message?.includes("foreign key") || err.response?.status === 404) {
+      savedRequestId.value = null;
+    }
     alert(err.response?.data?.message || "예산편성서 제출 중 오류가 발생했습니다.");
   } finally {
     submitting.value = false;
@@ -1122,5 +1263,39 @@ const getDiffClass = (diff) => {
   if (d > 0) return "text-emerald-700 font-bold";
   if (d < 0) return "text-blue-700 font-bold";
   return "text-gray-400";
+};
+
+const getMobileCardClass = (item) => {
+  switch (item.level) {
+    case "관":
+      return "border-l-[6px] border-l-blue-600 border-blue-200 bg-blue-50/70 shadow-xs";
+    case "항":
+      return "border-l-4 border-l-purple-500 border-purple-200 bg-purple-50/40";
+    case "목":
+      return "border-l-4 border-l-emerald-500 border-emerald-200 bg-emerald-50/30";
+    default:
+      return "border-l-4 border-l-gray-300 border-gray-200 bg-white";
+  }
+};
+
+const getMobileIndentStyle = (depth) => {
+  const margin = Math.max(0, (depth - 1) * 8);
+  return margin > 0 ? { marginLeft: `${margin}px` } : {};
+};
+
+const getMobileBadgeClass = (level) => {
+  switch (level) {
+    case "관": return "bg-blue-600 text-white";
+    case "항": return "bg-purple-600 text-white";
+    case "목": return "bg-emerald-600 text-white";
+    default: return "bg-gray-100 text-gray-700 border border-gray-300";
+  }
+};
+
+const getMobileTitleClass = (level, isLeaf) => {
+  if (level === "관") return "text-sm font-extrabold text-blue-950 tracking-tight";
+  if (level === "항") return "text-sm font-bold text-purple-950";
+  if (level === "목") return "text-sm font-semibold text-emerald-950";
+  return isLeaf ? "text-xs font-semibold text-gray-800" : "text-xs font-bold text-gray-900";
 };
 </script>

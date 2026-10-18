@@ -87,7 +87,7 @@
           <!-- 청구 시작일자 -->
           <div>
             <label class="block text-sm mb-1">청구 시작일자</label>
-            <div class="mobile-form-control-date-wrap">
+            <div class="mobile-form-control-date-wrap" @click="openDatePicker">
               <input type="date" v-model="filters.startDate" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-date" />
               <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
             </div>
@@ -96,7 +96,7 @@
           <!-- 청구 종료일자 -->
           <div>
             <label class="block text-sm mb-1">청구 종료일자</label>
-            <div class="mobile-form-control-date-wrap">
+            <div class="mobile-form-control-date-wrap" @click="openDatePicker">
               <input type="date" v-model="filters.endDate" @change="fetchApprovals(1)" class="mobile-form-control mobile-form-control-date" />
               <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
             </div>
@@ -262,6 +262,18 @@ const formatDateValue = (date) => {
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}-${m}-${d}`;
+};
+
+// 모바일 캘린더 피커 열기 (Android Chrome/Webview 호환 지원)
+const openDatePicker = (e) => {
+  const input = e.currentTarget?.querySelector('input[type="date"]');
+  if (input && typeof input.showPicker === 'function') {
+    try {
+      input.showPicker();
+    } catch {
+      // 이미 피커가 표시 중이거나 포커스 상태일 때의 예외 무시
+    }
+  }
 };
 
 // ✅ 로그인 사용자의 deptName 자동 세팅
