@@ -61,70 +61,133 @@
       </div>
     </div>
 
-    <!-- 리스트 (2줄 리스트 행) -->
-    <section class="space-y-2">
-      <div v-if="categoriesTree.length === 0" class="text-center text-gray-500 text-sm py-8 bg-white rounded-xl shadow">
+    <!-- 상단 펼치기/접기 버튼 바 -->
+    <div class="flex justify-end gap-1.5">
+      <button
+        type="button"
+        @click="expandAll"
+        class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 active:bg-gray-200 text-gray-700 border border-gray-200 rounded-lg font-semibold transition shadow-2xs flex items-center gap-1 cursor-pointer"
+      >
+        <span>➕</span>
+        <span>전체펼침</span>
+      </button>
+      <button
+        type="button"
+        @click="collapseAll"
+        class="px-2.5 py-1 text-xs bg-white hover:bg-gray-100 active:bg-gray-200 text-gray-700 border border-gray-200 rounded-lg font-semibold transition shadow-2xs flex items-center gap-1 cursor-pointer"
+      >
+        <span>➖</span>
+        <span>전체접음</span>
+      </button>
+    </div>
+
+    <!-- 계정별 카드 목록 -->
+    <section class="space-y-2.5">
+      <div v-if="categoriesTree.length === 0" class="text-center text-gray-500 text-sm py-8 bg-white rounded-xl shadow-xs border border-gray-200">
         데이터가 없습니다.
       </div>
 
       <div
         v-for="c in visibleTree"
         :key="c.id"
-        class="rounded-lg border bg-white px-3 py-2 text-xs"
-        :class="{
-          'bg-gray-50': c.level === '관',
-          'bg-blue-50': c.level === '항',
-          'bg-green-50': c.level === '목'
-        }"
+        class="rounded-xl border shadow-xs transition overflow-hidden"
+        :class="getMobileCardClass(c)"
+        :style="getMobileIndentStyle(c.depth)"
       >
-        <!-- 1줄: 계정명 + 집행률 -->
-        <div class="flex items-center justify-between gap-2">
-          <div class="min-w-0 flex items-center">
-            <!-- 접기/펼치기 버튼 (자식이 있을 때만) -->
-            <button
-              v-if="c.children && c.children.length > 0"
-              type="button"
-              @click="toggleCollapsed(c.id)"
-              class="shrink-0 w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-200 rounded touch-manipulation"
-              :aria-expanded="!collapsedIds.has(c.id)"
-            >
-              <span class="text-[10px] leading-none">{{ collapsedIds.has(c.id) ? '▶' : '▼' }}</span>
-            </button>
-            <span v-else class="w-6 shrink-0 block" aria-hidden="true"></span>
-            <p class="font-semibold text-gray-900 truncate min-w-0">
-              <span class="inline-block" :style="{ paddingLeft: getIndent(c.level) }">
-                <span v-if="getLevelSymbol(c.level)" class="mr-1 text-gray-400 shrink-0" aria-hidden="true">{{ getLevelSymbol(c.level) }}</span>{{ c.category_name }}
+        <!-- 카드 헤더 영역 (클릭하여 접기/펼치기) -->
+        <div
+          class="p-3.5"
+          :class="{ 'cursor-pointer select-none active:bg-black/5': c.children && c.children.length > 0 }"
+          @click="c.children && c.children.length > 0 && toggleCollapsed(c.id)"
+        >
+          <!-- 메인 제목 줄 -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0">
+              <!-- 폴딩 화살표 토글 버튼 (자식 있을 때) -->
+              <button
+                v-if="c.children && c.children.length > 0"
+                type="button"
+                @click.stop="toggleCollapsed(c.id)"
+                class="w-6 h-6 flex items-center justify-center rounded-full bg-black/5 text-gray-700 font-bold shrink-0 text-xs transition-transform duration-150"
+                :class="{ 'rotate-90': !collapsedIds.has(c.id) }"
+              >
+                ▶
+              </button>
+              <span v-else class="text-xs text-gray-400 shrink-0">📄</span>
+
+              <!-- 단계 뱃지 -->
+              <span
+                class="px-2 py-0.5 text-[10px] rounded-md font-extrabold shrink-0 shadow-2xs"
+                :class="getMobileBadgeClass(c.level)"
+              >{{ c.level }}</span>
+
+              <!-- 계정명 -->
+              <span :class="getMobileTitleClass(c.level, !(c.children && c.children.length > 0))" class="truncate">
+                {{ c.category_name }}
               </span>
-              <span v-if="c.isEtc" class="ml-1 text-[10px] px-1 py-0.5 rounded bg-red-100 text-red-700 align-middle">
+
+              <!-- ETC 뱃지 -->
+              <span
+                v-if="c.isEtc"
+                class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-700 border border-red-200 shrink-0"
+              >
                 ETC
               </span>
-              <span class="ml-2 text-[11px] text-gray-500 font-mono">
-                {{ c.category_id || "-" }}
+
+              <!-- 하위 항목 개수 뱃지 (자식이 있는 경우) -->
+              <span
+                v-if="c.children && c.children.length > 0"
+                class="px-1.5 py-0.2 rounded-full text-[10px] font-bold shrink-0"
+                :class="!collapsedIds.has(c.id) ? 'bg-black/10 text-gray-600' : 'bg-purple-600 text-white'"
+              >
+                {{ getDirectChildrenCount(c.id) }}
               </span>
-            </p>
+            </div>
+
+            <!-- 우측 집행률 -->
+            <div class="shrink-0 text-right">
+              <span class="text-[10px] text-gray-400 block leading-tight">집행률</span>
+              <span class="text-xs font-mono font-bold text-purple-700">
+                {{ calculateRate(getBudget(c), getExpense(c)) }}%
+              </span>
+            </div>
           </div>
 
-          <div class="shrink-0 text-right">
-            <p class="text-[11px] text-gray-500 leading-none">집행률</p>
-            <p class="font-semibold text-purple-700 leading-none mt-1">
-              {{ calculateRate(getBudget(c), getExpense(c)) }}%
-            </p>
+          <!-- 계정코드 -->
+          <div class="text-[11px] text-gray-400 font-mono mt-1 ml-7.5">
+            {{ c.category_id || "-" }}
           </div>
-        </div>
 
-        <!-- 2줄: 예산/지출/잔액 -->
-        <div class="mt-2 grid grid-cols-3 gap-2 text-[11px]">
-          <div class="bg-gray-50 rounded px-2 py-1">
-            <p class="text-gray-500">예산</p>
-            <p class="font-semibold text-right text-gray-900">{{ formatAmount(getBudget(c)) }}</p>
-          </div>
-          <div class="bg-gray-50 rounded px-2 py-1">
-            <p class="text-gray-500">지출</p>
-            <p class="font-semibold text-right text-red-600">{{ formatAmount(getExpense(c)) }}</p>
-          </div>
-          <div class="bg-gray-50 rounded px-2 py-1">
-            <p class="text-gray-500">잔액</p>
-            <p class="font-semibold text-right text-blue-600">{{ formatAmount(getBudget(c) - getExpense(c)) }}</p>
+          <!-- 2줄: 좌측 예산 / 우측 (지출, 잔액 세로 배열) -->
+          <div class="mt-2.5 grid grid-cols-2 gap-2 text-xs">
+            <!-- 좌측: 예산 -->
+            <div class="bg-white/90 rounded-lg p-2.5 border border-black/5 shadow-2xs flex flex-col justify-between">
+              <span class="text-[11px] text-gray-500 font-medium">예산</span>
+              <p class="font-bold text-right text-gray-900 font-mono text-sm sm:text-base mt-1">
+                {{ formatAmount(getBudget(c)) }}원
+              </p>
+            </div>
+
+            <!-- 우측: 지출 & 잔액 세로 배열 -->
+            <div class="flex flex-col gap-1.5 justify-between">
+              <!-- 지출 -->
+              <div class="bg-white/90 rounded-lg px-2.5 py-1.5 border border-black/5 shadow-2xs flex items-center justify-between">
+                <span class="text-[11px] text-gray-500 font-medium">지출</span>
+                <span class="font-bold font-mono text-xs text-red-600">
+                  {{ formatAmount(getExpense(c)) }}원
+                </span>
+              </div>
+              <!-- 잔액 -->
+              <div class="bg-white/90 rounded-lg px-2.5 py-1.5 border border-black/5 shadow-2xs flex items-center justify-between">
+                <span class="text-[11px] text-gray-500 font-medium">잔액</span>
+                <span
+                  class="font-bold font-mono text-xs"
+                  :class="(getBudget(c) - getExpense(c)) < 0 ? 'text-red-600' : 'text-blue-600'"
+                >
+                  {{ formatAmount(getBudget(c) - getExpense(c)) }}원
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -328,15 +391,8 @@ const fetchData = async () => {
     });
 
     categories.value = finalCategories;
-    // 기본: 관·항·목은 펼침, 세목은 접음 → 자식이 있는 '목' 노드만 접힌 상태로
-    const initialCollapsed = new Set();
-    finalCategories.forEach((c) => {
-      if (c.level === "목") {
-        const hasChild = finalCategories.some((other) => other.parent_id === c.id);
-        if (hasChild) initialCollapsed.add(c.id);
-      }
-    });
-    collapsedIds.value = initialCollapsed;
+    // 기본: 모든 상위 계정을 접어서 깔끔하게 시작 (예산편성서 작성 화면과 동일)
+    collapseAll();
 
     // 예산 매핑
     budgets.value = {};
@@ -417,33 +473,56 @@ const calculateRate = (budget, expense) => {
   return ((expense / budget) * 100).toFixed(1);
 };
 
-/** 들여쓰기: 관/항/목/세목 기호 시작 위치 통일 */
-const getIndent = (level) => {
-  switch (level) {
+/* ========================================================
+   🎨 예산편성서 작성 화면과 일치하는 모바일 카드/트리 스타일
+   ======================================================== */
+const getMobileCardClass = (item) => {
+  switch (item.level) {
     case "관":
+      return "border-l-[6px] border-l-blue-600 border-blue-200 bg-blue-50/70 shadow-xs";
     case "항":
+      return "border-l-4 border-l-purple-500 border-purple-200 bg-purple-50/40";
     case "목":
-    case "세목":
-      return "5px";
+      return "border-l-4 border-l-emerald-500 border-emerald-200 bg-emerald-50/30";
     default:
-      return "5px";
+      return "border-l-4 border-l-gray-300 border-gray-200 bg-white";
   }
 };
 
-/** depth 구분용 트리 문자: 관 없음, 항 → └, 목 → └└, 세목 → └└└ */
-const getLevelSymbol = (level) => {
+const getMobileIndentStyle = (depth) => {
+  const margin = Math.max(0, ((depth || 1) - 1) * 8);
+  return margin > 0 ? { marginLeft: `${margin}px` } : {};
+};
+
+const getMobileBadgeClass = (level) => {
   switch (level) {
-    case "관":
-      return "";
-    case "항":
-      return "└";
-    case "목":
-      return "└└";
-    case "세목":
-      return "└└└";
-    default:
-      return "";
+    case "관": return "bg-blue-600 text-white";
+    case "항": return "bg-purple-600 text-white";
+    case "목": return "bg-emerald-600 text-white";
+    default: return "bg-gray-100 text-gray-700 border border-gray-300";
   }
+};
+
+const getMobileTitleClass = (level, isLeaf) => {
+  if (level === "관") return "text-sm font-extrabold text-blue-950 tracking-tight";
+  if (level === "항") return "text-sm font-bold text-purple-950";
+  if (level === "목") return "text-sm font-semibold text-emerald-950";
+  return isLeaf ? "text-xs font-semibold text-gray-800" : "text-xs font-bold text-gray-900";
+};
+
+const getDirectChildrenCount = (id) => {
+  return categories.value.filter((child) => child.parent_id === id).length;
+};
+
+const expandAll = () => {
+  collapsedIds.value = new Set();
+};
+
+const collapseAll = () => {
+  const allParentIds = categories.value
+    .filter((c) => categories.value.some((other) => other.parent_id === c.id))
+    .map((c) => c.id);
+  collapsedIds.value = new Set(allParentIds);
 };
 </script>
 
