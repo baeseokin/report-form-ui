@@ -33,6 +33,12 @@ const ApprovalList = () =>
     ? import("../components/mobile/ApprovalListMobile.vue")
     : import("../components/ApprovalList.vue");
 
+// ✅ 지출내역 조회: 기기별로 필요한 컴포넌트만 로드
+const PaymentHistory = () =>
+  isMobile()
+    ? import("../components/mobile/PaymentHistoryMobile.vue")
+    : import("../components/PaymentHistory.vue");
+
 // ✅ 내결재목록 조회: 기기별로 필요한 컴포넌트만 로드
 const ApprovalListPage = () =>
   isMobile()
@@ -97,6 +103,9 @@ const routes = [
 
   // ✅ 청구목록 조회 → 모바일/PC 분기 (동적 import로 분리 청크 생성)
   { path: "/approvalList", component: ApprovalList, meta: { menuName: "청구목록 조회" } },
+
+  // ✅ 지출내역 조회 → 모바일/PC 분기 (동적 import)
+  { path: "/paymentHistory", component: PaymentHistory, meta: { menuName: "지출내역 조회" } },
 
   // ✅ 내결재목록 조회 → 모바일/PC 분기 (동적 import)
   { path: "/approvalStatus", component: ApprovalListPage, meta: { menuName: "내결재목록 조회" } },
@@ -166,7 +175,10 @@ router.beforeEach(async (to, from, next) => {
   // ✅ 메뉴 접근 권한 체크 (로그인된 경우에만 실행됨)
   if (userStore.user && to.meta.menuName && !to.meta.publicMenu) {
     let hasAccess = userStore.access.some(
-      (a) => a.menu_name === to.meta.menuName && a.access_type === "all"
+      (a) =>
+        (a.menu_name === to.meta.menuName ||
+          (to.path === "/paymentHistory" && a.menu_name === "지급내역 조회")) &&
+        a.access_type === "all"
     );
 
     if (!hasAccess) {

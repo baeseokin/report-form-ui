@@ -132,6 +132,7 @@ const showEdit = ref(false);
 const menuMeta = {
   '지출결의서 작성': { icon: '📝', path: '/reportForm' },
   '청구목록 조회': { icon: '📑', path: '/approvalList' },
+  '지출내역 조회': { icon: '💳', path: '/paymentHistory' },
   '내결재목록 조회': { icon: '⏳', path: '/approvalStatus' },
   '사용자 관리': { icon: '👥', path: '/userManagement' },
   '권한 관리': { icon: '🔐', path: '/roleAccess' },

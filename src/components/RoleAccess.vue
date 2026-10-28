@@ -56,6 +56,7 @@ const menus = [
   "지출결의서 작성",
   "예산편성서 작성",
   "청구목록 조회",
+  "지출내역 조회",
   "내결재목록 조회",
   "재정부 일괄결재",
   "부서 관리",
@@ -87,7 +88,9 @@ const loadAccess = async () => {
 
   // ✅ localAccess 갱신
   menus.forEach(m => {
-    localAccess[m] = access.value.some(a => a.menu_name === m && a.access_type === "all");
+    localAccess[m] = access.value.some(
+      a => (a.menu_name === m || (m === "지출내역 조회" && a.menu_name === "지급내역 조회")) && a.access_type === "all"
+    );
   });
 };
 

@@ -233,6 +233,7 @@ const allMenus = [
   { label: "지출결의서 작성", path: "/reportForm", icon: "📝" },
   { label: "예산편성서 작성", path: "/budgetReportForm", icon: "📋" },
   { label: "청구목록 조회", path: "/approvalList", icon: "📑" },
+  { label: "지출내역 조회", path: "/paymentHistory", icon: "💳" },
   { label: "내결재목록 조회", path: "/approvalStatus", icon: "✅" },
   { label: "재정부 일괄결재", path: "/bulkApproval", icon: "🗂️" },
   { label: "계정과목 관리", path: "/accountCategories", icon: "📊" },
@@ -261,7 +262,9 @@ const allowedMenus = computed(() => {
 
   const filtered = allMenus.filter((m) =>
     m.alwaysShow || userStore.access.some(
-      (a) => a.menu_name === m.label && a.access_type === "all"
+      (a) =>
+        (a.menu_name === m.label || (m.path === "/paymentHistory" && a.menu_name === "지급내역 조회")) &&
+        a.access_type === "all"
     )
   );
 
