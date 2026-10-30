@@ -31,6 +31,7 @@
             <label class="block text-xs font-semibold text-gray-600 mb-1">부서명</label>
             <select
               v-model="filters.deptName"
+              @change="onDeptChange"
               class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
             >
               <option value="">전체</option>
@@ -259,8 +260,7 @@ const departments = ref([]);
 const allCategories = ref([]);
 
 const today = new Date();
-const oneMonthAgo = new Date();
-oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+const startOfYear = new Date(today.getFullYear(), 0, 1);
 
 const formatDateValue = (date) => {
   const y = date.getFullYear();
@@ -271,7 +271,7 @@ const formatDateValue = (date) => {
 
 const filters = ref({
   deptName: "",
-  startDate: formatDateValue(oneMonthAgo),
+  startDate: formatDateValue(startOfYear),
   endDate: formatDateValue(today),
   selectedGwan: "",
   selectedHang: "",
@@ -313,7 +313,10 @@ const hangs = computed(() => {
   if (!gwan) return [];
 
   const list = allCategories.value.filter(
-    (c) => c.level === "항" && String(c.parent_id) === String(gwan.category_id)
+    (c) =>
+      c.level === "항" &&
+      (String(c.parent_id) === String(gwan.id) ||
+        String(c.parent_id) === String(gwan.category_id))
   );
 
   const unique = [];
@@ -335,14 +338,39 @@ const searchConditionSummary = computed(() => {
   return parts.join(", ");
 });
 
+const loadCategories = async () => {
+  try {
+    const targetDeptName = filters.value.deptName || user.value?.deptName || "";
+    const foundDept = departments.value.find((d) => d.dept_name === targetDeptName);
+    const targetDeptId =
+      foundDept?.id || (targetDeptName === user.value?.deptName ? user.value?.deptId : null);
+
+    if (targetDeptId) {
+      const catRes = await axios.get(`/api/accountCategories/${targetDeptId}`);
+      const cats = catRes.data?.categories || [];
+      if (cats.length > 0) {
+        allCategories.value = cats;
+        return;
+      }
+    }
+
+    const allRes = await axios.get("/api/accountCategories/all");
+    allCategories.value = allRes.data?.categories || [];
+  } catch (e) {
+    console.error("계정과목 로드 실패:", e);
+  }
+};
+
+const onDeptChange = async () => {
+  filters.value.selectedGwan = "";
+  filters.value.selectedHang = "";
+  await loadCategories();
+};
+
 onMounted(async () => {
   try {
-    const [deptRes, catRes] = await Promise.all([
-      axios.get("/api/departments"),
-      axios.get("/api/accountCategories/all")
-    ]);
+    const deptRes = await axios.get("/api/departments");
     departments.value = deptRes.data || [];
-    allCategories.value = catRes.data?.categories || [];
   } catch (e) {
     console.error("데이터 로드 실패:", e);
   }
@@ -351,6 +379,7 @@ onMounted(async () => {
     filters.value.deptName = user.value.deptName;
   }
 
+  await loadCategories();
   fetchPayments(1);
 });
 

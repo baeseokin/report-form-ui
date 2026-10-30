@@ -7,6 +7,7 @@
         <label class="font-semibold text-gray-600 mb-1 text-sm">부서명</label>
         <select
           v-model="filters.deptName"
+          @change="onDeptChange"
           class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
         >
           <option value="">전체</option>
@@ -342,20 +343,48 @@ const hangs = computed(() => {
   return unique;
 });
 
+// ✅ 부서(선택된 부서 또는 로그인 사용자의 부서)에 할당된 계정과목 로드
+const loadCategories = async () => {
+  try {
+    const targetDeptName = filters.value.deptName || user.value?.deptName || "";
+    const foundDept = departments.value.find((d) => d.dept_name === targetDeptName);
+    const targetDeptId =
+      foundDept?.id || (targetDeptName === user.value?.deptName ? user.value?.deptId : null);
+
+    if (targetDeptId) {
+      const catRes = await axios.get(`/api/accountCategories/${targetDeptId}`);
+      const cats = catRes.data?.categories || [];
+      if (cats.length > 0) {
+        allCategories.value = cats;
+        return;
+      }
+    }
+
+    const allRes = await axios.get("/api/accountCategories");
+    allCategories.value = allRes.data?.categories || [];
+  } catch (e) {
+    console.error("계정과목 로드 실패", e);
+  }
+};
+
+const onDeptChange = async () => {
+  filters.value.selectedGwan = "";
+  filters.value.selectedHang = "";
+  await loadCategories();
+  fetchApprovals(1);
+};
+
 onMounted(async () => {
   try {
-    const [deptRes, catRes] = await Promise.all([
-      axios.get("/api/departments"),
-      axios.get("/api/accountCategories")
-    ]);
+    const deptRes = await axios.get("/api/departments");
     departments.value = deptRes.data || [];
-    allCategories.value = catRes.data.categories || [];
   } catch (e) {
     console.error("데이터 로드 실패", e);
   }
   if (user.value?.deptName) {
     filters.value.deptName = user.value.deptName;
   }
+  await loadCategories();
   fetchApprovals(1);
 });
 
