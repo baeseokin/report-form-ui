@@ -1,2 +1,8 @@
 # 빌드 결과물 무시
 dist/
+
+# Local environment files
+.env
+.env.*
+.env_local
+!.env.example
