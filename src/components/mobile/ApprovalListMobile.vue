@@ -144,6 +144,7 @@
       <div
         v-for="(a, index) in approvals"
         :key="a.id"
+        data-testid="claim-card"
         class="bg-white rounded-lg shadow-md p-4 border"
       >
         <div class="flex justify-between items-center mb-2">
@@ -489,17 +490,19 @@ const editReport = (a) => {
 };
 
 const canDelete = (a) => {
+  const isOwner = a.author === user.value?.userName;
+  const isFinance = user.value?.deptName === '재정부';
+  const isAdmin = user.value?.roles?.some(r => r === '관리자' || r.role_name === '관리자');
+
+  // 서버·PC 화면과 동일: 재정부·관리자는 상태와 관계없이 삭제 가능
+  if (isAdmin || isFinance) return true;
+
   if (a.status === '결재완료' || a.status === '재정부이관완료') {
     return false;
   }
 
-  const isOwner = a.author === user.value?.userName;
-  const isFinance = user.value?.deptName === '재정부';
-  const isAdmin = user.value?.roles?.some(r => r === '관리자' || r.role_name === '관리자');
-  
   if (isOwner && a.historyCount === 1) return true;
-  if (isAdmin || isFinance) return true;
-  
+
   return false;
 };
 

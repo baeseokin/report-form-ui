@@ -1,6 +1,6 @@
 // 화면 E2E: 결재 흐름 (TEST_CASES.md 1장과 대응)
 import { test, expect, startScenario, loginAs, query } from "./support/scenario.js";
-import { submitClaim, decide, openClaimList } from "./support/flows.js";
+import { submitClaim, decide, openClaimList, claimStatus } from "./support/flows.js";
 
 const lastRequest = async () => (await query("SELECT * FROM approval_requests ORDER BY id DESC LIMIT 1"))[0];
 
@@ -12,7 +12,7 @@ test("1-1 결재선 순서대로 진행되고 재정부 이관까지 완료된�
 
   await step("ang001 청구목록: 진행상태 '결재진행중'", async () => {
     await openClaimList(page);
-    await expect(page.getByRole("cell", { name: "결재진행중" })).toBeVisible();
+    await expect(claimStatus(page, "결재진행중")).toBeVisible();
   });
 
   await step("mus003 내결재목록: 아직 내 차례가 아니므로 비어 있음", async () => {
@@ -34,7 +34,7 @@ test("1-1 결재선 순서대로 진행되고 재정부 이관까지 완료된�
   await step("ang001 청구목록: 진행상태 '재정부이관완료'", async () => {
     await loginAs(page, "ang001");
     await openClaimList(page);
-    await expect(page.getByRole("cell", { name: "재정부이관완료" })).toBeVisible();
+    await expect(claimStatus(page, "재정부이관완료")).toBeVisible();
   });
 
   const history = await query("SELECT approver_user_id, status FROM approval_history ORDER BY id");
@@ -50,7 +50,7 @@ test("1-5 현재 결재자가 반려하면 결재반려 상태가 된다", async
   await step("ang001 청구목록: 진행상태 '결재반려'", async () => {
     await loginAs(page, "ang001");
     await openClaimList(page);
-    await expect(page.getByRole("cell", { name: "결재반려" })).toBeVisible();
+    await expect(claimStatus(page, "결재반려")).toBeVisible();
   });
 
   const [last] = await query("SELECT * FROM approval_history ORDER BY id DESC LIMIT 1");
@@ -83,6 +83,6 @@ test("1-11 재정부가 기안하면 즉시 결재완료된다", async ({ page }
 
   await step("fin001 청구목록: 진행상태 '결재완료'", async () => {
     await openClaimList(page);
-    await expect(page.getByRole("cell", { name: "결재완료", exact: true })).toBeVisible();
+    await expect(claimStatus(page, "결재완료")).toBeVisible();
   });
 });

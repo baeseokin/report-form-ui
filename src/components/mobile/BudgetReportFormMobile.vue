@@ -113,6 +113,7 @@
         <div
           v-for="item in visibleCategories"
           :key="item.id"
+          data-testid="budget-card"
           class="rounded-xl border shadow-xs transition overflow-hidden"
           :class="getMobileCardClass(item)"
           :style="getMobileIndentStyle(item.depth)"
@@ -310,6 +311,7 @@
         <div class="relative w-full aspect-square border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner">
           <canvas
             ref="canvas"
+            data-testid="signature-canvas"
             width="320"
             height="320"
             class="w-full h-full touch-none"

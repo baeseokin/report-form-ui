@@ -1,11 +1,11 @@
 # 화면(E2E) 테스트
 
-실제 브라우저(Chromium)로 로그인부터 상신·승인·이관까지 화면을 조작하고, **단계마다 스크린샷**을 남깁니다.
+실제 브라우저(PC: Chromium, 모바일: iPhone·Android 에뮬레이션)로 로그인부터 상신·승인·이관까지 화면을 조작하고, **단계마다 스크린샷**을 남깁니다.
 
 ## 실행
 
 ```bash
-npm run test:e2e          # 전체 실행 (약 2분)
+npm run test:e2e          # 전체 실행: 19개 케이스 × PC · iPhone · Android = 57개 (약 5~6분)
 npm run test:e2e:shots    # 단계별 스크린샷 갤러리 열기 (e2e-screenshots/index.html)
 npm run test:e2e:report   # Playwright 보고서 열기 (단계별 스크린샷 첨부, 실패 시 trace 포함)
 
@@ -14,6 +14,31 @@ npx playwright test --headed      # 브라우저 화면을 보면서 실행
 ```
 
 필요 조건: Docker 실행 중, `../report-server` 폴더 존재 (`REPORT_SERVER_DIR` 환경변수로 변경 가능)
+iPhone 프로젝트는 WebKit 브라우저가 필요합니다. 처음 한 번 `npx playwright install webkit` 을 실행하세요.
+
+## 모바일 테스트
+
+`playwright.config.js` 의 `projects` 로 **모든 케이스를 PC · iPhone · Android 에서 모두** 실행합니다.
+새 케이스를 추가할 때도 세 환경에서 모두 통과해야 합니다.
+
+| 프로젝트 | 기기 | 브라우저 엔진 | 실행 대상 |
+|---|---|---|---|
+| `desktop` | 1440×900 | Chromium | 전체 케이스 |
+| `iphone` | iPhone 14 (390×664, 배율 3, 터치) | WebKit (Safari 엔진) | 전체 케이스 |
+| `android` | Pixel 7 (412×839, 배율 2.625, 터치) | Chromium | 전체 케이스 |
+
+- 모바일 User-Agent와 화면 폭으로 실행되므로 앱이 **모바일 전용 화면**(`src/components/mobile/*`)으로 바뀝니다.
+- 특정 환경만 빠르게 확인할 때: `npx playwright test --project=iphone -g "1-1"`
+  (단, 실행할 때마다 스크린샷 폴더 전체를 새로 만들므로, 갤러리에는 그 실행 결과만 남습니다)
+- PC와 모바일 화면이 다른 부분은 헬퍼에서 처리합니다. 새 케이스도 이 헬퍼를 쓰면 됩니다.
+  - `isMobileView(page)`: 모바일 화면으로 실행 중인지.
+  - `openSidebar(page)`: 모바일에서는 사이드바가 접혀 있으므로 MENU 탭으로 엽니다 (PC에서는 아무것도 하지 않음).
+  - `claimRow(page, 별칭)`: 청구목록의 문서 (PC는 표의 행, 모바일은 카드 `data-testid="claim-card"`).
+  - `claimStatus(page, 상태)`: 청구목록 상태 표시 (PC는 표의 칸, 모바일은 카드 배지).
+  - `expectNotice(page, dialogs, 문구)`: 안내 문구 확인 (PC는 화면 안 알림 상자, 모바일은 브라우저 알림창).
+  - 예산편성서는 `budget-plan.spec.js` 의 `ui` 객체, 가청구건은 `hangRow()` 에서 PC·모바일 문구와 구조 차이를 처리합니다.
+  - 승인/반려 버튼은 PC용·모바일용이 함께 있으므로 **보이는 것만** 고르고, 모바일 하단 버튼 바는 1.5초 뒤 숨으므로 누르기 직전에 깨웁니다.
+- 실제 기기가 아닌 **에뮬레이션**입니다. iOS 가상 키보드, 날짜 선택기 같은 OS 고유 UI나 실제 Safari 와의 미세한 차이는 확인하지 못합니다.
 
 ## 실행 구조
 
@@ -31,11 +56,12 @@ Playwright
 ## 스크린샷
 
 - 위치: `e2e-screenshots/<케이스>/<번호>_<단계>.png` — 실행할 때마다 이전 결과를 지우고 새로 만듭니다.
+  모바일은 `<케이스>~iphone`, `<케이스>~android` 폴더에 저장되며, 갤러리에서 PC 결과 바로 아래에 표시됩니다.
 - 각 단계가 끝난 화면을 전체 페이지로 캡처합니다.
 - 왼쪽 위 검은 상자: 단계명. 브라우저 알림창(alert/confirm)이 떴다면 그 문구도 함께 표시합니다. (알림창 자체는 캡처되지 않으므로)
 - 알림창은 자동으로 '확인'을 누릅니다.
 
-## 케이스 목록 (19개, 스크린샷 111장)
+## 케이스 목록 (19개 — PC · iPhone · Android 각각 실행)
 
 번호는 `report-server/tests/TEST_CASES.md` 의 API 테스트 번호와 맞췄습니다.
 **(준비)** 는 시나리오 주제가 아닌 사전 데이터로, 화면 대신 API로 만들고 스크린샷을 남기지 않습니다.

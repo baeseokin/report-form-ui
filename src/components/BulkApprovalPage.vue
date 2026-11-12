@@ -486,8 +486,8 @@ function getSignatureBlob() {
 function isSignatureEmpty() {
   const el = signaturePad.value;
   if (!el || !ctx) return true;
-  const rect = el.getBoundingClientRect();
-  const imgData = ctx.getImageData(0, 0, Math.floor(rect.width), Math.floor(rect.height)).data;
+  // getImageData 는 ctx.scale 의 영향을 받지 않으므로 실제 픽셀 크기 전체를 검사 (고해상도 화면 대응)
+  const imgData = ctx.getImageData(0, 0, el.width, el.height).data;
   return !imgData.some(v => v !== 0);
 }
 

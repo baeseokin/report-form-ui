@@ -2,7 +2,7 @@
 //   - 테스트 전용 백엔드(report-server, 포트 3101, 테스트 DB)와 프론트엔드(Vite, 포트 5174)를
 //     Playwright 가 직접 띄우고 테스트가 끝나면 종료합니다. 운영·개발 서버와 포트가 겹치지 않습니다.
 //   - 실행: npm run test:e2e   (report-server 의 테스트 DB 컨테이너는 자동으로 시작)
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 import path from "path";
 import os from "os";
 import { fileURLToPath } from "url";
@@ -24,11 +24,17 @@ export default defineConfig({
   outputDir: "e2e-results",
   use: {
     baseURL: `http://localhost:${WEB_PORT}`,
-    viewport: { width: 1440, height: 900 },
     locale: "ko-KR",
     timezoneId: "Asia/Seoul",
     trace: "retain-on-failure",
   },
+  // 모든 케이스를 PC · iPhone · Android 세 환경에서 모두 실행합니다.
+  //   - 모바일은 기기 에뮬레이션(화면 크기·터치·모바일 UA)이며, 앱이 모바일 전용 화면(components/mobile)으로 전환됩니다.
+  projects: [
+    { name: "desktop", use: { viewport: { width: 1440, height: 900 } } },
+    { name: "iphone", use: { ...devices["iPhone 14"] } },
+    { name: "android", use: { ...devices["Pixel 7"] } },
+  ],
   webServer: [
     {
       // 테스트 전용 백엔드 (테스트 DB 사용, 알림톡 발송 안 함)

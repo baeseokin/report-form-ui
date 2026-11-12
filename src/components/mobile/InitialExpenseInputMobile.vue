@@ -44,7 +44,7 @@
     </div>
 
     <div class="bg-gray-50 p-2 sm:p-4 space-y-4 mb-6 rounded-xl">
-        <div v-for="hang in hangCategories" :key="'mobile-'+hang.category_id" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div v-for="hang in hangCategories" :key="'mobile-'+hang.category_id" data-testid="hang-card" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
           <div class="flex justify-between items-start border-b pb-3 mb-3">
             <div>
               <div class="text-xs text-gray-500 mb-1">{{ hang.gwan_name || '-' }}</div>

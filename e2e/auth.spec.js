@@ -1,5 +1,5 @@
 // 화면 E2E: 로그인 · 로그아웃 (TEST_CASES.md 6장과 대응)
-import { test, expect, startScenario, USERS } from "./support/scenario.js";
+import { test, expect, startScenario, USERS, openSidebar } from "./support/scenario.js";
 
 async function fillLogin(page, userId, password) {
   const u = USERS[userId];
@@ -57,6 +57,7 @@ test("6-4 로그아웃하면 로그인 화면으로 돌아가고 메뉴에 접�
     await page.waitForURL("**/portal");
   });
   await step("로그아웃 클릭 → 로그인 화면", async () => {
+    await openSidebar(page); // 모바일: 로그아웃 버튼은 사이드바 안에 있음
     await page.getByText("로그아웃", { exact: true }).click();
     await page.waitForURL("**/login");
   });

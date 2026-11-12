@@ -33,7 +33,9 @@ export const USERS = {
 /** 시나리오 시작: DB 초기화 + 스크린샷 폴더 준비. 반환된 step() 으로 단계를 기록한다. */
 export async function startScenario(page, testInfo, caseId) {
   await seed.seedForE2E();
-  const dir = path.join(SHOT_ROOT, caseId);
+  // 모바일 프로젝트는 '<케이스>~iphone' 처럼 별도 폴더에 저장 (데스크톱 결과를 덮어쓰지 않도록)
+  const project = testInfo.project.name;
+  const dir = path.join(SHOT_ROOT, project === "desktop" ? caseId : `${caseId}~${project}`);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
 
@@ -96,6 +98,29 @@ async function hideBanner(page) {
 
 function slug(s) {
   return s.replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, "_").slice(0, 60);
+}
+
+/** 모바일 화면으로 실행 중인지 (앱의 모바일 전환 기준: 폭 1024px 미만) */
+export function isMobileView(page) {
+  return page.viewportSize().width < 1024;
+}
+
+/**
+ * 안내 문구 확인. PC 는 화면 안의 자체 알림 상자, 모바일은 브라우저 기본 알림창(alert/confirm)으로 같은 문구를 띄운다.
+ * (브라우저 알림창은 자동으로 '확인'이 눌리고 dialogs 에 문구가 쌓인다)
+ */
+export async function expectNotice(page, dialogs, text) {
+  if (isMobileView(page)) await expect.poll(() => dialogs.join("\n")).toMatch(text);
+  else await expect(page.getByText(text)).toBeVisible();
+}
+
+/** 모바일 화면(폭 1024px 미만)이면 접혀 있는 사이드바를 MENU 탭으로 연다. PC 에서는 아무것도 하지 않는다. */
+export async function openSidebar(page) {
+  const menuTab = page.locator(".mobile-menu-tab__btn");
+  if (await menuTab.isVisible()) {
+    await menuTab.click();
+    await page.waitForTimeout(300); // 사이드바 슬라이드 애니메이션
+  }
 }
 
 /** 서명 캔버스에 서명 그리기 */

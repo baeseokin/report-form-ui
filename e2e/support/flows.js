@@ -1,6 +1,6 @@
 // 화면 조작 묶음 (여러 시나리오에서 재사용)
 import { expect } from "@playwright/test";
-import { loginAs, drawSignature } from "./scenario.js";
+import { loginAs, drawSignature, isMobileView } from "./scenario.js";
 
 /**
  * 지출결의서 작성 → 결재요청 (4단계 스크린샷)
@@ -16,7 +16,7 @@ export async function submitClaim(page, step, userId, opts = {}) {
       // 재정부 등 다른 부서를 대신 청구할 수 있는 사용자만 부서 선택 가능
       await page.locator("label", { hasText: "부서명" }).locator("xpath=following-sibling::select").selectOption({ label: dept });
     }
-    await page.getByPlaceholder("청구요청 별칭 입력 (최대 100자)").fill(alias);
+    await page.getByTestId("alias-input").fill(alias); // PC·모바일 화면 공통
   });
 
   await step(`${userId} 지출내역 입력 (음악비/찬양대비/엔젤스운영/악보구입, ${amount.toLocaleString()}원)`, async () => {
@@ -60,12 +60,13 @@ export async function decide(page, step, userId, { mode = "approve", comment = "
 
   await step(`${userId} 결재문서 상세 열기`, async () => {
     await page.getByTestId(`row-view-btn-${index}`).click();
-    await page.getByTestId("btn-approve").first().waitFor();
+    await approveButton(page).waitFor();
   });
 
   await step(`${userId} ${label} 팝업: 서명${comment ? ` + 의견 "${comment}"` : ""}`, async () => {
-    if (mode === "approve") await page.getByTestId("btn-approve").first().click();
-    else await page.getByRole("button", { name: /반려/ }).first().click();
+    await wakeActionBar(page);
+    if (mode === "approve") await approveButton(page).click();
+    else await page.getByRole("button", { name: /반려/ }).filter({ visible: true }).first().click();
     await drawSignature(page, page.getByTestId("signature-canvas-popup"));
     if (comment) await page.getByPlaceholder("의견을 입력하세요...").fill(comment);
   });
@@ -75,6 +76,15 @@ export async function decide(page, step, userId, { mode = "approve", comment = "
     await expect(page.getByTestId("btn-submit-approval")).toBeHidden();
     await page.waitForTimeout(500);
   });
+}
+
+// 상세 화면의 승인 버튼은 PC용·모바일용 두 개가 있고 화면 폭에 따라 하나만 보이므로, 보이는 것만 고른다.
+const approveButton = (page) => page.getByTestId("btn-approve").filter({ visible: true }).first();
+
+// 모바일 상세 화면의 하단 버튼 바는 손가락·마우스를 움직이면 1.5초 동안만 나타나므로, 누르기 직전에 움직여 깨운다.
+async function wakeActionBar(page) {
+  await page.mouse.move(10, 10);
+  await page.mouse.move(20, 20);
 }
 
 /** 청구목록 조회 화면 열기 */
@@ -126,9 +136,16 @@ export async function prepareApprove(playwright, userId, requestId) {
   }
 }
 
-/** 청구목록에서 별칭으로 행 찾기 */
+/** 청구목록의 진행상태 표시 — PC 는 표의 칸, 모바일은 카드 안의 상태 배지 */
+export function claimStatus(page, status) {
+  return isMobileView(page)
+    ? page.locator("span", { hasText: new RegExp(`^\\s*${status}\\s*$`) })
+    : page.getByRole("cell", { name: status, exact: true });
+}
+
+/** 청구목록에서 별칭으로 문서 찾기 — PC 는 표의 행, 모바일은 카드 */
 export function claimRow(page, alias) {
-  return page.locator("tbody tr").filter({ hasText: alias });
+  return (isMobileView(page) ? page.getByTestId("claim-card") : page.locator("tbody tr")).filter({ hasText: alias });
 }
 export function rowButton(row, alt) {
   return row.locator("button", { has: row.page().locator(`img[alt="${alt}"]`) });

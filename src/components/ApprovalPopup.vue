@@ -247,9 +247,9 @@ const submitApproval = async () => {
     return;
   }
 
-  // 비어있는 서명 방지 (CSS 크기 기준으로 검사)
-  const rect = canvasEl.getBoundingClientRect();
-  const imgData = ctx.getImageData(0, 0, rect.width, rect.height).data;
+  // 비어있는 서명 방지: getImageData 는 ctx.scale 의 영향을 받지 않으므로 실제 픽셀 크기 전체를 검사
+  // (CSS 크기로 검사하면 고해상도 화면(devicePixelRatio 2~3)에서 왼쪽 위 일부만 검사되어 서명을 인식하지 못함)
+  const imgData = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
   const isEmpty = !imgData.some((v) => v !== 0);
   if (isEmpty) {
     alert("서명을 입력해주세요.");

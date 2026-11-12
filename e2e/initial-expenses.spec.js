@@ -1,5 +1,9 @@
 // 화면 E2E: 가청구건(초기 기지출액) 등록 (TEST_CASES.md 5장과 대응)
-import { test, expect, startScenario, loginAs, query, YEAR } from "./support/scenario.js";
+import { test, expect, startScenario, loginAs, query, YEAR, isMobileView } from "./support/scenario.js";
+
+/** 항(Hang)별 입력 영역 — PC 는 표의 행, 모바일은 카드 */
+const hangRow = (page, name) =>
+  (isMobileView(page) ? page.getByTestId("hang-card") : page.locator("tr")).filter({ hasText: name });
 
 test("5-1 재정부는 계정(항)별 기지출액을 등록할 수 있다", async ({ page }, testInfo) => {
   const { step, dialogs } = await startScenario(page, testInfo, "5-1_재정부_기지출액_등록");
@@ -7,11 +11,11 @@ test("5-1 재정부는 계정(항)별 기지출액을 등록할 수 있다", asy
   await step(`fin001 로그인 → 가청구건 등록 화면 (${YEAR}년)`, async () => {
     await loginAs(page, "fin001");
     await page.goto("/initialExpenseInput");
-    await expect(page.locator("tr", { hasText: "찬양대비" })).toBeVisible();
+    await expect(hangRow(page, "찬양대비")).toBeVisible();
   });
 
   await step("fin001 찬양대비 기지출총액 300,000원 입력", async () => {
-    await page.locator("tr", { hasText: "찬양대비" }).locator("input").first().fill("300000");
+    await hangRow(page, "찬양대비").locator("input").first().fill("300000");
   });
 
   await step("fin001 저장 클릭 → 확인창 · 저장 완료 알림", async () => {
@@ -21,7 +25,7 @@ test("5-1 재정부는 계정(항)별 기지출액을 등록할 수 있다", asy
 
   await step("fin001 다시 조회: 기지출총액 300,000원 표시", async () => {
     await page.reload();
-    await expect(page.locator("tr", { hasText: "찬양대비" }).locator("input").first()).toHaveValue("300,000");
+    await expect(hangRow(page, "찬양대비").locator("input").first()).toHaveValue("300,000");
   });
 
   const [e] = await query("SELECT * FROM expense_details WHERE description='초기 기지출액'");
