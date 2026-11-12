@@ -15,7 +15,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:3001", // Express 서버 주소
+        target: process.env.VITE_API_PROXY || "http://localhost:3001", // Express 서버 주소 (E2E 테스트는 별도 포트 사용)
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, "/api"),
       },

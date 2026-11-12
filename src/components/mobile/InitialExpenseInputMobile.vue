@@ -163,7 +163,7 @@ onMounted(() => {
 
 const fetchData = async () => {
   try {
-    const res = await axios.get(`/api/initial-expenses-data?year=${year.value}`);
+    const res = await axios.get(`/api/initial-expenses?year=${year.value}`);
     if (res.data.success) {
       hangCategories.value = res.data.categories || [];
       
@@ -290,7 +290,7 @@ const saveInitialExpenses = async () => {
       items: modifiedItems
     };
 
-    const res = await axios.post("/api/dummy-claims-bulk", payload);
+    const res = await axios.post("/api/initial-expenses/bulk", payload);
     
     if (res.data.success) {
       alert("✅ 변경된 기지출액이 성공적으로 저장되었습니다.");

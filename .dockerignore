@@ -11,3 +11,10 @@ yarn-error.log
 .env.test.local
 .env.production.local
 재정부오직솔루션소스
+
+# 테스트 전용 (배포 이미지에 포함하지 않음)
+e2e
+e2e-report
+e2e-results
+e2e-screenshots
+playwright.config.js

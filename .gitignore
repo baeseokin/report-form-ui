@@ -6,3 +6,8 @@ dist/
 .env.*
 .env_local
 !.env.example
+
+# E2E 테스트 결과물
+e2e-screenshots/
+e2e-report/
+e2e-results/
