@@ -39,7 +39,7 @@
           <span class="text-gray-700 font-medium">결재 의견</span>
           <textarea
             v-model="comment"
-            class="w-full mt-2 border rounded-lg p-2 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+            class="form-input w-full mt-2"
             rows="3"
             placeholder="의견을 입력하세요..."
           ></textarea>
@@ -50,7 +50,7 @@
       <div class="flex justify-end gap-3 mt-6">
         <button
           @click="$emit('close')"
-          class="px-5 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
+          class="btn btn-secondary"
         >
           취소
         </button>

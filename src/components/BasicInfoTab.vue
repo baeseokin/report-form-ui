@@ -35,7 +35,7 @@
           :value="selectedDept"
           @input="$emit('update:selectedDept', $event.target.value)"
           :disabled="!canSelectDept"
-          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          class="form-input w-full"
         >
           <option v-for="d in departmentOptions" :key="d.id" :value="d.dept_name">
             {{ d.dept_name }}
@@ -50,7 +50,7 @@
           type="text"
           :value="author"
           disabled
-          class="w-full border p-3 rounded-lg shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+          class="form-input w-full"
         />
       </div>
 
@@ -62,7 +62,7 @@
           :value="payee"
           @input="$emit('update:payee', $event.target.value)"
           placeholder="영수인 성명 입력"
-          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+          class="form-input w-full"
         />
       </div>
 
@@ -73,7 +73,7 @@
           type="date"
           :value="date"
           @input="$emit('update:date', $event.target.value)"
-          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+          class="form-input w-full"
         />
       </div>
     </div>
@@ -87,7 +87,7 @@
           :value="accountInfo"
           @input="$emit('update:accountInfo', $event.target.value)"
           placeholder="예: 국민 495201-01-22221112 홍길동"
-          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+          class="form-input w-full"
         />
         <div v-if="isAccountInfoChanged" class="mt-2 flex items-center">
           <input 
@@ -108,7 +108,7 @@
           @input="handlePhoneInput($event)"
           maxlength="13"
           placeholder="전화번호 입력"
-          class="w-full border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400"
+          class="form-input w-full"
         />
       </div>
     </div>
@@ -123,7 +123,7 @@
         maxlength="100"
         data-testid="alias-input"
         placeholder="청구요청 별칭 입력 (최대 100자)"
-        class="border p-3 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-400 w-full"
+        class="form-input w-full"
       />
     </div>
 
@@ -132,7 +132,7 @@
       <button
         @click="$emit('next')"
         data-testid="btn-next"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition"
+        class="btn btn-primary"
       >
         다음 →
       </button>

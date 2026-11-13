@@ -277,10 +277,10 @@
     />
     <!-- ✅ 이전/다음 -->
     <div class="flex justify-between gap-2 pt-2">
-      <button class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200" @click="emits('prev')">
+      <button class="btn btn-secondary btn-lg w-full" @click="emits('prev')">
         이전
       </button>
-      <button class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300" :disabled="!isSelectionReady" @click="handleNext" data-testid="btn-next">
+      <button class="btn btn-primary btn-lg w-full" :disabled="!isSelectionReady" @click="handleNext" data-testid="btn-next">
         다음
       </button>
     </div>

@@ -109,7 +109,7 @@
             <button
               type="button"
               @click="handleClose"
-              class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white text-xs sm:text-sm font-bold rounded-lg shadow-xs transition cursor-pointer"
+              class="btn btn-primary btn-sm font-bold"
             >
               닫기
             </button>

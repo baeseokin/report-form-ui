@@ -8,7 +8,7 @@
         <select
           v-model="filters.deptName"
           @change="onDeptChange"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+          class="form-input w-full"
         >
           <option value="">전체</option>
           <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
@@ -22,7 +22,7 @@
           type="text"
           :value="user?.deptName || '-'"
           disabled
-          class="bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 w-full text-sm text-gray-600 cursor-not-allowed outline-none"
+          class="form-input w-full"
         />
       </div>
 
@@ -32,7 +32,7 @@
         <input
           type="date"
           v-model="filters.startDate"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition text-sm"
+          class="form-input w-full"
         />
       </div>
 
@@ -42,7 +42,7 @@
         <input
           type="date"
           v-model="filters.endDate"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition text-sm"
+          class="form-input w-full"
         />
       </div>
 
@@ -55,7 +55,7 @@
         <select
           v-model="filters.selectedGwan"
           @change="filters.selectedHang = ''; fetchPayments(1)"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition text-sm"
+          class="form-input w-full"
         >
           <option value="">전체</option>
           <option v-for="g in gwans" :key="g.category_id" :value="g.category_id">
@@ -70,7 +70,7 @@
         <select
           v-model="filters.selectedHang"
           @change="fetchPayments(1)"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition text-sm"
+          class="form-input w-full"
         >
           <option value="">전체</option>
           <option v-for="h in hangs" :key="h.category_id" :value="h.category_id">
@@ -87,7 +87,7 @@
           v-model="filters.keyword"
           placeholder="지출내역 또는 신청자 입력"
           @keyup.enter="fetchPayments(1)"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition text-sm"
+          class="form-input w-full"
         />
       </div>
 
@@ -96,7 +96,7 @@
         <button
           @click="fetchPayments(1)"
           :disabled="loading"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium flex items-center gap-1.5 disabled:opacity-50"
+          class="btn btn-search"
         >
           <span v-if="loading" class="inline-block animate-spin">🔄</span>
           <span>조회</span>
@@ -106,7 +106,7 @@
           type="button"
           @click="downloadExcel"
           :disabled="downloadingExcel || totalCount === 0"
-          class="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition font-medium shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          class="btn btn-excel"
           title="검색 조건에 맞는 전체 지출내역 엑셀 파일 다운로드"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

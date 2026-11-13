@@ -22,10 +22,10 @@
             v-model="deptKeyword"
             type="search"
             placeholder="부서명 검색"
-            class="w-48 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+            class="form-input w-48"
           />
           <button
-            class="px-3 py-2 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200"
+            class="btn btn-secondary"
             @click="deptKeyword = ''"
           >
             초기화
@@ -76,7 +76,7 @@
             <select
               v-model="editable.dept_name"
               :disabled="isDeptLocked"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+              class="form-input mt-1 w-full"
             >
               <option value="">부서를 선택하세요</option>
               <option
@@ -94,7 +94,7 @@
             <select
               v-model="editable.approver_role"
               disabled
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-gray-100 cursor-not-allowed"
+              class="form-input mt-1 w-full"
             >
               <option value="">역할을 선택하세요</option>
               <option
@@ -111,7 +111,7 @@
             사용자 ID
             <select
               v-model="editable.approver_user_id"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              class="form-input mt-1 w-full"
             >
               <option value="">사용자를 선택하세요</option>
               <option
@@ -128,7 +128,7 @@
             결재 순서
             <select
               v-model.number="editable.order_no"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
+              class="form-input mt-1 w-full"
             >
               <option v-for="n in maxOrderOptions" :key="n" :value="n">{{ n }}차</option>
             </select>
@@ -137,7 +137,7 @@
           <div class="md:col-span-2 flex flex-wrap gap-2">
             <button
               type="button"
-              class="px-4 py-2 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 disabled:opacity-50"
+              class="btn btn-primary"
               :disabled="!isValid"
               @click="saveLine"
             >
@@ -145,7 +145,7 @@
             </button>
             <button
               type="button"
-              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              class="btn btn-secondary"
               @click="resetForm"
             >
               초기화

@@ -70,7 +70,7 @@
             <button
               type="button"
               @click="searchUsers"
-              class="w-full py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-purple-700 active:bg-purple-800 transition touch-manipulation"
+              class="btn btn-search btn-lg w-full touch-manipulation"
             >
               조회
             </button>
@@ -116,13 +116,13 @@
             <button
               v-if="!selectedUser.isNew"
               @click="newUser"
-              class="px-2 py-1.5 text-xs bg-emerald-500 text-white rounded-lg touch-manipulation"
+              class="btn btn-primary btn-sm touch-manipulation"
             >
               신규
             </button>
             <button
               @click="clearSelection"
-              class="px-2 py-1.5 text-xs bg-gray-200 text-gray-700 rounded-lg touch-manipulation"
+              class="btn btn-secondary btn-sm touch-manipulation"
             >
               닫기
             </button>
@@ -247,7 +247,7 @@
                 v-if="!selectedUser?.isNew"
                 @click="saveSignatureNow"
                 :disabled="!hasSignature"
-                class="px-2 py-1 bg-emerald-500 text-white rounded text-xs touch-manipulation disabled:opacity-50"
+                class="btn btn-primary btn-sm touch-manipulation"
               >
                 저장
               </button>
@@ -281,14 +281,14 @@
           <button
             v-if="selectedUser.isNew"
             @click="createUser"
-            class="flex-1 min-w-[120px] py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg font-medium touch-manipulation active:scale-[0.98]"
+            class="btn btn-primary btn-lg flex-1 min-w-[120px] touch-manipulation"
           >
             등록하기
           </button>
           <button
             v-else
             @click="updateUser"
-            class="flex-1 min-w-[120px] py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg font-medium touch-manipulation active:scale-[0.98]"
+            class="btn btn-primary btn-lg flex-1 min-w-[120px] touch-manipulation"
           >
             저장하기
           </button>
@@ -302,13 +302,13 @@
           <button
             v-if="!selectedUser.isNew"
             @click="deleteUser"
-            class="flex-1 min-w-[100px] py-3 bg-red-500 text-white rounded-lg font-medium touch-manipulation active:scale-[0.98]"
+            class="btn btn-danger btn-lg flex-1 min-w-[100px] touch-manipulation"
           >
             삭제
           </button>
           <button
             @click="clearSelection"
-            class="py-3 px-4 bg-gray-200 text-gray-800 rounded-lg font-medium touch-manipulation active:scale-[0.98]"
+            class="btn btn-secondary btn-lg touch-manipulation"
           >
             취소
           </button>

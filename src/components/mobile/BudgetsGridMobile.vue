@@ -54,7 +54,7 @@
             <button
               type="button"
               @click="downloadExcel"
-              class="flex-1 py-2.5 text-sm font-medium rounded-lg bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition touch-manipulation"
+              class="btn btn-excel btn-lg flex-1 touch-manipulation"
               :disabled="categoriesTree.length === 0"
             >
               Excel
@@ -145,7 +145,7 @@
     <div class="shrink-0 pt-2 pb-4">
       <button
         @click="saveAllBudgets"
-        class="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium rounded-xl shadow-lg hover:from-purple-600 hover:to-indigo-700 active:opacity-90 transition touch-manipulation"
+        class="btn btn-primary btn-lg w-full touch-manipulation"
       >
         💾 예산 저장
       </button>

@@ -118,7 +118,7 @@
 
           <button
             @click="fetchApprovals(1)"
-            class="w-full py-2 bg-purple-600 text-white rounded hover:bg-purple-700 active:bg-purple-800"
+            class="btn btn-search btn-lg w-full"
           >
             조회
           </button>

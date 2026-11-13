@@ -7,7 +7,7 @@
         <span></span>
         <button
           @click="newUser"
-          class="px-3 py-2 text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow hover:from-emerald-600 hover:to-teal-700 transition"
+          class="btn btn-primary"
         >
           ＋ 사용자 등록
         </button>
@@ -18,7 +18,7 @@
         <!-- 부서 선택 -->
         <div>
           <label class="block text-sm font-semibold text-gray-700">부서</label>
-          <select v-model="filters.dept" class="w-full border rounded-lg px-3 py-2">
+          <select v-model="filters.dept" class="form-input w-full">
             <option value="">전체</option>
             <option v-for="dept in departments" :key="dept.id" :value="dept.name">
               {{ dept.name }}
@@ -29,7 +29,7 @@
         <!-- 역할 선택 -->
         <div>
           <label class="block text-sm font-semibold text-gray-700">역할</label>
-          <select v-model="filters.role" class="w-full border rounded-lg px-3 py-2">
+          <select v-model="filters.role" class="form-input w-full">
             <option value="">전체</option>
             <option v-for="role in roles" :key="role.id" :value="role.name">
               {{ role.name }}
@@ -43,7 +43,7 @@
           <input
             v-model="filters.name"
             placeholder="이름 입력"
-            class="w-full border rounded-lg px-3 py-2"
+            class="form-input w-full"
           />
         </div>
 
@@ -51,7 +51,7 @@
         <div class="pt-2">
           <button
             @click="searchUsers"
-            class="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+            class="btn btn-search w-full"
           >
             조회
           </button>
@@ -104,7 +104,7 @@
           <div class="space-x-2" v-if="!selectedUser.isNew">
             <button
               @click="newUser"
-              class="px-3 py-2 text-sm bg-emerald-500 text-white rounded-lg shadow hover:bg-emerald-600"
+              class="btn btn-primary"
             >신규 등록</button>
             <button
               @click="clearSelection"
@@ -121,7 +121,7 @@
               <span class="font-semibold text-gray-700">부서</span>
               <select
                 v-model="selectedUser.dept"
-                class="border px-3 py-2 rounded-lg w-full mt-1"
+                class="form-input w-full mt-1"
               >
                 <option v-for="dept in departments" :key="dept.id" :value="dept.name">
                   {{ dept.name }}
@@ -138,7 +138,7 @@
                 </span>
                 <input
                   v-model="selectedUser.userId"
-                  class="border px-3 py-2 rounded-r-lg w-full flex-1"
+                  class="form-input w-full flex-1"
                   placeholder="나머지 ID 입력 (예: 01)"
                 />
               </div>
@@ -146,7 +146,7 @@
                 v-else
                 v-model="selectedUser.userId"
                 disabled
-                class="border px-3 py-2 rounded-lg w-full mt-1 bg-gray-100 text-gray-500"
+                class="form-input w-full mt-1"
               />
             </label>
 
@@ -155,7 +155,7 @@
               <span class="font-semibold text-gray-700">이름</span>
               <input
                 v-model="selectedUser.name"
-                class="border px-3 py-2 rounded-lg w-full mt-1"
+                class="form-input w-full mt-1"
                 placeholder="예: 홍길동"
               />
             </label>
@@ -166,7 +166,7 @@
               <input
                 v-model="selectedUser.email"
                 type="email"
-                class="border px-3 py-2 rounded-lg w-full mt-1"
+                class="form-input w-full mt-1"
                 placeholder="예: user@example.com"
                 autocomplete="email"
               />
@@ -177,7 +177,7 @@
               <span class="font-semibold text-gray-700">핸드폰번호</span>
               <input
                 v-model="selectedUser.phone"
-                class="border px-3 py-2 rounded-lg w-full mt-1"
+                class="form-input w-full mt-1"
                 placeholder="예: 01012345678"
               />
             </label>
@@ -187,7 +187,7 @@
               <span class="font-semibold text-gray-700">역할</span>
               <select
                 v-model="selectedUser.roles[0]"
-                class="border px-3 py-2 rounded-lg w-full mt-1"
+                class="form-input w-full mt-1"
               >
                 <option v-for="role in roles" :key="role.id" :value="role.id">
                   {{ role.name }}
@@ -206,7 +206,7 @@
               <input
                 type="password"
                 v-model="selectedUser.newPassword"
-                class="border px-3 py-2 rounded-lg w-full mt-1 disabled:bg-gray-100 disabled:text-gray-500"
+                class="form-input w-full mt-1"
                 autocomplete="new-password"
                 :disabled="selectedUser.isNew"
                 :placeholder="selectedUser.isNew ? '0000 (초기 비밀번호)' : ''"
@@ -218,7 +218,7 @@
               <input
                 type="password"
                 v-model="selectedUser.confirmPassword"
-                class="border px-3 py-2 rounded-lg w-full mt-1 disabled:bg-gray-100 disabled:text-gray-500"
+                class="form-input w-full mt-1"
                 autocomplete="new-password"
                 :disabled="selectedUser.isNew"
                 :placeholder="selectedUser.isNew ? '0000 (초기 비밀번호)' : ''"
@@ -261,7 +261,7 @@
                       v-if="!selectedUser?.isNew"
                       @click="saveSignatureNow"
                       :disabled="!hasSignature"
-                      class="px-3 py-1 bg-emerald-500 text-white rounded disabled:opacity-50 hover:bg-emerald-600"
+                      class="btn btn-primary btn-sm"
                     >
                       서명 저장
                     </button>
@@ -283,14 +283,14 @@
             <button
               v-if="selectedUser.isNew"
               @click="createUser"
-              class="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg shadow hover:from-emerald-600 hover:to-teal-700 transition"
+              class="btn btn-primary"
             >
               등록하기
             </button>
             <button
               v-else
               @click="updateUser"
-              class="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+              class="btn btn-primary"
             >
               저장하기
             </button>
@@ -304,13 +304,13 @@
             <button
               v-if="!selectedUser.isNew"
               @click="deleteUser"
-              class="px-6 py-2 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition"
+              class="btn btn-danger"
             >
               삭제하기
             </button>
             <button
               @click="clearSelection"
-              class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+              class="btn btn-secondary"
             >
               취소
             </button>

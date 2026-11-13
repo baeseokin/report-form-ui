@@ -176,7 +176,7 @@
     <div class="flex justify-between gap-2 pt-2">
       <button
         @click="$emit('prev')"
-        class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200"
+        class="btn btn-secondary btn-lg w-full"
       >
         이전
       </button>
@@ -185,7 +185,7 @@
         :disabled="isSubmitting"
         @click="sendApprovalRequest"
         data-testid="btn-submit"
-        class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-sm font-medium"
+        class="btn btn-primary btn-lg w-full"
       >
         <span v-if="isSubmitting" class="flex items-center justify-center gap-2">
           <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

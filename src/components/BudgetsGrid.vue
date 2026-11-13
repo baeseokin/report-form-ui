@@ -7,7 +7,7 @@
         <select
           v-model="selectedDeptId"
           @change="fetchCategories"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-44 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-44"
         >
           <option value="all">전체</option>
           <option v-for="d in departments" :key="d.id" :value="d.id">
@@ -24,7 +24,7 @@
           @change="fetchCategories"
           min="2000"
           max="2100"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-28 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-28"
         />
       </div>
 
@@ -33,7 +33,7 @@
         <button
           type="button"
           @click="downloadExcel"
-          class="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn btn-excel"
           :disabled="categoriesTree.length === 0"
         >
           Excel
@@ -81,7 +81,7 @@
                 <input
                   v-if="selectedDeptId === 'all' || c.owner_dept_id == selectedDeptId"
                   type="text"
-                  class="border rounded p-1 w-40 text-right shadow-sm"
+                  class="form-input form-input-sm w-40 text-right"
                   :value="formatAmount(budgets[c.category_id] ?? 0)"
                   @input="onBudgetInput($event, c)"
                 />
@@ -107,7 +107,7 @@
     <div class="flex justify-end">
       <button
         @click="saveAllBudgets"
-        class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+        class="btn btn-primary"
       >
         💾 저장
       </button>

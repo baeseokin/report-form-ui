@@ -38,7 +38,7 @@
           <button
             type="button"
             @click="fetchBudgetStatus"
-            class="w-full py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-purple-700 active:bg-purple-800 transition touch-manipulation"
+            class="btn btn-search btn-lg w-full touch-manipulation"
           >
             조회
           </button>

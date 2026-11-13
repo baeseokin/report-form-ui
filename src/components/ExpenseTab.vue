@@ -16,7 +16,7 @@
               <select
                 v-model="selectedGwan"
                 data-testid="select-gwan"
-                class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                class="form-input form-input-sm w-full pr-8"
               >
                 <option disabled value="">관 선택</option>
                 <option v-for="g in getGwans" :key="g.category_id" :value="g.category_id">{{ g.category_name }}</option>
@@ -33,7 +33,7 @@
                 v-model="selectedHang"
                 :disabled="!selectedGwan"
                 data-testid="select-hang"
-                class="w-full appearance-none bg-gray-50 border border-gray-300 rounded-lg px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:bg-gray-100 disabled:text-gray-400"
+                class="form-input form-input-sm w-full pr-8"
               >
                 <option disabled value="">항 선택</option>
                 <option v-for="h in hangsForSelectedGwan" :key="h.category_id" :value="h.category_id">{{ h.category_name }}</option>
@@ -86,10 +86,10 @@
             <!-- 목 -->
             <td class="border p-2">
               <template v-if="isMokCustom(item)">
-                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(item.originalIndex, $event.target.value, item)" placeholder="목 직접 입력" :data-testid="'row-'+item.originalIndex+'-mok-input'" class="w-full p-2 border rounded" />
+                <input type="text" :value="item.mok === '__custom__' ? (item.customMok || '') : item.mok" @input="onMokInput(item.originalIndex, $event.target.value, item)" placeholder="목 직접 입력" :data-testid="'row-'+item.originalIndex+'-mok-input'" class="form-input w-full" />
               </template>
               <template v-else>
-                <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(item.originalIndex, 'mok', $event.target.value)" :data-testid="'row-'+item.originalIndex+'-mok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
+                <select :disabled="!isSelectionReady" :value="item.mok" @change="onSelect(item.originalIndex, 'mok', $event.target.value)" :data-testid="'row-'+item.originalIndex+'-mok-select'" class="form-input w-full">
                   <option disabled value="">선택</option>
                   <option v-for="m in getMoks(item)" :key="m.category_id" :value="m.category_id">{{ m.category_name }}</option>
                   <option value="__custom__">직접입력</option>
@@ -99,10 +99,10 @@
             <!-- 세목 -->
             <td class="border p-2">
               <template v-if="isSemokCustom(item)">
-                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(item.originalIndex, $event.target.value, item)" placeholder="세목 직접 입력" :data-testid="'row-'+item.originalIndex+'-semok-input'" class="w-full p-2 border rounded" />
+                <input type="text" :value="item.semok === '__custom__' ? (item.customSemok || '') : item.semok" @input="onSemokInput(item.originalIndex, $event.target.value, item)" placeholder="세목 직접 입력" :data-testid="'row-'+item.originalIndex+'-semok-input'" class="form-input w-full" />
               </template>
               <template v-else>
-                <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(item.originalIndex, 'semok', $event.target.value)" :data-testid="'row-'+item.originalIndex+'-semok-select'" class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400">
+                <select :disabled="!isSelectionReady" :value="item.semok" @change="onSelect(item.originalIndex, 'semok', $event.target.value)" :data-testid="'row-'+item.originalIndex+'-semok-select'" class="form-input w-full">
                   <option disabled value="">선택</option>
                   <option v-for="s in getSemoks(item)" :key="s.category_id" :value="s.category_id">{{ s.category_name }}</option>
                   <option value="__custom__">직접입력</option>
@@ -121,7 +121,7 @@
                 @keydown="onDetailKeydown($event, item)"
                 placeholder="지출내역 입력"
                 :data-testid="'row-'+item.originalIndex+'-detail'"
-                class="w-full p-2 border rounded disabled:bg-gray-100 disabled:text-gray-400"
+                class="form-input w-full"
               />
               <ul v-if="activeDetailIdx === item.originalIndex && filteredDetails(item.detail).length > 0" 
                   class="absolute z-10 left-0 right-0 bg-white border border-gray-200 rounded shadow-lg max-h-48 overflow-y-auto mt-1 mx-2">
@@ -145,7 +145,7 @@
                 @blur="onAmountBlur(item.originalIndex)"
                 @input="updateAmount($event, item.originalIndex)"
                 :data-testid="'row-'+item.originalIndex+'-amount'"
-                class="w-full p-2 text-right rounded border disabled:bg-gray-100 disabled:text-gray-400"
+                class="form-input w-full text-right"
               />
             </td>
           </tr>
@@ -167,7 +167,7 @@
         rows="2"
         maxlength="50"
         placeholder="지출내역에 대한 전체적인 특이사항을 입력하세요..."
-        class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+        class="form-input w-full resize-none"
       ></textarea>
     </div>
 
@@ -178,21 +178,21 @@
           @click="addItem"
           :disabled="!isSelectionReady"
           data-testid="btn-add-row"
-          class="bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white px-5 py-2 rounded-lg shadow-md transition"
+          class="btn btn-primary"
         >＋ 행 추가</button>
         <button
           @click="deleteItems"
           :disabled="!isSelectionReady"
-          class="ml-2 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-5 py-2 rounded-lg shadow-md transition"
+          class="btn btn-danger ml-2"
         >－ 행 삭제</button>
       </div>
       <div class="flex gap-3">
-        <button @click="$emit('prev')" class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md transition">← 이전</button>
+        <button @click="$emit('prev')" class="btn btn-secondary">← 이전</button>
         <button
           @click="handleNext"
           data-testid="btn-next"
           :disabled="!isSelectionReady"
-          class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-2 rounded-lg shadow-md transition"
+          class="btn btn-primary"
         >다음 →</button>
       </div>
     </div>

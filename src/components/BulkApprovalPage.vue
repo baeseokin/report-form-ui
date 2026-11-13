@@ -136,7 +136,7 @@
               v-model="bulkComment"
               rows="3"
               placeholder="결재 의견을 입력하세요..."
-              class="w-full border border-gray-200 rounded-lg p-3 mt-1 focus:ring-2 focus:ring-purple-400 outline-none resize-none text-sm"
+              class="form-input w-full mt-1 resize-none"
             ></textarea>
           </div>
 

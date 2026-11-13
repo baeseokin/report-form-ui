@@ -7,7 +7,7 @@
         <select
           v-model="selectedDeptId"
           @change="fetchData"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-44 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+          class="form-input w-44"
           :disabled="!canChangeDept"
         >
           <option v-for="d in departments" :key="d.id" :value="d.id">
@@ -26,7 +26,7 @@
           @change="fetchData"
           min="2000"
           max="2100"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-28 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-28"
         />
       </div>
 

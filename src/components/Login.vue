@@ -174,13 +174,13 @@
               <button
                 type="button"
                 @click="cancelPasswordChange"
-                class="flex-1 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition"
+                class="btn btn-secondary flex-1"
               >
                 취소
               </button>
               <button
                 type="submit"
-                class="flex-1 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 transition"
+                class="btn btn-primary flex-1"
                 :disabled="!canSubmitPasswordChange"
               >
                 변경하기

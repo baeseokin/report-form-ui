@@ -137,7 +137,7 @@
       <button
         @click="$emit('next')"
         data-testid="btn-next"
-        class="bg-blue-500 hover:bg-blue-600 text-white w-full py-3 rounded-lg shadow-md transition text-base font-semibold"
+        class="btn btn-primary btn-lg w-full font-semibold"
       >
         다음 →
       </button>

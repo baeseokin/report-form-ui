@@ -8,7 +8,7 @@
         <select
           v-model="filters.deptName"
           @change="onDeptChange"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+          class="form-input w-full"
         >
           <option value="">전체</option>
           <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
@@ -20,7 +20,7 @@
       <!-- 청구 유형 -->
       <div class="flex flex-col w-36">
         <label class="font-semibold text-gray-600 mb-1 text-sm">청구 유형</label>
-        <select v-model="filters.documentType" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
+        <select v-model="filters.documentType" class="form-input w-full">
           <option value="">전체</option>
           <option value="청구지출결의서">청구지출결의서</option>
           <option value="정산지출결의서">정산지출결의서</option>
@@ -32,7 +32,7 @@
       <!-- 진행상태 -->
       <div class="flex flex-col w-32">
         <label class="font-semibold text-gray-600 mb-1 text-sm">진행상태</label>
-        <select v-model="filters.status" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
+        <select v-model="filters.status" class="form-input w-full">
           <option value="">전체</option>
           <option value="결재진행중">결재진행중</option>
           <option value="결재완료">결재완료</option>
@@ -44,13 +44,13 @@
       <!-- 청구 시작일자 -->
       <div class="flex flex-col w-40">
         <label class="font-semibold text-gray-600 mb-1 text-sm">청구 시작일자</label>
-        <input type="date" v-model="filters.startDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
+        <input type="date" v-model="filters.startDate" class="form-input w-full" />
       </div>
 
       <!-- 청구 종료일자 -->
       <div class="flex flex-col w-40">
         <label class="font-semibold text-gray-600 mb-1 text-sm">청구 종료일자</label>
-        <input type="date" v-model="filters.endDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
+        <input type="date" v-model="filters.endDate" class="form-input w-full" />
       </div>
 
       <!-- 줄바꿈 (화면 너비에 따라 관/항이 아래로 내려가게 유도) -->
@@ -59,7 +59,7 @@
       <!-- 관 -->
       <div class="flex flex-col w-32">
         <label class="font-semibold text-gray-600 mb-1 text-sm">관</label>
-        <select v-model="filters.selectedGwan" @change="filters.selectedHang = ''; fetchApprovals(1)" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
+        <select v-model="filters.selectedGwan" @change="filters.selectedHang = ''; fetchApprovals(1)" class="form-input w-full">
           <option value="">전체</option>
           <option v-for="g in gwans" :key="g.category_id" :value="g.category_id">
             {{ g.category_name }}
@@ -70,7 +70,7 @@
       <!-- 항 -->
       <div class="flex flex-col w-32">
         <label class="font-semibold text-gray-600 mb-1 text-sm">항</label>
-        <select v-model="filters.selectedHang" @change="fetchApprovals(1)" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition">
+        <select v-model="filters.selectedHang" @change="fetchApprovals(1)" class="form-input w-full">
           <option value="">전체</option>
           <option v-for="h in hangs" :key="h.category_id" :value="h.category_id">
             {{ h.category_name }}
@@ -86,7 +86,7 @@
           v-model="filters.keyword"
           placeholder="검색어 입력"
           @keyup.enter="fetchApprovals(1)"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-full"
         />
       </div>
 
@@ -94,7 +94,7 @@
       <div class="flex items-end">
         <button
           @click="fetchApprovals(1)"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="btn btn-search"
         >
           조회
         </button>

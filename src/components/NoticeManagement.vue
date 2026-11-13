@@ -7,7 +7,7 @@
       <div v-if="isManager" class="flex justify-end mb-4">
         <button
           @click="openForm()"
-          class="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-0.5"
+          class="btn btn-primary btn-lg group font-semibold"
         >
           <svg class="w-4 h-4 text-purple-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
           공지 등록하기
@@ -142,20 +142,20 @@
       <div class="px-6 py-4 bg-gray-100 border-t border-gray-200 flex justify-between items-center">
         <button
           @click="mode = 'list'; fetchNotices();"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="btn btn-secondary"
         >
           목록으로
         </button>
         <div v-if="isManager" class="flex space-x-2">
           <button
             @click="openForm(currentNotice)"
-            class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+            class="btn btn-primary"
           >
             수정
           </button>
           <button
             @click="deleteNotice(currentNotice.id)"
-            class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+            class="btn btn-danger"
           >
             삭제
           </button>
@@ -175,7 +175,7 @@
           <input
             v-model="form.title"
             type="text"
-            class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 transition outline-none"
+            class="form-input w-full"
             placeholder="공지사항 제목을 입력하세요"
           />
         </div>
@@ -259,14 +259,14 @@
       <div class="mt-8 flex justify-end gap-2 pt-4 border-t border-gray-100">
         <button
           @click="mode = form.id ? 'view' : 'list'"
-          class="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+          class="btn btn-secondary"
         >
           취소
         </button>
         <button
           @click="saveNotice"
           :disabled="isSaving"
-          class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium disabled:opacity-50 disabled:cursor-wait"
+          class="btn btn-primary"
         >
           {{ isSaving ? '저장 중...' : '저장' }}
         </button>

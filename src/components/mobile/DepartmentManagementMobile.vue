@@ -117,14 +117,14 @@
 
         <div class="flex gap-2">
           <button
-            class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-40"
+            class="btn btn-primary flex-1"
             :disabled="!editable.dept_name"
             @click="saveDepartment"
           >
             저장
           </button>
           <button
-            class="flex-1 px-4 py-2 bg-rose-500 text-white rounded-lg shadow hover:bg-rose-600 disabled:opacity-40"
+            class="btn btn-danger flex-1"
             :disabled="editable.isNew"
             @click="deleteDepartment"
           >
@@ -133,7 +133,7 @@
         </div>
 
         <button
-          class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+          class="btn btn-secondary btn-lg w-full"
           @click="resetForm"
         >
           입력 초기화

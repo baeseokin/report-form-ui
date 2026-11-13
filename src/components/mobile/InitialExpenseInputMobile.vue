@@ -36,7 +36,7 @@
         <button
           type="button"
           @click="fetchData"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="btn btn-search"
         >
           조회
         </button>
@@ -128,14 +128,14 @@
       <button
         v-if="hasModifications"
         @click="fetchData"
-        class="px-6 py-2.5 bg-gray-200 text-gray-700 font-medium rounded-lg shadow-sm hover:bg-gray-300 transition"
+        class="btn btn-secondary btn-lg"
       >
         변경 취소
       </button>
       <button
         @click="saveInitialExpenses"
         :disabled="isSaving || hangCategories.length === 0 || !hasModifications"
-        class="px-6 py-2.5 bg-gray-800 text-white font-medium rounded-lg shadow-md hover:bg-gray-900 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+        class="btn btn-primary btn-lg"
       >
         <span v-if="isSaving">저장 중...</span>
         <span v-else>💾 변경된 항목 일괄 저장</span>

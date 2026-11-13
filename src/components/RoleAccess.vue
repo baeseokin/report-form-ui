@@ -4,7 +4,7 @@
     <div class="mb-6">
       <label class="block font-semibold mb-2">역할 선택</label>
       <select v-model="selectedRole" @change="loadAccess"
-              class="border p-2 rounded w-64 focus:ring-2 focus:ring-purple-400">
+              class="form-input w-64">
         <option value="">선택 안함</option>
         <option v-for="r in roles" :key="r.id" :value="r.id">{{ r.role_name }}</option>
       </select>
@@ -35,7 +35,7 @@
     <!-- ✅ 저장 버튼 -->
     <div class="flex justify-end">
       <button @click="saveAccess"
-              class="px-5 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg shadow hover:from-purple-600 hover:to-indigo-700 transition"
+              class="btn btn-primary"
       >
         저장하기
       </button>

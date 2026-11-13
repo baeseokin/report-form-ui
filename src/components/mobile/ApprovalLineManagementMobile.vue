@@ -40,7 +40,7 @@
           />
           <button
             type="button"
-            class="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 active:bg-gray-300 text-sm touch-manipulation shrink-0"
+            class="btn btn-secondary touch-manipulation shrink-0"
             @click="deptKeyword = ''"
           >
             초기화
@@ -192,7 +192,7 @@
         <div class="flex flex-wrap gap-2 pt-2">
           <button
             type="button"
-            class="flex-1 min-w-[80px] py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-purple-700 active:bg-purple-800 disabled:opacity-50 touch-manipulation"
+            class="btn btn-primary btn-lg flex-1 min-w-[80px] touch-manipulation"
             :disabled="!isValid"
             @click="saveLine"
           >
@@ -200,7 +200,7 @@
           </button>
           <button
             type="button"
-            class="flex-1 min-w-[80px] py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 active:bg-gray-300 touch-manipulation"
+            class="btn btn-secondary btn-lg flex-1 min-w-[80px] touch-manipulation"
             @click="resetForm"
           >
             초기화

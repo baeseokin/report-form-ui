@@ -88,14 +88,14 @@
     <div class="flex justify-between gap-2 pt-2">
       <button
         @click="$emit('prev')"
-        class="w-full py-3 rounded bg-gray-100 hover:bg-gray-200"
+        class="btn btn-secondary btn-lg w-full"
       >
         이전
       </button>
       <button
         @click="$emit('next')"
         data-testid="btn-next"
-        class="w-full py-3 rounded bg-blue-600 text-white hover:bg-blue-700"
+        class="btn btn-primary btn-lg w-full"
         :disabled="totalBytes > maxTotalBytes || isCompressing"
         :class="{ 'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes || isCompressing }"
         title="총 용량이 제한을 초과하면 다음 단계로 진행할 수 없습니다."

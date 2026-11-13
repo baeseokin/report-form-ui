@@ -7,7 +7,7 @@
       <div class="flex justify-end mb-4 px-1">
         <button
           @click="openForm()"
-          class="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 active:from-purple-700 active:to-indigo-700 text-white font-semibold text-sm rounded-full shadow-md active:shadow-sm transition-all"
+          class="btn btn-primary font-semibold"
         >
           <svg class="w-4 h-4 text-purple-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
           새 글 쓰기
@@ -121,7 +121,7 @@
             class="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-purple-500 focus:ring-1 focus:ring-purple-200 outline-none text-sm resize-none w-full"
             placeholder="댓글을 남겨보세요."
           ></textarea>
-          <button @click="submitComment()" :disabled="!newComment.content.trim()" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition font-medium text-sm flex-shrink-0 disabled:opacity-50">등록</button>
+          <button @click="submitComment()" :disabled="!newComment.content.trim()" class="btn btn-primary">등록</button>
         </div>
 
         <!-- 댓글 목록 트리 -->
@@ -148,8 +148,8 @@
                   placeholder="답글을 입력하세요."
                 ></textarea>
                 <div class="flex flex-col space-y-2">
-                  <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="px-3 py-1.5 bg-gray-800 text-white rounded active:bg-gray-900 transition font-medium text-[10px] disabled:opacity-50">등록</button>
-                  <button @click="replyingTo = null" class="px-3 py-1.5 bg-white border text-gray-600 rounded active:bg-gray-100 transition font-medium text-[10px]">취소</button>
+                  <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="btn btn-primary btn-sm">등록</button>
+                  <button @click="replyingTo = null" class="btn btn-secondary btn-sm">취소</button>
                 </div>
               </div>
             </div>
@@ -182,8 +182,8 @@
                     placeholder="답글을 입력하세요."
                   ></textarea>
                   <div class="flex flex-col space-y-2">
-                    <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="px-3 py-1.5 bg-gray-800 text-white rounded active:bg-gray-900 transition font-medium text-[10px] disabled:opacity-50">등록</button>
-                    <button @click="replyingTo = null" class="px-3 py-1.5 bg-gray-50 border text-gray-600 rounded active:bg-gray-100 transition font-medium text-[10px]">취소</button>
+                    <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="btn btn-primary btn-sm">등록</button>
+                    <button @click="replyingTo = null" class="btn btn-secondary btn-sm">취소</button>
                   </div>
                 </div>
               </div>
@@ -200,20 +200,20 @@
       <div class="px-4 py-4 bg-gray-100 border-t border-gray-200 flex flex-wrap gap-2 justify-between items-center mt-auto">
         <button
           @click="mode = 'list'; fetchBoards();"
-          class="px-5 py-2 text-sm bg-gray-700 text-white rounded-lg active:bg-gray-800 transition font-medium"
+          class="btn btn-secondary"
         >
           목록으로
         </button>
         <div v-if="canEditOrDelete(currentBoard.author_id)" class="flex gap-2">
           <button
             @click="openForm(currentBoard)"
-            class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg active:bg-purple-700 transition font-medium"
+            class="btn btn-primary"
           >
             수정
           </button>
           <button
             @click="deleteBoard(currentBoard.id)"
-            class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg active:bg-red-700 transition font-medium"
+            class="btn btn-danger"
           >
             삭제
           </button>
@@ -300,14 +300,14 @@
       <div class="mt-6 flex justify-end gap-2 pt-4 border-t border-gray-100">
         <button
           @click="mode = form.id ? 'view' : 'list'"
-          class="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg active:bg-gray-50 transition font-medium flex-1 text-center"
+          class="btn btn-secondary flex-1"
         >
           취소
         </button>
         <button
           @click="saveBoard"
           :disabled="isSaving"
-          class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg active:bg-purple-700 transition font-medium flex-1 text-center disabled:opacity-50 flex justify-center items-center"
+          class="btn btn-primary flex-1"
         >
           <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

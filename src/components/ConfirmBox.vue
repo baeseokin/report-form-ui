@@ -9,13 +9,13 @@
       <div class="flex justify-center gap-3">
         <button
           @click="$emit('cancel')"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2 rounded"
+          class="btn btn-secondary"
         >
           중단
         </button>
         <button
           @click="$emit('confirm')"
-          class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded"
+          class="btn btn-primary"
         >
           계속진행
         </button>

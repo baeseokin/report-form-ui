@@ -54,7 +54,7 @@
             type="text"
             v-model="f.aliasName"
             placeholder="별칭입력"
-            class="w-80 border rounded p-2 text-sm shadow-sm focus:ring-2 focus:ring-purple-400"
+            class="form-input w-80"
           />
         <span class="text-sm text-gray-500">({{ bytesToStr(f.size) }})</span>
 
@@ -65,13 +65,13 @@
     <p v-else class="text-gray-500">첨부된 파일이 없습니다.</p>
 
     <div class="flex justify-between mt-6">
-      <button @click="$emit('prev')" class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md transition">
+      <button @click="$emit('prev')" class="btn btn-secondary">
         ← 이전
       </button>
       <button
         @click="$emit('next')"
         data-testid="btn-next"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md transition"
+        class="btn btn-primary"
         :disabled="totalBytes > maxTotalBytes || isCompressing"
         :class="{'opacity-60 cursor-not-allowed': totalBytes > maxTotalBytes || isCompressing}"
         title="총 용량이 제한을 초과하면 다음 단계로 진행할 수 없습니다."

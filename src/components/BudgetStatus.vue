@@ -8,13 +8,13 @@
         <input
           type="number"
           v-model="filters.year"
-          class="bg-white border border-gray-200 rounded-lg px-3 py-2 w-28 focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-28"
         />
       </div>
       <button
         type="button"
         @click="fetchBudgetStatus"
-        class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+        class="btn btn-search"
       >
         조회
       </button>

@@ -59,8 +59,8 @@
                 <td class="border p-2 text-center">
                   <div class="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button @click="openModal('add', c)" class="text-green-600 hover:bg-green-100 p-1 rounded" title="하위 추가">➕</button>
-                    <button @click="openModal('edit', c)" class="text-blue-600 hover:bg-blue-100 p-1 rounded" title="수정">✏️</button>
-                    <button @click="deleteCategory(c)" class="text-red-600 hover:bg-red-100 p-1 rounded" title="삭제">🗑</button>
+                    <button @click="openModal('edit', c)" class="btn-icon" title="수정"><img src="/icons/edit.svg" alt="수정" class="w-5 h-5" /></button>
+                    <button @click="deleteCategory(c)" class="btn-icon" title="삭제"><img src="/icons/trash.svg" alt="삭제" class="w-5 h-5" /></button>
                   </div>
                 </td>
               </tr>
@@ -101,14 +101,14 @@
             <select
               v-model="selectedYear"
               @change="fetchDeptMapping"
-              class="border rounded p-1 text-sm bg-white"
+              class="form-input form-input-sm w-auto"
             >
               <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년</option>
             </select>
             <select
               v-model="selectedDeptId"
               @change="fetchDeptMapping"
-              class="border rounded p-1 text-sm flex-1 max-w-[200px]"
+              class="form-input form-input-sm flex-1 max-w-[200px]"
             >
               <option :value="null" disabled>부서 선택</option>
               <option v-for="d in departments" :key="d.id" :value="d.id">
@@ -119,7 +119,7 @@
           <button
             @click="saveMapping"
             :disabled="!selectedDeptId"
-            class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm shadow-sm disabled:bg-gray-300"
+            class="btn btn-primary btn-sm"
           >
             저장
           </button>
@@ -195,7 +195,7 @@
             <span class="text-gray-700">부모 계정ID</span>
             <input
               v-model="modalForm.parent_category_id"
-              class="w-full border rounded p-2 mt-1 bg-gray-100"
+              class="form-input w-full mt-1"
               readonly
             />
           </label>
@@ -204,7 +204,7 @@
             <span class="text-gray-700">부모 계정명</span>
             <input
               v-model="modalForm.parent_category_name"
-              class="w-full border rounded p-2 mt-1 bg-gray-100"
+              class="form-input w-full mt-1"
               readonly
             />
           </label>
@@ -213,7 +213,7 @@
             <span class="text-gray-700">계정ID</span>
             <input
               v-model="modalForm.category_id"
-              class="w-full border rounded p-2 mt-1 bg-gray-100"
+              class="form-input w-full mt-1"
               readonly
             />
           </label>
@@ -222,7 +222,7 @@
             <span class="text-gray-700">계정명</span>
             <input
               v-model="modalForm.category_name"
-              class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-purple-400"
+              class="form-input w-full mt-1"
             />
           </label>
 
@@ -231,7 +231,7 @@
             <span class="text-gray-700">단계</span>
             <select
               v-model="modalForm.level"
-              class="w-full border rounded p-2 mt-1 focus:ring-2 focus:ring-purple-400"
+              class="form-input w-full mt-1"
             >
               <option value="관">관</option>
               <option value="항">항</option>
@@ -245,13 +245,13 @@
         <div class="flex justify-end gap-3 mt-6">
           <button
             @click="closeModal"
-            class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            class="btn btn-secondary"
           >
             취소
           </button>
           <button
             @click="saveCategory"
-            class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            class="btn btn-primary"
           >
             저장
           </button>

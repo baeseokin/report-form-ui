@@ -59,7 +59,7 @@
         type="button"
         @click="loadTemplateAndNext"
         :disabled="loading"
-        class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-md transition flex justify-center items-center gap-2"
+        class="btn btn-primary btn-lg w-full mt-4 font-bold"
       >
         <span v-if="loading" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
         <span>다음: 예산편성 입력 →</span>
@@ -271,7 +271,7 @@
         <button
           type="button"
           @click="goToTab(2)"
-          class="flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition"
+          class="btn btn-primary btn-lg flex-1 font-bold"
         >
           다음: 최종확인 →
         </button>
@@ -336,7 +336,7 @@
           type="button"
           @click="submitBudgetPlan('결재진행중')"
           :disabled="submitting"
-          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex justify-center items-center gap-2"
+          class="btn btn-primary btn-lg w-full font-bold"
         >
           <span v-if="submitting" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
           <span>📤 결재 상신</span>
@@ -474,14 +474,14 @@
           <button
             type="button"
             @click="closeNewCategoryModal"
-            class="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-700"
+            class="btn btn-secondary"
           >
             취소
           </button>
           <button
             type="button"
             @click="confirmAddNewCategory"
-            class="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold"
+            class="btn btn-primary font-bold"
           >
             + 추가하기
           </button>

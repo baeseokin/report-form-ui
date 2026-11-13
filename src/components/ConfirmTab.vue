@@ -173,7 +173,7 @@
           maxlength="500"
           data-testid="comment-textarea"
           placeholder="여기에 코멘트를 입력하세요..."
-          class="w-full h-60 border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-400 resize-y"
+          class="form-input w-full h-60 resize-y"
         ></textarea>
         <p class="text-right text-sm text-gray-500 mt-1">
           {{ comment?.length || 0 }}/500
@@ -210,7 +210,7 @@
     <div class="flex justify-between">
       <button
         @click="$emit('prev')"
-        class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md transition"
+        class="btn btn-secondary"
       >
         ← 이전
       </button>
@@ -221,7 +221,7 @@
           :disabled="isSubmitting"
           @click="sendApprovalRequest"
           data-testid="btn-submit"
-          class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg shadow-md transition disabled:opacity-70 disabled:cursor-not-allowed disabled:pointer-events-none text-sm font-medium"
+          class="btn btn-primary btn-lg"
         >
           <span v-if="isSubmitting" class="flex items-center gap-2">
             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

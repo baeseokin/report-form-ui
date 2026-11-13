@@ -21,20 +21,20 @@
       <!-- 청구 시작일자 -->
       <div class="flex flex-col w-40">
         <label class="font-semibold text-gray-600 mb-1 text-sm">청구 시작일자</label>
-        <input type="date" v-model="search.startDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
+        <input type="date" v-model="search.startDate" class="form-input w-full" />
       </div>
 
       <!-- 청구 종료일자 -->
       <div class="flex flex-col w-40">
         <label class="font-semibold text-gray-600 mb-1 text-sm">청구 종료일자</label>
-        <input type="date" v-model="search.endDate" class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition" />
+        <input type="date" v-model="search.endDate" class="form-input w-full" />
       </div>
 
       <!-- 조회 버튼 -->
       <div class="flex items-end">
         <button
           @click="page=1; searchList()"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="btn btn-search"
         >
           조회
         </button>
@@ -65,7 +65,7 @@
               <button
                 @click="openDetail(row)"
                 :data-testid="'row-view-btn-' + index"
-                class="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                class="btn btn-primary btn-sm"
               >
                 결재
               </button>

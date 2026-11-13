@@ -3,20 +3,20 @@
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
       <div class="flex flex-wrap gap-2">
         <button
-          class="px-3 py-2 text-sm rounded-lg bg-emerald-500 text-white shadow hover:bg-emerald-600"
+          class="btn btn-primary"
           @click="startCreateRoot"
         >
           ＋ 최상위 부서
         </button>
         <button
-          class="px-3 py-2 text-sm rounded-lg bg-blue-500 text-white shadow hover:bg-blue-600 disabled:opacity-50"
+          class="btn btn-primary"
           :disabled="!selected"
           @click="startCreateChild"
         >
           ＋ 하위 부서
         </button>
         <button
-          class="px-3 py-2 text-sm rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+          class="btn btn-secondary"
           @click="resetForm"
         >
           새로고침
@@ -38,11 +38,11 @@
               v-model="searchKeyword"
               type="search"
               placeholder="부서명·코드 검색"
-              class="w-full border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="form-input w-full pl-9 pr-3"
             />
           </div>
           <button
-            class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+            class="btn btn-secondary"
             @click="searchKeyword = ''"
           >
             초기화
@@ -77,7 +77,7 @@
             부서명
             <input
               v-model="editable.dept_name"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="form-input mt-1 w-full"
               placeholder="예: 기획팀"
             />
           </label>
@@ -86,7 +86,7 @@
             부서 코드
             <input
               v-model="editable.dept_cd"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="form-input mt-1 w-full"
               placeholder="예: PLAN"
               maxlength="10"
             />
@@ -96,7 +96,7 @@
             상위 부서
             <select
               v-model="editable.parent_dept_id"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="form-input mt-1 w-full"
             >
               <option :value="null">(최상위)</option>
               <option
@@ -114,7 +114,7 @@
             청구계좌정보
             <input
               v-model="editable.account_info"
-              class="mt-1 w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              class="form-input mt-1 w-full"
               placeholder="예: 국민 495201-01-22221112 홍길동"
             />
           </label>
@@ -133,21 +133,21 @@
 
         <div class="flex gap-2 mt-6">
           <button
-            class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 disabled:opacity-40"
+            class="btn btn-primary"
             :disabled="!editable.dept_name"
             @click="saveDepartment"
           >
             저장
           </button>
           <button
-            class="px-4 py-2 bg-rose-500 text-white rounded-lg shadow hover:bg-rose-600 disabled:opacity-40"
+            class="btn btn-danger"
             :disabled="editable.isNew"
             @click="deleteDepartment"
           >
             삭제
           </button>
           <button
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            class="btn btn-secondary"
             @click="resetForm"
           >
             초기화

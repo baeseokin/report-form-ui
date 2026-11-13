@@ -19,7 +19,7 @@
           @change="fetchData"
           min="2000"
           max="2100"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-full"
         />
       </div>
 
@@ -28,7 +28,7 @@
         <input
           type="date"
           v-model="requestDate"
-          class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-gray-300 focus:border-gray-300 outline-none transition"
+          class="form-input w-full"
         />
       </div>
 
@@ -36,7 +36,7 @@
         <button
           type="button"
           @click="fetchData"
-          class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="btn btn-search"
         >
           조회
         </button>
@@ -71,7 +71,7 @@
             <td class="border p-3 text-center">
               <input
                 type="text"
-                class="border border-gray-300 rounded px-3 py-1.5 w-full text-right focus:outline-none focus:ring-2 focus:ring-gray-300"
+                class="form-input form-input-sm w-full text-right"
                 :value="formatAmount(inputInitialExpenses[hang.category_id])"
                 @input="onInitialAmountInput($event, hang)"
                 placeholder="0"
@@ -81,7 +81,7 @@
             <td class="border p-3 text-center">
               <input
                 type="text"
-                class="border border-blue-300 rounded px-3 py-1.5 w-full text-right focus:outline-none focus:ring-2 focus:ring-blue-300 text-blue-800 font-medium"
+                class="form-input form-input-sm w-full text-right"
                 :value="formatAmount(inputTotalExpenses[hang.category_id])"
                 @input="onTotalAmountInput($event, hang)"
                 placeholder="0"
@@ -112,14 +112,14 @@
       <button
         v-if="hasModifications"
         @click="fetchData"
-        class="px-6 py-2.5 bg-gray-200 text-gray-700 font-medium rounded-lg shadow-sm hover:bg-gray-300 transition"
+        class="btn btn-secondary btn-lg"
       >
         변경 취소
       </button>
       <button
         @click="saveInitialExpenses"
         :disabled="isSaving || hangCategories.length === 0 || !hasModifications"
-        class="px-6 py-2.5 bg-gray-800 text-white font-medium rounded-lg shadow-md hover:bg-gray-900 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+        class="btn btn-primary btn-lg"
       >
         <span v-if="isSaving">저장 중...</span>
         <span v-else>💾 변경된 항목 일괄 저장</span>

@@ -50,7 +50,7 @@
           </div>
           <button
             @click="page=1; searchList()"
-            class="w-full py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 active:bg-purple-800"
+            class="btn btn-search btn-lg w-full"
           >
             조회
           </button>
@@ -77,7 +77,7 @@
           <button
             @click="openDetail(row)"
             :data-testid="'row-view-btn-' + index"
-            class="px-3 py-1 bg-purple-600 text-white rounded text-sm"
+            class="btn btn-primary btn-sm"
           >결재</button>
         </div>
       </div>

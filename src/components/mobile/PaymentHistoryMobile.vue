@@ -115,7 +115,7 @@
             type="button"
             @click="handleSearch"
             :disabled="loading"
-            class="w-full py-2.5 bg-gray-800 text-white font-medium rounded-lg hover:bg-gray-900 active:bg-black transition text-sm flex items-center justify-center gap-1.5"
+            class="btn btn-search btn-lg w-full"
           >
             <span v-if="loading" class="animate-spin text-sm">🔄</span>
             <span>조회</span>
@@ -130,7 +130,7 @@
         type="button"
         @click="downloadExcel"
         :disabled="downloadingExcel || totalCount === 0"
-        class="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-emerald-600 active:bg-emerald-700 text-white rounded-lg transition font-medium shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+        class="btn btn-excel btn-sm"
       >
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

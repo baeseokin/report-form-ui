@@ -32,7 +32,7 @@
           <div class="flex items-center gap-2">
             <select
               v-model="targetYear"
-              class="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition"
+              class="form-input w-full"
             >
               <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}년도</option>
             </select>
@@ -49,7 +49,7 @@
           <select
             v-model="selectedDeptName"
             :disabled="!canChangeDept"
-            class="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+            class="form-input w-full"
           >
             <option v-for="d in sortedDepartmentOptions" :key="d.id || d.dept_name" :value="d.dept_name">
               {{ d.dept_name }}
@@ -69,7 +69,7 @@
             type="text"
             :value="currentUser?.userName || '작성자'"
             readonly
-            class="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 text-sm text-gray-600 outline-none cursor-not-allowed"
+            class="form-input w-full"
           />
         </div>
 
@@ -79,7 +79,7 @@
             type="text"
             :value="todayStr"
             readonly
-            class="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 text-sm text-gray-600 outline-none cursor-not-allowed"
+            class="form-input w-full"
           />
         </div>
       </div>
@@ -90,7 +90,7 @@
           type="button"
           @click="loadTemplateAndNext"
           :disabled="loading"
-          class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-md transition flex items-center justify-center gap-2"
+          class="btn btn-primary btn-lg"
         >
           <span v-if="loading" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
           <span>다음: 예산편성 입력 →</span>
@@ -305,7 +305,7 @@
                     :value="item.request_amount ? item.request_amount.toLocaleString() : '0'"
                     @input="handleAmountInput(item, $event)"
                     @focus="$event.target.select()"
-                    class="w-36 text-right font-mono border border-gray-300 rounded px-2.5 py-1.5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition bg-white"
+                    class="form-input form-input-sm w-36 text-right font-mono font-semibold"
                   />
                   <!-- 2) 최하위 Leaf 계정이지만 타 부서 관리 계정인 경우: 수정 불가 잠금 -->
                   <div
@@ -342,7 +342,7 @@
                     type="text"
                     v-model="item.calc_basis"
                     placeholder="산출 근거 및 주요 변동 사유"
-                    class="w-full border border-gray-200 rounded px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-purple-300 focus:border-purple-300 outline-none transition"
+                    class="form-input form-input-sm w-full"
                   />
                   <!-- 신규 신청 계정 삭제 버튼 -->
                   <button
@@ -383,7 +383,7 @@
         <button
           type="button"
           @click="currentTab = 0"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-5 py-2.5 rounded-lg transition"
+          class="btn btn-secondary btn-lg"
         >
           ← 이전 단계
         </button>
@@ -392,14 +392,14 @@
             type="button"
             @click="submitBudgetPlan('작성중')"
             :disabled="submitting"
-            class="bg-gray-600 hover:bg-gray-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition"
+            class="btn btn-primary btn-lg"
           >
             임시저장
           </button>
           <button
             type="button"
             @click="currentTab = 2"
-            class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-md transition"
+            class="btn btn-primary btn-lg"
           >
             다음: 최종 확인 및 상신 →
           </button>
@@ -458,7 +458,7 @@
             rows="8"
             maxlength="500"
             placeholder="예산 편성의 주된 방향, 전년대비 주요 증감 원인 및 부서 운영 계획을 간략히 기술하세요."
-            class="w-full h-[240px] border border-gray-300 rounded-xl p-3.5 text-sm shadow-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none transition resize-none"
+            class="form-input w-full h-[240px] resize-none"
           ></textarea>
           <p class="text-right text-xs text-gray-400 mt-1">
             {{ comment?.length || 0 }}/500
@@ -502,7 +502,7 @@
         <button
           type="button"
           @click="currentTab = 1"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-5 py-2.5 rounded-lg transition"
+          class="btn btn-secondary btn-lg"
         >
           ← 이전 단계
         </button>
@@ -511,7 +511,7 @@
           type="button"
           @click="submitBudgetPlan('결재진행중')"
           :disabled="submitting"
-          class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium px-7 py-2.5 rounded-lg shadow-md transition flex items-center gap-2"
+          class="btn btn-primary btn-lg"
         >
           <span v-if="submitting" class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
           <span>📤 결재 상신</span>
@@ -581,7 +581,7 @@
             </label>
             <select
               v-model="newCategoryForm.parentId"
-              class="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none"
+              class="form-input w-full"
             >
               <option value="" disabled>
                 {{ newCategoryForm.level === '목' ? '-- 상위 항을 선택하세요 --' : '-- 상위 목을 선택하세요 --' }}
@@ -609,7 +609,7 @@
               type="text"
               v-model="newCategoryForm.name"
               :placeholder="newCategoryForm.level === '목' ? '예: 선교행사비, 부서운영비' : '예: 특별초청강사료, 청년부행사지원비'"
-              class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none"
+              class="form-input w-full"
             />
           </div>
 
@@ -624,7 +624,7 @@
               :value="newCategoryForm.amount ? Number(newCategoryForm.amount).toLocaleString() : ''"
               @input="handleNewModalAmountInput"
               placeholder="0"
-              class="w-full text-right font-mono border border-gray-300 rounded-lg p-2.5 text-sm font-semibold focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none"
+              class="form-input w-full text-right font-mono font-semibold"
             />
           </div>
 
@@ -637,7 +637,7 @@
               type="text"
               v-model="newCategoryForm.calcBasis"
               placeholder="신설 사유 및 산출 근거를 입력하세요."
-              class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-400 focus:border-purple-400 outline-none"
+              class="form-input w-full"
             />
           </div>
         </div>
@@ -646,14 +646,14 @@
           <button
             type="button"
             @click="closeNewCategoryModal"
-            class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+            class="btn btn-secondary"
           >
             취소
           </button>
           <button
             type="button"
             @click="confirmAddNewCategory"
-            class="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 rounded-lg shadow-sm transition cursor-pointer"
+            class="btn btn-primary font-bold"
           >
             + 계정 추가하기
           </button>

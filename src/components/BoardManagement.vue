@@ -7,7 +7,7 @@
       <div class="flex justify-end mb-4">
         <button
           @click="openForm()"
-          class="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-200 ease-in-out transform hover:-translate-y-0.5"
+          class="btn btn-primary btn-lg group font-semibold"
         >
           <svg class="w-4 h-4 text-purple-100 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
           새 게시글 쓰기
@@ -140,10 +140,10 @@
           <textarea 
             v-model="newComment.content" 
             rows="2" 
-            class="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-purple-500 focus:ring-1 focus:ring-purple-200 outline-none text-sm resize-none"
+            class="form-input flex-1 resize-none"
             placeholder="댓글을 남겨보세요."
           ></textarea>
-          <button @click="submitComment()" :disabled="!newComment.content.trim()" class="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition font-medium text-sm flex-shrink-0 disabled:opacity-50">등록</button>
+          <button @click="submitComment()" :disabled="!newComment.content.trim()" class="btn btn-primary">등록</button>
         </div>
 
         <!-- 댓글 목록 트리 -->
@@ -166,12 +166,12 @@
                 <textarea 
                   v-model="replyContent" 
                   rows="2" 
-                  class="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-purple-500 outline-none text-sm resize-none"
+                  class="form-input flex-1 resize-none"
                   placeholder="답글을 입력하세요."
                 ></textarea>
                 <div class="flex flex-col space-y-2">
-                  <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="px-4 py-1.5 bg-gray-800 text-white rounded hover:bg-gray-900 transition font-medium text-xs flex-shrink-0 disabled:opacity-50">등록</button>
-                  <button @click="replyingTo = null" class="px-4 py-1.5 bg-white border text-gray-600 rounded hover:bg-gray-100 transition font-medium text-xs flex-shrink-0">취소</button>
+                  <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="btn btn-primary btn-sm">등록</button>
+                  <button @click="replyingTo = null" class="btn btn-secondary btn-sm">취소</button>
                 </div>
               </div>
             </div>
@@ -200,12 +200,12 @@
                   <textarea 
                     v-model="replyContent" 
                     rows="2" 
-                    class="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-purple-500 outline-none text-sm resize-none"
+                    class="form-input flex-1 resize-none"
                     placeholder="답글을 입력하세요."
                   ></textarea>
                   <div class="flex flex-col space-y-2">
-                    <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="px-4 py-1.5 bg-gray-800 text-white rounded hover:bg-gray-900 transition font-medium text-xs flex-shrink-0 disabled:opacity-50">등록</button>
-                    <button @click="replyingTo = null" class="px-4 py-1.5 bg-gray-50 border text-gray-600 rounded hover:bg-gray-100 transition font-medium text-xs flex-shrink-0">취소</button>
+                    <button @click="submitComment(c.id)" :disabled="!replyContent.trim()" class="btn btn-primary btn-sm">등록</button>
+                    <button @click="replyingTo = null" class="btn btn-secondary btn-sm">취소</button>
                   </div>
                 </div>
               </div>
@@ -222,20 +222,20 @@
       <div class="px-6 py-4 bg-gray-100 border-t border-gray-200 flex justify-between items-center mt-auto">
         <button
           @click="mode = 'list'; fetchBoards();"
-          class="px-5 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-medium"
+          class="btn btn-secondary"
         >
           목록으로
         </button>
         <div v-if="canEditOrDelete(currentBoard.author_id)" class="flex space-x-2">
           <button
             @click="openForm(currentBoard)"
-            class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium"
+            class="btn btn-primary"
           >
             수정
           </button>
           <button
             @click="deleteBoard(currentBoard.id)"
-            class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+            class="btn btn-danger"
           >
             삭제
           </button>
@@ -256,7 +256,7 @@
           <input
             v-model="form.title"
             type="text"
-            class="w-full max-w-3xl px-4 py-2 rounded-lg border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 outline-none transition"
+            class="form-input w-full max-w-3xl"
             placeholder="제목을 입력하세요"
           />
         </div>
@@ -291,7 +291,7 @@
         <!-- 삭제 예정 파일 복구 버튼 -->
         <div v-if="form.deletedFileIds.length > 0" class="w-full max-w-3xl self-start text-sm text-red-600 bg-red-50 px-4 py-3 rounded border border-red-200 flex justify-between items-center">
           <span class="font-medium">* 기존 파일 중 {{ form.deletedFileIds.length }}개가 저장 시 삭제됩니다.</span>
-          <button @click="undoDeletions" class="text-purple-600 hover:text-purple-800 font-medium px-3 py-1 bg-white rounded shadow-sm border hover:bg-gray-50 transition">실행 취소</button>
+          <button @click="undoDeletions" class="btn btn-secondary btn-sm">실행 취소</button>
         </div>
 
         <!-- 신규 첨부파일 드래그 앤 드롭 영역 -->
@@ -329,14 +329,14 @@
       <div class="mt-8 flex justify-end space-x-3 pt-4 border-t border-gray-100">
         <button
           @click="mode = form.id ? 'view' : 'list'"
-          class="px-6 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+          class="btn btn-secondary"
         >
           취소
         </button>
         <button
           @click="saveBoard"
           :disabled="isSaving"
-          class="px-6 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          class="btn btn-primary"
         >
           <svg v-if="isSaving" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

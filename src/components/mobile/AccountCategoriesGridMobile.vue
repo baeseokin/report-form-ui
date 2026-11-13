@@ -22,13 +22,13 @@
             :disabled="!selectedCategory"
             class="p-1.5 text-blue-600 rounded text-sm leading-none active:bg-blue-100 min-w-[28px] min-h-[28px] flex items-center justify-center border border-blue-300 disabled:opacity-40 disabled:border-gray-200 touch-manipulation"
             title="수정"
-          >✏️</button>
+          ><img src="/icons/edit.svg" alt="수정" class="w-4 h-4" /></button>
           <button
             @click="selectedCategory && deleteCategory(selectedCategory)"
             :disabled="!selectedCategory"
             class="p-1.5 text-red-600 rounded text-sm leading-none active:bg-red-100 min-w-[28px] min-h-[28px] flex items-center justify-center border border-red-300 disabled:opacity-40 disabled:border-gray-200 touch-manipulation"
             title="삭제"
-          >🗑</button>
+          ><img src="/icons/trash.svg" alt="삭제" class="w-4 h-4" /></button>
         </div>
       </div>
       <div class="flex-1 overflow-y-auto min-h-[200px]">
@@ -120,7 +120,7 @@
         <button
           @click="saveMapping"
           :disabled="!selectedDeptId"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed touch-manipulation"
+          class="btn btn-primary touch-manipulation"
         >
           저장
         </button>
@@ -217,10 +217,10 @@
         </div>
       </div>
       <div class="p-4 border-t bg-gray-50 flex gap-3">
-        <button @click="closeModal" class="flex-1 py-3 bg-gray-400 text-white rounded-xl font-medium active:bg-gray-500 touch-manipulation">
+        <button @click="closeModal" class="btn btn-secondary btn-lg flex-1 touch-manipulation">
           취소
         </button>
-        <button @click="saveCategory" class="flex-1 py-3 bg-purple-600 text-white rounded-xl font-medium active:bg-purple-700 touch-manipulation">
+        <button @click="saveCategory" class="btn btn-primary btn-lg flex-1 touch-manipulation">
           저장
         </button>
       </div>

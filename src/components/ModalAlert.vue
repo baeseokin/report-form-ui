@@ -8,7 +8,7 @@
       <p class="text-gray-700 mb-6">{{ message }}</p>
       <button
         @click="$emit('close')"
-        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded"
+        class="btn btn-primary"
       >
         확인
       </button>
