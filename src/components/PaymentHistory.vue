@@ -162,6 +162,7 @@
             <tr
               v-for="item in payments"
               :key="item.item_id"
+              data-testid="payment-row"
               @click="openPreview(item.request_id)"
               class="hover:bg-purple-50 transition text-sm h-11 cursor-pointer"
             >
@@ -184,10 +185,11 @@
                 <button
                   type="button"
                   @click="openPreview(item.request_id)"
-                  class="p-1.5 rounded-lg hover:bg-purple-100 transition text-purple-700"
+                  data-testid="payment-view-btn"
+                  class="p-1 rounded-lg hover:bg-green-100 transition"
                   title="지출결의서 상세보기"
                 >
-                  👁
+                  <img src="/icons/view.svg" alt="상세보기" class="w-6 h-6" />
                 </button>
               </td>
             </tr>

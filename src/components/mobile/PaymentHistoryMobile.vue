@@ -159,6 +159,7 @@
       <div
         v-for="item in payments"
         :key="item.item_id"
+        data-testid="payment-card"
         @click="openPreview(item.request_id)"
         class="bg-white rounded-lg shadow-sm p-4 border border-gray-200 active:bg-purple-50 transition"
       >

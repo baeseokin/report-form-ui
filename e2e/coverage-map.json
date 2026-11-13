@@ -1401,6 +1401,118 @@
         "POST /api/login"
       ]
     },
+    "e2e/payment-history.spec.js::8-1 재정부 이관이 끝난 지출만 지출내역에 보이고, 상세보기로 지출결의서를 열 수 있다::android": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/ApprovalPopup.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/ModalAlert.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/ReportPreview.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PaymentHistoryMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/printUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/accountCategories/:n",
+        "GET /api/approval/detail/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "POST /api/login",
+        "POST /api/paymentHistory"
+      ]
+    },
+    "e2e/payment-history.spec.js::8-1 재정부 이관이 끝난 지출만 지출내역에 보이고, 상세보기로 지출결의서를 열 수 있다::desktop": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/ApprovalPopup.vue",
+        "src/components/DeptPickerDesktop.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/ModalAlert.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/PaymentHistory.vue",
+        "src/components/PortalHome.vue",
+        "src/components/ReportPreview.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/printUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/accountCategories/:n",
+        "GET /api/approval/detail/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "POST /api/login",
+        "POST /api/paymentHistory"
+      ]
+    },
+    "e2e/payment-history.spec.js::8-1 재정부 이관이 끝난 지출만 지출내역에 보이고, 상세보기로 지출결의서를 열 수 있다::iphone": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/ApprovalPopup.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/ModalAlert.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/ReportPreview.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PaymentHistoryMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/printUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/accountCategories/:n",
+        "GET /api/approval/detail/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "GET /api/user/favorites",
+        "POST /api/login",
+        "POST /api/paymentHistory"
+      ]
+    },
     "e2e/permissions.spec.js::2-1~2-3 부서·권한에 따라 보이는 문서가 다르다::android": {
       "src": [
         "src/App.vue",
