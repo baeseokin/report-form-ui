@@ -27,7 +27,7 @@
             <label>부서명</label>
             <input type="text" v-model="search.deptName" placeholder="전체" class="filter-input w-32" />
           </div>
-          <button @click="page = 1; fetchList()" class="btn-search">🔍 조회</button>
+          <button @click="page = 1; fetchList()" class="btn btn-search" data-testid="bulk-search-btn">조회</button>
         </div>
         <!-- ◀ 좌측: 결재 목록 -->
         <section class="list-panel">
@@ -58,6 +58,7 @@
               </thead>
               <tbody>
                 <tr
+                  data-testid="bulk-row"
                   v-for="row in rows"
                   :key="row.id"
                   :class="['list-row', selectedIds.has(row.id) ? 'row-selected' : '']"
@@ -123,10 +124,10 @@
           <!-- 서명 캔버스 -->
           <div class="sign-section" :class="{ 'opacity-40 pointer-events-none': selectedIds.size === 0 }">
             <label class="sign-label">서명</label>
-            <canvas ref="signaturePad" class="sign-canvas"></canvas>
+            <canvas ref="signaturePad" class="sign-canvas" data-testid="bulk-signature-canvas"></canvas>
             <div class="flex justify-between mt-2 text-sm text-gray-500">
               <span>기본 서명이 자동 로드됩니다. 지우기 후 재서명 가능.</span>
-              <button @click="clearSignature(false)" class="btn-clear">지우기</button>
+              <button @click="clearSignature(false)" class="btn btn-secondary btn-sm">지우기</button>
             </div>
           </div>
 
@@ -142,7 +143,7 @@
 
           <!-- 액션 버튼 -->
           <div class="action-buttons" :class="{ 'opacity-40 pointer-events-none': selectedIds.size === 0 }">
-            <button @click="submitBulkApproval" class="btn-approve-main" :disabled="submitting">
+            <button @click="submitBulkApproval" class="btn-approve-main" :disabled="submitting" data-testid="bulk-submit-btn">
               <span v-if="submitting" class="animate-spin mr-2">⏳</span>
               <span v-else class="mr-2">🚀</span>
               {{ submitting ? '처리중...' : '일괄 이관처리 및 출력' }}
@@ -216,7 +217,7 @@
             <p class="confirm-msg">{{ confirmModal.message }}</p>
             <div class="confirm-actions">
               <button class="confirm-cancel" @click="confirmModal.resolve(false)">취소</button>
-              <button class="confirm-ok" @click="confirmModal.resolve(true)">확인</button>
+              <button class="confirm-ok" data-testid="bulk-confirm-ok" @click="confirmModal.resolve(true)">확인</button>
             </div>
           </div>
         </div>
@@ -1298,17 +1299,6 @@ function initCanvas(skipDefaultLoad = false) {
   transition: all 0.15s;
 }
 .filter-input:focus { border-color: #a78bfa; }
-.btn-search {
-  padding: 8px 24px;
-  background: #374151;
-  color: #fff;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.btn-search:hover { background: #1f2937; }
 
 /* ─── 메인 2분할 레이아웃 ─────────────────────────── */
 .main-layout {
@@ -1471,16 +1461,6 @@ function initCanvas(skipDefaultLoad = false) {
   cursor: crosshair;
   display: block;
 }
-.btn-clear {
-  padding: 4px 12px;
-  background: #f3f4f6;
-  border-radius: 6px;
-  font-size: 0.78rem;
-  color: #6b7280;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.btn-clear:hover { background: #e5e7eb; }
 
 /* ─── 액션 버튼 (1단계) ─────────────────────────── */
 .action-buttons {

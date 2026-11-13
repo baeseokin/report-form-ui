@@ -9,9 +9,9 @@
         class="w-full flex items-center justify-between p-3 text-left hover:bg-purple-200 active:bg-purple-300 transition"
         :class="{ 'hidden': searchExpanded }"
       >
-        <span class="font-semibold text-gray-700 text-sm">검색조건</span>
-        <span class="text-xs text-gray-500 truncate flex-1 mx-2">{{ searchConditionSummary }}</span>
-        <span class="text-gray-400 shrink-0 text-xs">▼</span>
+        <span class="font-semibold text-gray-700">검색조건</span>
+        <span class="text-sm text-gray-500 truncate flex-1 mx-2">{{ searchConditionSummary }}</span>
+        <span class="text-gray-400 shrink-0">▼</span>
       </button>
 
       <!-- 펼친 상태: 조건 영역 -->
@@ -21,62 +21,59 @@
           @click="searchExpanded = false"
           class="w-full flex items-center justify-between p-3 text-left bg-purple-200 hover:bg-purple-300 active:bg-purple-400 transition"
         >
-          <span class="font-semibold text-gray-700 text-sm">검색조건 접기</span>
-          <span class="text-gray-400 text-xs">▲</span>
+          <span class="font-semibold text-gray-700">검색조건 접기</span>
+          <span class="text-gray-400">▲</span>
         </button>
 
-        <div class="p-4 space-y-3 bg-white">
+        <div class="p-3 pt-4 space-y-3 bg-white">
           <!-- 부서명 -->
-          <div v-if="canEditDept">
-            <label class="block text-xs font-semibold text-gray-600 mb-1">부서명</label>
+          <div>
+            <label class="block text-sm mb-1">부서명</label>
             <select
+              v-if="canEditDept"
               v-model="filters.deptName"
               @change="onDeptChange"
-              class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
+              class="mobile-form-control mobile-form-control-select w-full"
             >
               <option value="">전체</option>
               <option v-for="d in departmentOptions" :key="d.id ?? d.dept_name" :value="d.dept_name">
                 {{ d.dept_name }}
               </option>
             </select>
-          </div>
-          <div v-else>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">부서명</label>
             <input
+              v-else
               type="text"
               :value="user?.deptName || '-'"
               disabled
-              class="w-full border border-gray-200 rounded-lg p-2 text-sm bg-gray-100 text-gray-500 outline-none"
+              class="mobile-form-control w-full bg-gray-100 text-gray-500"
             />
           </div>
 
           <!-- 신청 시작일자 -->
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">신청 시작일자</label>
-            <input
-              type="date"
-              v-model="filters.startDate"
-              class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
-            />
+            <label class="block text-sm mb-1">신청 시작일자</label>
+            <div class="mobile-form-control-date-wrap" @click="openDatePicker">
+              <input type="date" v-model="filters.startDate" class="mobile-form-control mobile-form-control-date" />
+              <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+            </div>
           </div>
 
           <!-- 신청 종료일자 -->
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">신청 종료일자</label>
-            <input
-              type="date"
-              v-model="filters.endDate"
-              class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
-            />
+            <label class="block text-sm mb-1">신청 종료일자</label>
+            <div class="mobile-form-control-date-wrap" @click="openDatePicker">
+              <input type="date" v-model="filters.endDate" class="mobile-form-control mobile-form-control-date" />
+              <span class="mobile-form-control-date-icon" aria-hidden="true">📅</span>
+            </div>
           </div>
 
           <!-- 관 -->
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">관</label>
+            <label class="block text-sm mb-1">관</label>
             <select
               v-model="filters.selectedGwan"
               @change="filters.selectedHang = '';"
-              class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
+              class="mobile-form-control mobile-form-control-select w-full"
             >
               <option value="">전체</option>
               <option v-for="g in gwans" :key="g.category_id" :value="g.category_id">
@@ -87,10 +84,10 @@
 
           <!-- 항 -->
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">항</label>
+            <label class="block text-sm mb-1">항</label>
             <select
               v-model="filters.selectedHang"
-              class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
+              class="mobile-form-control mobile-form-control-select w-full"
             >
               <option value="">전체</option>
               <option v-for="h in hangs" :key="h.category_id" :value="h.category_id">
@@ -101,13 +98,13 @@
 
           <!-- 검색어 -->
           <div>
-            <label class="block text-xs font-semibold text-gray-600 mb-1">검색어 (지출내역/신청자)</label>
+            <label class="block text-sm mb-1">검색어 (지출내역/신청자)</label>
             <input
               type="text"
               v-model="filters.keyword"
               placeholder="검색어 입력"
               @keyup.enter="handleSearch"
-              class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white outline-none focus:ring-2 focus:ring-purple-400"
+              class="mobile-form-control w-full"
             />
           </div>
 
@@ -117,27 +114,29 @@
             :disabled="loading"
             class="btn btn-search btn-lg w-full"
           >
-            <span v-if="loading" class="animate-spin text-sm">🔄</span>
+            <span v-if="loading" class="inline-block animate-spin">🔄</span>
             <span>조회</span>
           </button>
+
         </div>
       </div>
     </div>
 
-    <!-- ✅ 상단 툴바: 엑셀 다운로드 버튼 + 건수/합계 요약 -->
-    <div class="flex items-center justify-between mb-3 px-1">
-      <button
-        type="button"
-        @click="downloadExcel"
-        :disabled="downloadingExcel || totalCount === 0"
-        class="btn btn-excel btn-sm"
-      >
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <span>{{ downloadingExcel ? "생성중..." : "엑셀 다운로드" }}</span>
-      </button>
+    <!-- 엑셀 다운로드: 목록 바로 위, 화면 폭 전체 (조회 후 검색조건이 접혀도 보이도록) -->
+    <button
+      type="button"
+      @click="downloadExcel"
+      :disabled="downloadingExcel || totalCount === 0"
+      class="btn btn-excel btn-lg w-full mb-3"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <span>{{ downloadingExcel ? "다운로드 생성 중..." : "엑셀 다운로드" }}</span>
+    </button>
 
+    <!-- ✅ 건수/합계 요약 -->
+    <div class="flex items-center justify-end mb-3 px-1">
       <div class="text-xs text-gray-600 flex items-center gap-2">
         <span>건수: <strong class="text-gray-900 font-bold">{{ Number(totalCount || 0).toLocaleString() }}</strong>건</span>
         <span class="text-gray-300">|</span>
@@ -255,6 +254,18 @@ const pageSize = 15;
 const loading = ref(false);
 const downloadingExcel = ref(false);
 const searchExpanded = ref(false);
+
+// 날짜 입력칸 영역을 누르면 달력 열기 (다른 모바일 화면과 동일)
+const openDatePicker = (e) => {
+  const input = e.currentTarget?.querySelector('input[type="date"]');
+  if (input && typeof input.showPicker === "function") {
+    try {
+      input.showPicker();
+    } catch {
+      // 이미 달력이 열려 있거나 포커스 상태일 때의 예외 무시
+    }
+  }
+};
 const previewReport = ref(null);
 
 const departments = ref([]);

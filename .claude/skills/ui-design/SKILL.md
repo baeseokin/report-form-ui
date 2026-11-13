@@ -24,6 +24,11 @@ description: report-form-ui 의 UI/UX 디자인 표준(버튼·입력칸·카드
 | 보조 (연회색) | `btn btn-secondary` | 취소, 초기화, 닫기, 이전, 목록으로, 새로고침, 비밀번호 초기화 |
 | 표·카드 안 아이콘 | `btn-icon` + `<img src="/icons/….svg" class="w-6 h-6">` | 상세보기·수정·복사·삭제 |
 
+- **조회 버튼**은 문구 "조회"만 쓴다 (🔍·🔄 같은 이모지를 문구에 붙이지 않음). 조회 중 표시는 `<span v-if="loading" class="inline-block animate-spin">🔄</span><span>조회</span>` 로 로딩 중에만 보인다.
+- **엑셀 버튼**은 다운로드 아이콘 + "엑셀 다운로드" 로 통일한다 ("Excel" 등 다른 문구 금지). 생성 중에는 "다운로드 생성 중..." 으로 바꾸고 `:disabled` 처리. 아이콘:
+  ```html
+  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+  ```
 - 크기: 기본(PC, 36px) · `btn-sm`(표 안·보조 동작) · `btn-lg`(모바일 하단 주요 동작, 폼 마지막 단계, 44px).
 - 한 영역의 주요 동작(`btn-primary`)은 하나. 나머지는 `btn-secondary`.
 - 비활성은 `:disabled` 만 주면 된다 (스타일은 공통 클래스가 처리). 그라데이션 버튼은 쓰지 않는다.
@@ -43,7 +48,12 @@ description: report-form-ui 의 UI/UX 디자인 표준(버튼·입력칸·카드
 - 결과 요약 줄: 표 위 오른쪽에 `건수: N건 | 합계금액: N원` (`text-xs text-gray-600`, 금액은 `text-purple-700 font-bold`).
 - 표: `<table class="table-std">` — 머리글은 연보라(`bg-purple-100`), 셀 테두리·여백·행 hover 는 클래스가 처리. 표는 `card overflow-x-auto` 로 감싼다.
 - 페이지 이동: 표 아래 가운데, 현재 페이지 `btn btn-primary btn-sm`, 나머지 `btn btn-secondary btn-sm`.
-- 모바일 검색조건: 접히는 보라 막대(`bg-purple-100` + "검색조건 · 요약 · ▼") → 펼치면 입력칸 + `btn btn-search btn-lg w-full`. 참고 구현: `mobile/PaymentHistoryMobile.vue`.
+- 모바일 검색조건: 접히는 보라 막대(`bg-purple-100` + "검색조건 · 요약 · ▼") → 펼친 영역 `p-3 pt-4 space-y-3 bg-white` 안에
+  - 라벨 `<label class="block text-sm mb-1">`, 입력칸·선택상자 `mobile-form-control`(+ `mobile-form-control-select`) `w-full` — 작은 입력칸(`p-2 text-sm` 등)을 직접 만들지 않는다
+  - 날짜: `<div class="mobile-form-control-date-wrap" @click="openDatePicker"><input type="date" class="mobile-form-control mobile-form-control-date"><span class="mobile-form-control-date-icon">📅</span></div>`
+  - 맨 아래 `btn btn-search btn-lg w-full`. 조회하면 패널을 접고 결과를 보여 준다 (`searchExpanded = false`)
+- 모바일 엑셀 버튼: 검색조건 패널 **밖**, 목록(건수·합계 요약) 바로 위에 `btn btn-excel btn-lg w-full` — 패널이 접혀 있어도 항상 보이게 한다
+  - 참고 구현: `mobile/PaymentHistoryMobile.vue`, `mobile/ApprovalListMobile.vue`
 - 모바일 목록: 표 대신 `card p-4` 카드 목록 (`space-y-3`), 카드 전체를 눌러 상세 열기, 상태는 오른쪽 위 배지.
 
 ## 5. 상태 배지
@@ -75,13 +85,23 @@ description: report-form-ui 의 UI/UX 디자인 표준(버튼·입력칸·카드
 7. **E2E 케이스** 추가 (e2e 스킬의 "케이스 작성 규칙" — PC · iPhone · Android 모두 통과).
 8. **눈으로 확인**: 작성한 E2E 의 `e2e-screenshots/<케이스>` 와 `~iphone` 스크린샷을 Read 로 열어, 위 표준(버튼 색·입력칸·표·빈 목록)과 다른 곳이 없는지 확인한다.
 
-## 8. 기존 화면을 수정할 때
+## 8. 화면 전용 CSS (`<style scoped>`)
+- 공통 클래스와 **같은 이름**(`btn`, `btn-*`, `form-input`, `form-label`, `card`, `filter-card`, `section-title`, `table-std`, `badge`, `badge-*`, `empty-state`)을 화면 CSS 에 정의하지 않는다. scoped 규칙이 공통 스타일을 덮어써 화면마다 모양이 달라진다 (예: 재정부 일괄결재의 `.btn-search` 가 조회 버튼 크기·굵기를 바꿨던 문제).
+- 버튼 모양을 화면 CSS 로 새로 만들지 않는다. 특수한 버튼이 꼭 필요하면 다른 이름(`bulk-print-btn` 등)을 쓰고 사용자에게 알린다.
+- 점검 명령 (결과가 없어야 함):
+  ```bash
+  for f in src/components/*.vue src/components/mobile/*.vue; do awk '/<style/{s=1} s' "$f" | grep -nE '^\s*\.(btn|btn-(primary|search|excel|danger|secondary|icon|sm|lg)|form-input|form-label|card|filter-card|section-title|table-std|badge(-(gray|purple|blue|green|red|amber))?|empty-state)\s*[{,:]' | sed "s|^|$f:|"; done
+  ```
+
+## 9. 기존 화면을 수정할 때
 - 고치는 부분에 아직 옛 스타일(직접 조합한 `bg-blue-500 … rounded` 버튼, `border p-2 rounded` 입력칸, 이모지 행 아이콘)이 있으면 같은 영역 안에서 표준 클래스로 바꾼다. 관련 없는 영역까지 넓히지 않는다.
 - 문서 미리보기·인쇄 화면(`ReportPreview.vue`, `BudgetReportPreview.vue`)은 인쇄 양식이라 이 표준의 예외다.
 
-## 9. 검토 체크리스트 (새 화면 · 디자인 변경 시)
+## 10. 검토 체크리스트 (새 화면 · 디자인 변경 시)
 - [ ] 화면 안에 제목(h1/h2) 중복 없음 — App.vue 가 그림
 - [ ] 버튼이 모두 `btn btn-*` (그라데이션·파랑·초록 직접 색 없음), 영역별 주요 버튼 하나
+- [ ] 조회 버튼 문구 "조회", 엑셀 버튼 "아이콘 + 엑셀 다운로드"
+- [ ] 화면 CSS 에 공통 클래스와 같은 이름 없음 (8장 점검 명령)
 - [ ] 입력칸이 PC `form-input` / 모바일 `mobile-form-control`
 - [ ] 표가 `table-std`, 행 동작은 SVG 아이콘 + `btn-icon`
 - [ ] 빈 목록·불러오는 중 상태 있음

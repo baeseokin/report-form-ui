@@ -1315,6 +1315,109 @@
         "PUT /api/users/me/signature"
       ]
     },
+    "e2e/bulk-approval.spec.js::11-1 재정부가 결재완료 문서를 선택해 일괄 이관하면 재정부이관완료가 된다::android": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/BulkApprovalPage.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/printUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "GET /api/users/me/signature",
+        "POST /api/approval/approve",
+        "POST /api/approvalList",
+        "POST /api/login"
+      ]
+    },
+    "e2e/bulk-approval.spec.js::11-1 재정부가 결재완료 문서를 선택해 일괄 이관하면 재정부이관완료가 된다::desktop": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/BulkApprovalPage.vue",
+        "src/components/DeptPickerDesktop.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/PortalHome.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/printUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "GET /api/users/me/signature",
+        "POST /api/approval/approve",
+        "POST /api/approvalList",
+        "POST /api/login"
+      ]
+    },
+    "e2e/bulk-approval.spec.js::11-1 재정부가 결재완료 문서를 선택해 일괄 이관하면 재정부이관완료가 된다::iphone": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/BulkApprovalPage.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/printUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "GET /api/user/favorites",
+        "GET /api/users/me/signature",
+        "POST /api/approval/approve",
+        "POST /api/approvalList",
+        "POST /api/login"
+      ]
+    },
     "e2e/initial-expenses.spec.js::5-1 재정부는 계정(항)별 기지출액을 등록할 수 있다::android": {
       "src": [
         "src/App.vue",

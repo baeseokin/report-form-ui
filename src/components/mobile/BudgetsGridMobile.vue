@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 font-nanum min-h-[calc(100vh-4rem)] flex flex-col gap-4">
     <!-- 검색조건 접기/펼치기 (보라색 스타일) -->
-    <div class="mb-4 bg-purple-100 rounded-lg border border-purple-200 shadow-sm overflow-hidden">
+    <div class="bg-purple-100 rounded-lg border border-purple-200 shadow-sm overflow-hidden">
       <!-- 접힌 상태: 터치하면 펼침 -->
       <button
         type="button"
@@ -50,19 +50,22 @@
               class="mobile-form-control w-full"
             />
           </div>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              @click="downloadExcel"
-              class="btn btn-excel btn-lg flex-1 touch-manipulation"
-              :disabled="categoriesTree.length === 0"
-            >
-              Excel
-            </button>
-          </div>
         </div>
       </div>
     </div>
+
+    <!-- 엑셀 다운로드: 목록 바로 위, 화면 폭 전체 (검색조건이 접혀 있어도 보이도록) -->
+    <button
+      type="button"
+      @click="downloadExcel"
+      class="btn btn-excel btn-lg w-full touch-manipulation shrink-0"
+      :disabled="categoriesTree.length === 0"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <span>엑셀 다운로드</span>
+    </button>
 
     <!-- 계정 목록 (카드 리스트) -->
     <section class="flex-1 min-h-0 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
