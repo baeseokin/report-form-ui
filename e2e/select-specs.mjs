@@ -21,6 +21,7 @@ const ALL_SPECS = fs.readdirSync(new URL(".", import.meta.url))
 
 // 테스트 실행 환경 · 공통 테스트 코드 → 전체 실행
 const ALL_PATTERNS = [
+  /^src\/.*\.css$/, // 전역 CSS 는 @import 로 합쳐져 개별 요청으로 기록되지 않으므로 전체 실행
   /^public\//,
   /^(index\.html|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|playwright\.config\.js)$/,
   /^e2e\/(support\/|global-setup\.js|global-teardown\.js)/,
