@@ -77,17 +77,13 @@
         <p v-if="categoriesTree.length === 0" class="text-center text-gray-500 text-sm py-8">
           데이터가 없습니다. 검색조건에서 조회를 눌러주세요.
         </p>
-        <div v-else class="divide-y divide-gray-100">
+        <div v-else class="p-2 space-y-2">
           <div
             v-for="c in visibleTree"
             :key="c.id"
             class="px-3 py-2.5 touch-manipulation"
-            :class="{
-              'bg-blue-50': c.level === '관',
-              'bg-gray-50': c.level === '항',
-              'bg-green-50': c.level === '목',
-              'bg-white': c.level === '세목'
-            }"
+            :class="hierRowClass(c.level)"
+            :style="hierIndentStyle(c.depth)"
           >
             <!-- 1줄: 접기 버튼 + 계정명 + 단계 -->
             <div class="flex items-start gap-2">
@@ -102,12 +98,12 @@
               </button>
               <span v-else class="w-7 shrink-0 block" aria-hidden="true" />
               <div class="min-w-0 flex-1">
-                <p class="font-medium text-gray-900 text-sm break-words" :style="{ paddingLeft: `${(c.depth - 1) * 8}px` }">
+                <p class="break-words" :class="hierTitleClass(c.level)">
                   {{ c.category_name }}
                 </p>
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs text-gray-500">
                   <span class="font-mono">{{ c.category_id || '-' }}</span>
-                  <span class="px-1.5 py-0.5 rounded bg-gray-200 text-gray-600">{{ c.level }}</span>
+                  <span :class="hierBadgeClass(c.level)">{{ c.level }}</span>
                   <span v-if="c.owner_dept_id" class="text-gray-500">{{ getDeptName(c.owner_dept_id) }}</span>
                 </div>
               </div>
@@ -159,6 +155,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import axios from "axios";
+import { hierBadgeClass, hierRowClass, hierIndentStyle, hierTitleClass } from "../../utils/hierarchyListStyle";
 import { getCurrentYear } from "../../utils/dateUtils";
 
 const departments = ref([]);

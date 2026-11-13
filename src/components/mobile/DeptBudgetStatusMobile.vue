@@ -29,6 +29,7 @@
           <div>
             <label class="block text-sm mb-1">부서 선택</label>
             <select
+              data-testid="dept-budget-dept"
               v-model="selectedDeptId"
               @change="fetchData"
               class="mobile-form-control mobile-form-control-select w-full disabled:bg-gray-100 disabled:text-gray-500"
@@ -82,15 +83,16 @@
     </div>
 
     <!-- 계정별 카드 목록 -->
-    <section class="space-y-2.5">
-      <div v-if="categoriesTree.length === 0" class="text-center text-gray-500 text-sm py-8 bg-white rounded-xl shadow-xs border border-gray-200">
+    <section :class="HIER_LIST_CLASS">
+      <div v-if="categoriesTree.length === 0" class="card empty-state">
         데이터가 없습니다.
       </div>
 
       <div
+        data-testid="dept-budget-card"
         v-for="c in visibleTree"
         :key="c.id"
-        class="rounded-xl border shadow-xs transition overflow-hidden"
+        class="transition"
         :class="getMobileCardClass(c)"
         :style="getMobileIndentStyle(c.depth)"
       >
@@ -113,11 +115,10 @@
               >
                 ▶
               </button>
-              <span v-else class="text-xs text-gray-400 shrink-0">📄</span>
+              <span v-else class="w-6 shrink-0" aria-hidden="true"></span>
 
               <!-- 단계 뱃지 -->
               <span
-                class="px-2 py-0.5 text-[10px] rounded-md font-extrabold shrink-0 shadow-2xs"
                 :class="getMobileBadgeClass(c.level)"
               >{{ c.level }}</span>
 
@@ -137,8 +138,7 @@
               <!-- 하위 항목 개수 뱃지 (자식이 있는 경우) -->
               <span
                 v-if="c.children && c.children.length > 0"
-                class="px-1.5 py-0.2 rounded-full text-[10px] font-bold shrink-0"
-                :class="!collapsedIds.has(c.id) ? 'bg-black/10 text-gray-600' : 'bg-purple-600 text-white'"
+                :class="HIER_COUNT_CLASS"
               >
                 {{ getDirectChildrenCount(c.id) }}
               </span>
@@ -198,6 +198,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from "vue";
 import axios from "axios";
+import { HIER_LIST_CLASS, hierBadgeClass, HIER_COUNT_CLASS, hierRowClass, hierIndentStyle, hierTitleClass } from "../../utils/hierarchyListStyle";
 import { useUserStore } from "../../store/userStore";
 import { storeToRefs } from "pinia";
 import { getCurrentYear } from "../../utils/dateUtils";
@@ -476,39 +477,13 @@ const calculateRate = (budget, expense) => {
 /* ========================================================
    🎨 예산편성서 작성 화면과 일치하는 모바일 카드/트리 스타일
    ======================================================== */
-const getMobileCardClass = (item) => {
-  switch (item.level) {
-    case "관":
-      return "border-l-[6px] border-l-blue-600 border-blue-200 bg-blue-50/70 shadow-xs";
-    case "항":
-      return "border-l-4 border-l-purple-500 border-purple-200 bg-purple-50/40";
-    case "목":
-      return "border-l-4 border-l-emerald-500 border-emerald-200 bg-emerald-50/30";
-    default:
-      return "border-l-4 border-l-gray-300 border-gray-200 bg-white";
-  }
-};
+const getMobileCardClass = (item) => hierRowClass(item.level);
 
-const getMobileIndentStyle = (depth) => {
-  const margin = Math.max(0, ((depth || 1) - 1) * 8);
-  return margin > 0 ? { marginLeft: `${margin}px` } : {};
-};
+const getMobileIndentStyle = (depth) => hierIndentStyle(depth);
 
-const getMobileBadgeClass = (level) => {
-  switch (level) {
-    case "관": return "bg-blue-600 text-white";
-    case "항": return "bg-purple-600 text-white";
-    case "목": return "bg-emerald-600 text-white";
-    default: return "bg-gray-100 text-gray-700 border border-gray-300";
-  }
-};
+const getMobileBadgeClass = (level) => hierBadgeClass(level);
 
-const getMobileTitleClass = (level, isLeaf) => {
-  if (level === "관") return "text-sm font-extrabold text-blue-950 tracking-tight";
-  if (level === "항") return "text-sm font-bold text-purple-950";
-  if (level === "목") return "text-sm font-semibold text-emerald-950";
-  return isLeaf ? "text-xs font-semibold text-gray-800" : "text-xs font-bold text-gray-900";
-};
+const getMobileTitleClass = (level) => hierTitleClass(level);
 
 const getDirectChildrenCount = (id) => {
   return categories.value.filter((child) => child.parent_id === id).length;

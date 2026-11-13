@@ -5,6 +5,7 @@
       <div class="flex flex-col">
         <label class="font-semibold text-gray-600 mb-1 text-sm">부서 선택</label>
         <select
+          data-testid="dept-budget-dept"
           v-model="selectedDeptId"
           @change="fetchData"
           class="form-input w-44"
@@ -47,6 +48,7 @@
       </thead>
       <tbody>
         <tr
+          data-testid="dept-budget-row"
           v-for="c in categoriesTree"
           :key="c.id"
           :class="{

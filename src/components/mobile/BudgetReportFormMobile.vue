@@ -109,12 +109,12 @@
       </div>
 
       <!-- 계정별 카드 목록 -->
-      <div class="space-y-2.5">
+      <div :class="HIER_LIST_CLASS">
         <div
           v-for="item in visibleCategories"
           :key="item.id"
           data-testid="budget-card"
-          class="rounded-xl border shadow-xs transition overflow-hidden"
+          class="transition"
           :class="getMobileCardClass(item)"
           :style="getMobileIndentStyle(item.depth)"
         >
@@ -137,11 +137,10 @@
                 >
                   ▶
                 </button>
-                <span v-else class="text-xs text-gray-400 shrink-0">📄</span>
+                <span v-else class="w-6 shrink-0" aria-hidden="true"></span>
 
                 <!-- 단계 뱃지 -->
                 <span
-                  class="px-2 py-0.5 text-[10px] rounded-md font-extrabold shrink-0 shadow-2xs"
                   :class="getMobileBadgeClass(item.level)"
                 >{{ item.level }}</span>
 
@@ -153,8 +152,7 @@
                 <!-- 하위 항목 개수 뱃지 (자식이 있는 경우) -->
                 <span
                   v-if="item.has_children"
-                  class="px-1.5 py-0.2 rounded-full text-[10px] font-bold shrink-0"
-                  :class="item.is_expanded ? 'bg-black/10 text-gray-600' : 'bg-purple-600 text-white'"
+                  :class="HIER_COUNT_CLASS"
                 >
                   {{ item.children_count }}
                 </span>
@@ -178,7 +176,7 @@
             <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
               <span>당해: <strong class="font-mono text-gray-700">{{ formatAmount(item.prev_amount) }}원</strong></span>
               <!-- 상위 계정인 경우 소계 강조 -->
-              <span v-if="!item.is_leaf" class="text-xs font-semibold" :class="item.level === '관' ? 'text-blue-900' : 'text-purple-900'">
+              <span v-if="!item.is_leaf" class="text-xs font-semibold text-gray-800">
                 소계: <span class="text-sm font-bold font-mono">{{ formatAmount(item.request_amount) }}원</span>
               </span>
             </div>
@@ -197,7 +195,7 @@
                 v-if="item.level === '목'"
                 type="button"
                 @click="openNewCategoryModal('세목', item.id)"
-                class="px-2 py-0.5 text-[11px] bg-white border border-green-200 text-green-700 rounded-md font-medium"
+                class="px-2 py-0.5 text-[11px] bg-white border border-purple-200 text-purple-700 rounded-md font-medium"
               >
                 + 이 목에 신규 세목 추가
               </button>
@@ -495,6 +493,7 @@
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
+import { HIER_LIST_CLASS, hierBadgeClass, HIER_COUNT_CLASS, hierRowClass, hierIndentStyle, hierTitleClass } from "../../utils/hierarchyListStyle";
 import { useUserStore } from "@/store/userStore";
 import { getCurrentYear } from "@/utils/dateUtils";
 
@@ -1267,37 +1266,11 @@ const getDiffClass = (diff) => {
   return "text-gray-400";
 };
 
-const getMobileCardClass = (item) => {
-  switch (item.level) {
-    case "관":
-      return "border-l-[6px] border-l-blue-600 border-blue-200 bg-blue-50/70 shadow-xs";
-    case "항":
-      return "border-l-4 border-l-purple-500 border-purple-200 bg-purple-50/40";
-    case "목":
-      return "border-l-4 border-l-emerald-500 border-emerald-200 bg-emerald-50/30";
-    default:
-      return "border-l-4 border-l-gray-300 border-gray-200 bg-white";
-  }
-};
+const getMobileCardClass = (item) => hierRowClass(item.level);
 
-const getMobileIndentStyle = (depth) => {
-  const margin = Math.max(0, (depth - 1) * 8);
-  return margin > 0 ? { marginLeft: `${margin}px` } : {};
-};
+const getMobileIndentStyle = (depth) => hierIndentStyle(depth);
 
-const getMobileBadgeClass = (level) => {
-  switch (level) {
-    case "관": return "bg-blue-600 text-white";
-    case "항": return "bg-purple-600 text-white";
-    case "목": return "bg-emerald-600 text-white";
-    default: return "bg-gray-100 text-gray-700 border border-gray-300";
-  }
-};
+const getMobileBadgeClass = (level) => hierBadgeClass(level);
 
-const getMobileTitleClass = (level, isLeaf) => {
-  if (level === "관") return "text-sm font-extrabold text-blue-950 tracking-tight";
-  if (level === "항") return "text-sm font-bold text-purple-950";
-  if (level === "목") return "text-sm font-semibold text-emerald-950";
-  return isLeaf ? "text-xs font-semibold text-gray-800" : "text-xs font-bold text-gray-900";
-};
+const getMobileTitleClass = (level) => hierTitleClass(level);
 </script>

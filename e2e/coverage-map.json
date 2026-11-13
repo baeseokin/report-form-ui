@@ -1081,6 +1081,7 @@
         "src/router/index.js",
         "src/store/userStore.js",
         "src/utils/dateUtils.js",
+        "src/utils/hierarchyListStyle.js",
         "src/utils/printUtils.js"
       ],
       "api": [
@@ -1177,6 +1178,7 @@
         "src/router/index.js",
         "src/store/userStore.js",
         "src/utils/dateUtils.js",
+        "src/utils/hierarchyListStyle.js",
         "src/utils/printUtils.js"
       ],
       "api": [
@@ -1220,7 +1222,8 @@
         "src/main.js",
         "src/router/index.js",
         "src/store/userStore.js",
-        "src/utils/dateUtils.js"
+        "src/utils/dateUtils.js",
+        "src/utils/hierarchyListStyle.js"
       ],
       "api": [
         "GET /api/access/:n",
@@ -1294,7 +1297,8 @@
         "src/main.js",
         "src/router/index.js",
         "src/store/userStore.js",
-        "src/utils/dateUtils.js"
+        "src/utils/dateUtils.js",
+        "src/utils/hierarchyListStyle.js"
       ],
       "api": [
         "GET /api/access/:n",
@@ -1415,6 +1419,102 @@
         "GET /api/users/me/signature",
         "POST /api/approval/approve",
         "POST /api/approvalList",
+        "POST /api/login"
+      ]
+    },
+    "e2e/dept-budget-status.spec.js::12-1 재정부 이관된 지출이 부서 예산집행 현황의 지출·잔액·집행률에 반영된다::android": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptBudgetStatusMobile.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/hierarchyListStyle.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories/:n",
+        "GET /api/departments",
+        "GET /api/dept-budget-status",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "POST /api/login"
+      ]
+    },
+    "e2e/dept-budget-status.spec.js::12-1 재정부 이관된 지출이 부서 예산집행 현황의 지출·잔액·집행률에 반영된다::desktop": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/DeptBudgetStatus.vue",
+        "src/components/DeptPickerDesktop.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/PortalHome.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories/:n",
+        "GET /api/departments",
+        "GET /api/dept-budget-status",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "POST /api/login"
+      ]
+    },
+    "e2e/dept-budget-status.spec.js::12-1 재정부 이관된 지출이 부서 예산집행 현황의 지출·잔액·집행률에 반영된다::iphone": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptBudgetStatusMobile.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js",
+        "src/utils/hierarchyListStyle.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories/:n",
+        "GET /api/departments",
+        "GET /api/dept-budget-status",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "GET /api/user/favorites",
         "POST /api/login"
       ]
     },

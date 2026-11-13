@@ -55,6 +55,14 @@ description: report-form-ui 의 UI/UX 디자인 표준(버튼·입력칸·카드
 - 모바일 엑셀 버튼: 검색조건 패널 **밖**, 목록(건수·합계 요약) 바로 위에 `btn btn-excel btn-lg w-full` — 패널이 접혀 있어도 항상 보이게 한다
   - 참고 구현: `mobile/PaymentHistoryMobile.vue`, `mobile/ApprovalListMobile.vue`
 - 모바일 목록: 표 대신 `card p-4` 카드 목록 (`space-y-3`), 카드 전체를 눌러 상세 열기, 상태는 오른쪽 위 배지.
+- **계층형 계정 목록(관 > 항 > 목 > 세목, 모바일)**: `src/utils/hierarchyListStyle.js` 의 공통 스타일을 쓴다.
+  - 계정마다 **작은 카드**(`hierRowClass`: 회색 테두리 · 옅은 그림자)로 나누고 카드 사이 간격(`HIER_LIST_CLASS`, 8px)으로 구분
+  - 계층은 **카드 들여쓰기**(`hierIndentStyle`, 계층마다 8px) · **글자 굵기**(`hierTitleClass`) · **계층 색**으로 구분
+  - 계층 색(관 파랑 · 항 보라 · 목 초록 · 세목 회색)은 **연한 배지**(`hierBadgeClass`)와 **아주 옅은 줄 배경**(`hierRowClass`) 두 곳에만 쓴다
+  - 굵은 색 띠(`border-l-*`) · 색 테두리 · 진한 바탕 배지 · 계층별 글자색은 쓰지 않는다 (한 계층을 여러 겹으로 강조하면 금액보다 색이 먼저 보임)
+  - 색은 금액 의미에만: 지출 빨강, 잔액 파랑, 증감 초록/빨강, 집행률 보라. 소계 등 일반 금액은 회색
+  - 하위 개수 배지 `HIER_COUNT_CLASS`, 자식 없는 줄은 펼침 버튼 자리만 비워 둠 (📄 같은 아이콘 없음)
+  - 적용 화면: 예산편성서 작성 STEP 2/3, 부서 예산집행 현황, 예산 관리 (모바일)
 
 ## 5. 상태 배지
 `<span class="badge badge-…">` — 결재 상태 색은 아래로 고정한다.
