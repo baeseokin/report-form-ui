@@ -26,8 +26,13 @@ function testKey(testInfo) {
   return `${spec}::${testInfo.title}::${testInfo.project.name}`;
 }
 
-/** "/api/approval/detail/12" → "/api/approval/detail/:n" (실행마다 달라지는 숫자 id 를 묶어 기록 변화를 줄임) */
-const normalizeApi = (p) => p.replace(/\/\d+(?=\/|$)/g, "/:n");
+/**
+ * 실행마다 달라지는 경로 조각을 묶어 기록 변화를 줄임
+ *   "/api/approval/detail/12"                     → "/api/approval/detail/:n"   (숫자 id)
+ *   "/api/files/1794549078100-98116-signature.png" → "/api/files/:n"            (시각·난수가 들어간 파일 이름)
+ */
+const normalizeApi = (p) => p.replace(/\/[^/]*\d{6,}[^/]*(?=\/|$)|\/\d+(?=\/|$)/g, "/:n");
+const normalizeEntry = (api) => [...new Set(api.map((a) => a.replace(/ (.*)$/, (_, p) => " " + normalizeApi(p))))].sort();
 
 export async function recordLoadedSources(page, testInfo, use) {
   const src = new Set();
@@ -94,10 +99,13 @@ export function mergeCoverage() {
   for (const f of fs.readdirSync(TMP_DIR)) {
     if (!f.endsWith(".json")) continue;
     const { key, src, api } = JSON.parse(fs.readFileSync(path.join(TMP_DIR, f), "utf8"));
-    map.tests[key] = { src, api };
+    map.tests[key] = { src, api: normalizeEntry(api) };
     recorded++;
   }
   fs.rmSync(TMP_DIR, { recursive: true, force: true });
+
+  // 이전 규칙으로 기록된 항목도 같은 규칙으로 정리
+  for (const v of Object.values(map.tests)) if (!Array.isArray(v) && v.api) v.api = normalizeEntry(v.api);
 
   // 없어진 spec / 제목이 바뀌거나 삭제된 테스트 정리
   const sources = {};
