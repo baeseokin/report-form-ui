@@ -40,6 +40,44 @@ iPhone 프로젝트는 WebKit 브라우저가 필요합니다. 처음 한 번 `n
   - 승인/반려 버튼은 PC용·모바일용이 함께 있으므로 **보이는 것만** 고르고, 모바일 하단 버튼 바는 1.5초 뒤 숨으므로 누르기 직전에 깨웁니다.
 - 실제 기기가 아닌 **에뮬레이션**입니다. iOS 가상 키보드, 날짜 선택기 같은 OS 고유 UI나 실제 Safari 와의 미세한 차이는 확인하지 못합니다.
 
+## 커밋할 때 자동 실행
+
+`git commit` 시점에 **스테이징된 변경과 관련된 케이스만** PC · iPhone · Android 에서 실행합니다.
+
+```bash
+node e2e/select-specs.mjs     # 스테이징된 변경 → 실행할 spec 과 이유 확인
+e2e/run-related.sh            # 관련 spec 실행, 통과하면 .git/e2e-pass 에 기록
+e2e/run-related.sh --check    # 지금 스테이징된 내용이 이미 통과했는지만 확인
+```
+
+- **사람이 커밋할 때**: git pre-commit 훅(`.githooks/pre-commit`)이 관련 케이스를 실행하고, 실패하면 커밋을 막습니다.
+  저장소마다 한 번 설치: `git config core.hooksPath .githooks` · 급할 때 우회: `git commit --no-verify`
+- **Claude Code 가 커밋할 때**: 훅(`.claude/hooks/e2e-before-commit.sh`)이 미검증 커밋을 막고, Claude 가 e2e 스킬
+  (`.claude/skills/e2e/SKILL.md`)에 따라 실행 → 실패 원인 분석·수정 → 재실행(최대 3회) 후 커밋합니다.
+- 이미 같은 내용으로 통과했으면 다시 실행하지 않습니다 (스테이징 트리 해시로 비교).
+- 변경 파일 → spec 연결은 **`e2e/coverage-map.json`** 에서 자동으로 구합니다. E2E 를 실행할 때마다 각 테스트가 실제로 불러온
+  `src/` 파일을 기록해 갱신하므로(PC·모바일 컴포넌트 모두), 새 하위 컴포넌트나 새 케이스가 생겨도 손으로 고칠 필요가 없습니다.
+  바뀐 파일을 불러오는 테스트가 있는 spec 만 실행하고, 설정 파일·`e2e/support` 변경은 전체 실행, 문서만 바뀌면 건너뜁니다.
+- 어떤 테스트도 불러온 적 없는 소스(새 화면, 테스트 없는 화면)를 바꾸면 **"E2E 미커버"** 로 표시됩니다.
+  - Claude 가 커밋할 때: 케이스 초안을 제안하고, 추가하면 작성·실행 / 생략하면 `e2e/run-related.sh --accept-uncovered` 로 기록 후 커밋
+  - 사람이 커밋할 때: 경고만 표시하고 막지 않음
+- 테스트는 작업 폴더 기준으로 돌기 때문에, 스테이징되지 않은 `src/`·`e2e/` 변경이 있으면 실행을 거부합니다 (`git add` 후 다시).
+
+### report-server 를 커밋할 때
+
+report-server 의 `.githooks/pre-commit`(사람) 과 `.claude/hooks/e2e-before-commit.sh`(Claude) 가 `e2e/run-related.sh --server` 를 사용합니다.
+
+1. 서버 API 테스트(jest) 전체 실행 (약 5초)
+2. 바뀐 라우트·서비스 파일의 API 를 **화면에서 실제로 호출하는** E2E 케이스만 PC · iPhone · Android 에서 실행
+   - 화면이 어떤 API 를 호출하는지도 `coverage-map.json` 에 자동 기록됩니다 (`api` 항목).
+   - `routes/` 의 API 정의와 `services/` 의 require 관계를 따라 영향 범위를 계산합니다 (`e2e/support/server-impact.js`).
+   - `app.js`·`lib/`·`db/`·`env.js`·테스트 시드 변경은 화면 E2E 전체, `tests/*.test.js` 만 바뀌면 서버 API 테스트만 실행합니다.
+
+```bash
+node e2e/select-specs.mjs --server            # report-server 에 스테이징된 변경 기준 선택 결과
+e2e/run-related.sh --server                   # 실행 → 통과 시 report-server/.git/e2e-pass 에 기록
+```
+
 ## 실행 구조
 
 ```

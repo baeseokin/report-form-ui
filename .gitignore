@@ -11,3 +11,4 @@ dist/
 e2e-screenshots/
 e2e-report/
 e2e-results/
+e2e-coverage-tmp/

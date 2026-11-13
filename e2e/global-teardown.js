@@ -2,12 +2,14 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { mergeCoverage } from "./support/coverage.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../e2e-screenshots");
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const caseKey = (name) => name.split(/[_~]/)[0].split(/[-·]/).map(Number);
 
 export default async function globalTeardown() {
+  mergeCoverage(); // 테스트별 불러온 소스 파일 → e2e/coverage-map.json
   if (!fs.existsSync(ROOT)) return;
   const cases = fs.readdirSync(ROOT, { withFileTypes: true })
     .filter((d) => d.isDirectory())

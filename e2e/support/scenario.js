@@ -2,7 +2,8 @@
 //   - step(): 단계를 실행하고 끝난 화면을 스크린샷으로 저장 (e2e-screenshots/<케이스>/<번호>_<단계>.png)
 //   - loginAs(): 실제 로그인 화면에서 부서 → 역할 → 사용자 → 비밀번호 입력
 //   - 브라우저 alert/confirm 은 자동으로 '확인'을 누르고, 그 문구를 스크린샷 상단에 표시
-import { test, expect } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
+import { recordLoadedSources } from "./coverage.js";
 import { createRequire } from "module";
 import path from "path";
 import fs from "fs";
@@ -136,4 +137,9 @@ export async function drawSignature(page, canvas) {
   await page.mouse.up();
 }
 
-export { test, expect };
+// 모든 테스트에 자동 적용: 테스트가 불러온 소스 파일을 기록 (e2e/coverage-map.json → 커밋 시 관련 케이스 선택에 사용)
+export const test = base.extend({
+  _sourceCoverage: [async ({ page }, use, testInfo) => recordLoadedSources(page, testInfo, use), { auto: true }],
+});
+
+export { expect };

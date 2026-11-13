@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# git pre-commit 훅 (사람이 직접 커밋할 때): 스테이징된 변경과 관련된 E2E 를 PC · iPhone · Android 에서 실행합니다.
+#   - 이미 같은 내용으로 통과했으면(예: Claude 가 검증 후 커밋) 다시 실행하지 않습니다.
+#   - 테스트가 없는 화면(E2E 미커버)의 변경은 경고만 하고 막지 않습니다.
+#   - 실패하면 커밋을 막습니다. 자동 수정은 하지 않으니 Claude 에게 "/e2e" 로 수정을 요청하세요.
+#   - 급할 때 우회: git commit --no-verify  (권장하지 않음)
+#   설치(저장소마다 한 번): git config core.hooksPath .githooks
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+if E2E_IGNORE_UNCOVERED=1 e2e/run-related.sh --check >/dev/null 2>&1; then
+  exit 0
+fi
+
+e2e/run-related.sh
+RC=$?
+if [[ $RC -ne 0 ]]; then
+  echo ""
+  echo "커밋이 중단되었습니다. 실패 원인을 고친 뒤 다시 커밋하거나, Claude Code 에서 /e2e 로 분석·수정을 요청하세요."
+fi
+exit $RC
