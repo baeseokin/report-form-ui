@@ -7,7 +7,7 @@
 @layer components {
   /* ───────── 버튼 ─────────
    * 용도별 색:  btn-primary 보라(저장·등록·다음·결재요청) / btn-search 진회색(조회)
-   *            btn-excel 초록(엑셀) / btn-danger 빨강(삭제·반려) / btn-secondary 흰 바탕(취소·초기화·닫기·이전)
+   *            btn-excel 초록(엑셀) / btn-danger 빨강(삭제·반려) / btn-secondary 연회색(취소·초기화·닫기·이전)
    * 크기:      기본(PC 36px) / btn-sm(작은 보조 동작) / btn-lg(모바일·폼 하단 주요 동작 44px)
    */
   .btn {
@@ -20,7 +20,7 @@
   .btn-search { @apply bg-gray-800 text-white hover:bg-gray-900 active:bg-black disabled:hover:bg-gray-800; }
   .btn-excel { @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800 disabled:hover:bg-emerald-600; }
   .btn-danger { @apply bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800 disabled:hover:bg-red-600; }
-  .btn-secondary { @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:hover:bg-white; }
+  .btn-secondary { @apply bg-gray-200 text-gray-700 hover:bg-gray-300 active:bg-gray-400 disabled:hover:bg-gray-200; }
   /* 표·카드 안의 아이콘 버튼 (상세보기·수정·복사·삭제 이미지) */
   .btn-icon { @apply inline-flex items-center justify-center p-1 rounded-lg transition-colors hover:bg-gray-100; }
 

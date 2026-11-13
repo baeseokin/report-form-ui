@@ -21,7 +21,7 @@ description: report-form-ui 의 UI/UX 디자인 표준(버튼·입력칸·카드
 | 조회 | `btn btn-search` | 조회, 검색 |
 | 엑셀 | `btn btn-excel` | 엑셀 다운로드 (문구는 "엑셀 다운로드") |
 | 삭제·반려 | `btn btn-danger` | 삭제, 반려 |
-| 보조 | `btn btn-secondary` | 취소, 초기화, 닫기, 이전, 목록으로, 새로고침 |
+| 보조 (연회색) | `btn btn-secondary` | 취소, 초기화, 닫기, 이전, 목록으로, 새로고침, 비밀번호 초기화 |
 | 표·카드 안 아이콘 | `btn-icon` + `<img src="/icons/….svg" class="w-6 h-6">` | 상세보기·수정·복사·삭제 |
 
 - 크기: 기본(PC, 36px) · `btn-sm`(표 안·보조 동작) · `btn-lg`(모바일 하단 주요 동작, 폼 마지막 단계, 44px).

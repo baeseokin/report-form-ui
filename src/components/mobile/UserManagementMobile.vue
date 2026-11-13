@@ -43,7 +43,7 @@
           <div class="p-3 pt-4 space-y-3 bg-white">
             <div>
               <label class="block text-sm mb-1">부서</label>
-              <select v-model="filters.dept" class="w-full mobile-form-control mobile-form-control-select">
+              <select v-model="filters.dept" data-testid="user-filter-dept" class="w-full mobile-form-control mobile-form-control-select">
                 <option value="">전체</option>
                 <option v-for="dept in departments" :key="dept.id" :value="dept.name">
                   {{ dept.name }}
@@ -69,6 +69,7 @@
             </div>
             <button
               type="button"
+              data-testid="user-search-btn"
               @click="searchUsers"
               class="btn btn-search btn-lg w-full touch-manipulation"
             >
@@ -93,6 +94,7 @@
             v-for="user in users"
             :key="user.id"
             @click="selectUser(user)"
+            data-testid="user-card"
             class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer touch-manipulation active:bg-purple-50 transition"
             :class="selectedUser && selectedUser.id === user.id ? 'bg-purple-100 border-purple-300' : 'border-gray-200 hover:bg-gray-50'"
           >
@@ -166,6 +168,7 @@
             이름
             <input
               v-model="selectedUser.name"
+              data-testid="user-name-input"
               class="mt-1 w-full mobile-form-control"
               placeholder="예: 홍길동"
             />
@@ -186,6 +189,7 @@
             핸드폰번호
             <input
               v-model="selectedUser.phone"
+              data-testid="user-phone-input"
               class="mt-1 w-full mobile-form-control"
               placeholder="예: 01012345678"
             />
@@ -240,7 +244,7 @@
                 <input type="checkbox" v-model="setAsDefault" class="rounded" />
                 <span>기본 지정</span>
               </label>
-              <button @click="clearCanvas" class="px-2 py-1 bg-gray-100 rounded text-xs touch-manipulation">
+              <button @click="clearCanvas" class="btn btn-secondary btn-sm touch-manipulation">
                 지우기
               </button>
               <button
@@ -287,6 +291,7 @@
           </button>
           <button
             v-else
+            data-testid="user-save-btn"
             @click="updateUser"
             class="btn btn-primary btn-lg flex-1 min-w-[120px] touch-manipulation"
           >
@@ -294,8 +299,9 @@
           </button>
           <button
             v-if="!selectedUser.isNew"
+            data-testid="user-reset-pw-btn"
             @click="resetPassword"
-            class="flex-1 min-w-[100px] py-3 bg-yellow-500 text-white rounded-lg font-medium touch-manipulation active:scale-[0.98]"
+            class="btn btn-secondary btn-lg flex-1 min-w-[100px] touch-manipulation"
           >
             비밀번호 초기화
           </button>

@@ -26,7 +26,7 @@
           </p>
           <button
             @click="clearSignature(false)"
-            class="px-3 py-1 bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
+            class="btn btn-secondary btn-sm"
           >
             지우기
           </button>

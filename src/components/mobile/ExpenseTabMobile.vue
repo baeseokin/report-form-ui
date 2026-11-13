@@ -65,7 +65,7 @@
         <div class="text-sm font-semibold text-gray-800">입력 항목</div>
         <div class="flex gap-2">
           <button
-            class="px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200"
+            class="btn btn-secondary"
             @click="addRow"
             :disabled="!isSelectionReady"
           >
@@ -247,7 +247,7 @@
       <!-- ✅ 하단 행추가/삭제 버튼 추가 (상단과 동일한 스타일 적용) -->
       <div v-if="isSelectionReady && formattedItems.length > 0" class="flex justify-end gap-2 pt-1 pb-3">
         <button
-          class="px-3 py-2 text-sm rounded bg-gray-100 hover:bg-gray-200"
+          class="btn btn-secondary"
           @click="addRow"
         >
           + 행추가

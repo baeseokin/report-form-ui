@@ -18,7 +18,7 @@
         <!-- 부서 선택 -->
         <div>
           <label class="block text-sm font-semibold text-gray-700">부서</label>
-          <select v-model="filters.dept" class="form-input w-full">
+          <select v-model="filters.dept" data-testid="user-filter-dept" class="form-input w-full">
             <option value="">전체</option>
             <option v-for="dept in departments" :key="dept.id" :value="dept.name">
               {{ dept.name }}
@@ -50,6 +50,7 @@
         <!-- 조회 버튼 -->
         <div class="pt-2">
           <button
+            data-testid="user-search-btn"
             @click="searchUsers"
             class="btn btn-search w-full"
           >
@@ -75,6 +76,7 @@
                 v-for="user in users"
                 :key="user.id"
                 @click="selectUser(user)"
+                data-testid="user-row"
                 class="cursor-pointer hover:bg-purple-50 transition"
                 :class="selectedUser && selectedUser.id === user.id ? 'bg-purple-200 font-semibold' : ''"
               >
@@ -108,7 +110,7 @@
             >신규 등록</button>
             <button
               @click="clearSelection"
-              class="px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              class="btn btn-secondary"
             >선택 해제</button>
           </div>
         </div>
@@ -155,6 +157,7 @@
               <span class="font-semibold text-gray-700">이름</span>
               <input
                 v-model="selectedUser.name"
+                data-testid="user-name-input"
                 class="form-input w-full mt-1"
                 placeholder="예: 홍길동"
               />
@@ -177,6 +180,7 @@
               <span class="font-semibold text-gray-700">핸드폰번호</span>
               <input
                 v-model="selectedUser.phone"
+                data-testid="user-phone-input"
                 class="form-input w-full mt-1"
                 placeholder="예: 01012345678"
               />
@@ -254,7 +258,7 @@
                       <input type="checkbox" v-model="setAsDefault" />
                       <span>저장 후 기본 지정</span>
                     </label>
-                    <button @click="clearCanvas" class="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200">
+                    <button @click="clearCanvas" class="btn btn-secondary btn-sm">
                       지우기
                     </button>
                     <button
@@ -289,6 +293,7 @@
             </button>
             <button
               v-else
+              data-testid="user-save-btn"
               @click="updateUser"
               class="btn btn-primary"
             >
@@ -296,8 +301,9 @@
             </button>
             <button
               v-if="!selectedUser.isNew"
-              @click="resetPassword"
-              class="px-6 py-2 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600 transition"
+              data-testid="user-reset-pw-btn"
+            @click="resetPassword"
+              class="btn btn-secondary"
             >
               비밀번호 초기화
             </button>

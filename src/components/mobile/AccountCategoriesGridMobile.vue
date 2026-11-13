@@ -19,6 +19,7 @@
           >➕</button>
           <button
             @click="selectedCategory && openModal('edit', selectedCategory)"
+            data-testid="category-edit-btn"
             :disabled="!selectedCategory"
             class="p-1.5 text-blue-600 rounded text-sm leading-none active:bg-blue-100 min-w-[28px] min-h-[28px] flex items-center justify-center border border-blue-300 disabled:opacity-40 disabled:border-gray-200 touch-manipulation"
             title="수정"
@@ -34,6 +35,7 @@
       <div class="flex-1 overflow-y-auto min-h-[200px]">
         <div class="divide-y divide-gray-100">
           <div
+            data-testid="category-card"
             v-for="c in visibleCategories"
             :key="c.id"
             @click="selectedCategoryId === c.id ? (selectedCategoryId = null) : (selectedCategoryId = c.id)"
@@ -54,6 +56,7 @@
             <button
               v-if="c.children && c.children.length > 0"
               @click.stop="toggleExpand(c.id)"
+              data-testid="category-expand"
               class="w-7 h-7 shrink-0 flex items-center justify-center text-gray-500 rounded-lg active:bg-gray-200"
             >
               {{ expandedIds.has(c.id) ? '▼' : '▶' }}
@@ -170,7 +173,7 @@
               <span class="text-xs text-gray-500">{{ getDeptName(c.owner_dept_id) }}</span>
             </template>
             <template v-else>
-              <button @click="toggleOwner(c)" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded touch-manipulation">
+              <button @click="toggleOwner(c)" class="btn btn-secondary btn-sm touch-manipulation">
                 Set Owner
               </button>
             </template>
@@ -203,7 +206,7 @@
           </label>
           <label class="block">
             <span class="text-sm text-gray-600">계정명</span>
-            <input v-model="modalForm.category_name" class="w-full border rounded-lg p-3 mt-1 focus:ring-2 focus:ring-purple-400 text-base" />
+            <input v-model="modalForm.category_name" data-testid="category-name-input" class="w-full border rounded-lg p-3 mt-1 focus:ring-2 focus:ring-purple-400 text-base" />
           </label>
           <label class="block">
             <span class="text-sm text-gray-600">단계</span>
@@ -220,7 +223,7 @@
         <button @click="closeModal" class="btn btn-secondary btn-lg flex-1 touch-manipulation">
           취소
         </button>
-        <button @click="saveCategory" class="btn btn-primary btn-lg flex-1 touch-manipulation">
+        <button @click="saveCategory" data-testid="category-save-btn" class="btn btn-primary btn-lg flex-1 touch-manipulation">
           저장
         </button>
       </div>

@@ -264,7 +264,7 @@
           type="button"
           @click="submitBudgetPlan('작성중')"
           :disabled="submitting"
-          class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-xl text-sm transition"
+          class="btn btn-secondary btn-lg flex-1"
         >
           임시저장
         </button>

@@ -28,6 +28,7 @@
             </thead>
             <tbody>
               <tr
+                data-testid="category-row"
                 v-for="c in visibleCategories"
                 :key="c.id"
                 class="hover:bg-gray-50 group"
@@ -45,6 +46,7 @@
                     <span
                       v-if="c.children && c.children.length > 0"
                       @click.stop="toggleExpand(c.id)"
+                      data-testid="category-expand"
                       class="mr-1 cursor-pointer text-gray-500 hover:text-purple-600 w-4 text-center inline-block select-none"
                     >
                       {{ expandedIds.has(c.id) ? '▼' : '▶' }}
@@ -59,7 +61,7 @@
                 <td class="border p-2 text-center">
                   <div class="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button @click="openModal('add', c)" class="text-green-600 hover:bg-green-100 p-1 rounded" title="하위 추가">➕</button>
-                    <button @click="openModal('edit', c)" class="btn-icon" title="수정"><img src="/icons/edit.svg" alt="수정" class="w-5 h-5" /></button>
+                    <button @click="openModal('edit', c)" data-testid="category-edit-btn" class="btn-icon" title="수정"><img src="/icons/edit.svg" alt="수정" class="w-5 h-5" /></button>
                     <button @click="deleteCategory(c)" class="btn-icon" title="삭제"><img src="/icons/trash.svg" alt="삭제" class="w-5 h-5" /></button>
                   </div>
                 </td>
@@ -168,7 +170,7 @@
                     <span class="text-xs text-gray-500">{{ getDeptName(c.owner_dept_id) }}</span>
                   </div>
                   <div v-else>
-                    <button @click="toggleOwner(c)" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded hover:bg-gray-200">
+                    <button @click="toggleOwner(c)" class="btn btn-secondary btn-sm">
                       Set Owner
                     </button>
                   </div>
@@ -222,6 +224,7 @@
             <span class="text-gray-700">계정명</span>
             <input
               v-model="modalForm.category_name"
+              data-testid="category-name-input"
               class="form-input w-full mt-1"
             />
           </label>
@@ -251,6 +254,7 @@
           </button>
           <button
             @click="saveCategory"
+            data-testid="category-save-btn"
             class="btn btn-primary"
           >
             저장

@@ -1,5 +1,99 @@
 {
   "tests": {
+    "e2e/account-categories.spec.js::10-1 계정과목 이름을 수정하면 목록과 DB 에 반영된다::android": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/AccountCategoriesGridMobile.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "POST /api/login",
+        "PUT /api/accountCategories/:n"
+      ]
+    },
+    "e2e/account-categories.spec.js::10-1 계정과목 이름을 수정하면 목록과 DB 에 반영된다::desktop": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/AccountCategoriesGrid.vue",
+        "src/components/DeptPickerDesktop.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/PortalHome.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "POST /api/login",
+        "PUT /api/accountCategories/:n"
+      ]
+    },
+    "e2e/account-categories.spec.js::10-1 계정과목 이름을 수정하면 목록과 DB 에 반영된다::iphone": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/AccountCategoriesGridMobile.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/accountCategories",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/session",
+        "GET /api/user/favorites",
+        "POST /api/login",
+        "PUT /api/accountCategories/:n"
+      ]
+    },
     "e2e/approval-flow.spec.js::1-1 결재선 순서대로 진행되고 재정부 이관까지 완료된다::android": {
       "src": [
         "src/App.vue",
@@ -2247,6 +2341,206 @@
         "GET /api/user/favorites",
         "POST /api/approvalList",
         "POST /api/login"
+      ]
+    },
+    "e2e/user-management.spec.js::9-1 관리자가 사용자 정보를 수정하면 저장된다::android": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/components/mobile/UserManagementMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/roles",
+        "GET /api/session",
+        "GET /api/users/:n/signature/default",
+        "GET /api/users/search",
+        "POST /api/login",
+        "PUT /api/users/:n"
+      ]
+    },
+    "e2e/user-management.spec.js::9-1 관리자가 사용자 정보를 수정하면 저장된다::desktop": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/DeptPickerDesktop.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/PortalHome.vue",
+        "src/components/UserManagement.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/roles",
+        "GET /api/session",
+        "GET /api/users/:n/signature/default",
+        "GET /api/users/search",
+        "POST /api/login",
+        "PUT /api/users/:n"
+      ]
+    },
+    "e2e/user-management.spec.js::9-1 관리자가 사용자 정보를 수정하면 저장된다::iphone": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/components/mobile/UserManagementMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/roles",
+        "GET /api/session",
+        "GET /api/user/favorites",
+        "GET /api/users/:n/signature/default",
+        "GET /api/users/search",
+        "POST /api/login",
+        "PUT /api/users/:n"
+      ]
+    },
+    "e2e/user-management.spec.js::9-2 비밀번호를 초기화하면 0000 으로 로그인하고 변경 요청 상태가 된다::android": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/components/mobile/UserManagementMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/roles",
+        "GET /api/session",
+        "GET /api/users/:n/signature/default",
+        "GET /api/users/search",
+        "POST /api/login",
+        "POST /api/users/:n/reset-password"
+      ]
+    },
+    "e2e/user-management.spec.js::9-2 비밀번호를 초기화하면 0000 으로 로그인하고 변경 요청 상태가 된다::desktop": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/DeptPickerDesktop.vue",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/PortalHome.vue",
+        "src/components/UserManagement.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/roles",
+        "GET /api/session",
+        "GET /api/users/:n/signature/default",
+        "GET /api/users/search",
+        "POST /api/login",
+        "POST /api/users/:n/reset-password"
+      ]
+    },
+    "e2e/user-management.spec.js::9-2 비밀번호를 초기화하면 0000 으로 로그인하고 변경 요청 상태가 된다::iphone": {
+      "src": [
+        "src/App.vue",
+        "src/assets/mobile-form-controls.css",
+        "src/components/HelpButton.vue",
+        "src/components/Login.vue",
+        "src/components/NoticePopupModal.vue",
+        "src/components/mobile/DeptPickerMobile.vue",
+        "src/components/mobile/PortalHomeMobile.vue",
+        "src/components/mobile/UserManagementMobile.vue",
+        "src/composables/useAutoLogout.js",
+        "src/helpContent.js",
+        "src/index.css",
+        "src/main.js",
+        "src/router/index.js",
+        "src/store/userStore.js",
+        "src/utils/dateUtils.js"
+      ],
+      "api": [
+        "GET /api/access/:n",
+        "GET /api/departments",
+        "GET /api/notices/popups",
+        "GET /api/portal/summary",
+        "GET /api/public/roles",
+        "GET /api/public/users",
+        "GET /api/roles",
+        "GET /api/session",
+        "GET /api/user/favorites",
+        "GET /api/users/:n/signature/default",
+        "GET /api/users/search",
+        "POST /api/login",
+        "POST /api/users/:n/reset-password"
       ]
     }
   }
